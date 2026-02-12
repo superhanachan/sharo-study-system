@@ -32,9 +32,25 @@ h2,
     font-family: 'Outfit', sans-serif;
 }
 
-.app-container {
-    display: flex;
-    min-height: 100vh;
+.edit-badge {
+    position: fixed;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--error);
+    color: white;
+    padding: 0.2rem 1rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    z-index: 2000;
+    box-shadow: 0 4px 15px rgba(255, 71, 87, 0.4);
+    display: none;
+    pointer-events: none;
+}
+
+.edit-mode .edit-badge {
+    display: block;
 }
 
 /* Sidebar */
@@ -102,6 +118,8 @@ h2,
     margin-bottom: 0.25rem;
     position: relative;
     cursor: default;
+    display: block;
+    width: 100%;
 }
 
 .edit-mode .toc-nav .item-container {
@@ -126,27 +144,39 @@ h2,
 
 .reorder-btns {
     display: none;
-    gap: 0.2rem;
+    gap: 0.15rem;
+    flex-shrink: 0;
+    opacity: 0;
+    transition: opacity 0.2s;
 }
 
 .edit-mode .reorder-btns {
     display: flex;
 }
 
+.item-container:hover .reorder-btns {
+    opacity: 1;
+}
+
 .reorder-btn {
-    background: none;
-    border: none;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--glass-border);
     color: var(--text-secondary);
     cursor: pointer;
-    padding: 0.2rem;
-    font-size: 0.8rem;
-    opacity: 0.5;
+    padding: 1px 4px;
+    border-radius: 4px;
+    font-size: 0.75rem;
     transition: var(--transition);
+    line-height: normal;
 }
 
 .reorder-btn:hover {
     opacity: 1;
     color: var(--accent);
+}
+
+.delete-folder-btn:hover {
+    color: var(--error) !important;
 }
 
 .toc-nav ul {
@@ -165,11 +195,16 @@ h2,
 }
 
 .toc-nav li .item-container {
-    display: flex;
+    display: flex !important;
     align-items: center;
-    gap: 0.25rem;
-    border-radius: 12px;
+    gap: 0.5rem;
+    border-radius: 8px;
+    padding: 0.4rem 0.6rem;
     transition: var(--transition);
+    width: 100%;
+    min-height: 36px;
+    box-sizing: border-box;
+    overflow: hidden;
 }
 
 .toc-nav li.active>.item-container {
@@ -202,23 +237,23 @@ h2,
     margin-right: 0.2rem;
 }
 
-.drag-over-folder {
-    background: rgba(76, 201, 240, 0.1) !important;
-    outline: 2px dashed var(--accent) !important;
+.drag-over-folder>.item-container {
+    background: rgba(76, 201, 240, 0.4) !important;
+    outline: 2px solid var(--accent) !important;
     outline-offset: -2px;
 }
 
 .toc-nav a {
     color: var(--text-secondary);
     text-decoration: none;
-    display: block;
-    padding: 0.5rem 0.75rem;
     flex: 1;
-    transition: var(--transition);
+    min-width: 0;
     font-weight: 500;
-    font-size: 0.9rem;
-    line-height: 1.3;
+    font-size: 0.85rem;
+    line-height: 1.4;
     word-break: break-all;
+    white-space: normal;
+    display: block;
 }
 
 .toc-nav a:hover,
