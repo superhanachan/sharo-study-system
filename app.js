@@ -80,6 +80,7 @@ class QuizApp {
             if (!set.type) set.type = 'page';
             if (set.parentId === undefined) set.parentId = null;
             if (set.isCollapsed === undefined) set.isCollapsed = false;
+            if (set.isInPool === undefined) set.isInPool = false;
 
             if (!reachableIds.has(set.id)) {
                 // Rescue item by moving to root
@@ -383,8 +384,16 @@ class QuizApp {
             this.weakQuestionsBody.innerHTML = '<tr><td colspan="4">データがありません</td></tr>';
             return;
         }
-        const avg = Math.round(this.history.reduce((a, b) => a + b.accuracy, 0) / this.history.length);
-        this.totalAccuracy.textContent = `${avg}%`; this.totalAnsweredDisplay.textContent = this.history.length;
+
+        // 全体の正答率と総解答数を、履歴（上限50件）ではなく各問題の統計から算出するように変更
+        const allStatsValues = Object.values(this.questionStats);
+        const totalCorrect = allStatsValues.reduce((sum, s) => sum + (s.correct || 0), 0);
+        const totalTotal = allStatsValues.reduce((sum, s) => sum + (s.total || 0), 0);
+        const avg = totalTotal > 0 ? Math.round((totalCorrect / totalTotal) * 100) : 0;
+
+        this.totalAccuracy.textContent = `${avg}%`;
+        this.totalAnsweredDisplay.textContent = totalTotal;
+
         this.historyBody.innerHTML = this.history.map(h => `<tr><td>${h.timestamp}</td><td>${h.page}</td><td>${h.score}</td><td>${h.accuracy}%</td></tr>`).join('');
 
         const statsArray = Object.values(this.questionStats).map(s => {
@@ -430,6 +439,10 @@ class QuizApp {
         const allQuestions = [];
         this.quizData.forEach(set => {
             if (set.type !== 'page' || !set.questions) return;
+
+            // CHECK: Is this page or any of its parent folders selected for the pool?
+            if (!this.isItemSelectedForPool(set.id)) return;
+
             set.questions.forEach(q => {
                 if (q.isInPool === false) return;
                 const stat = this.questionStats[q.id] || { correct: 0, total: 0, recent: [] };
@@ -746,6 +759,10 @@ class QuizApp {
                         </span>
                         <span class="folder-icon">${s.isCollapsed ? '📁' : '📂'}</span>
                     ` : ''}
+                    <input type="checkbox" class="toc-pool-checkbox" 
+                           ${s.isInPool ? 'checked' : ''} 
+                           onclick="event.stopPropagation(); app.toggleItemPool('${s.id}')" 
+                           title="特訓対象に含める">
                     <a href="#${s.id}" draggable="false" onclick="if('${isFolder}' === 'true') { event.preventDefault(); app.toggleFolder('${s.id}'); }">
                         ${s.title}
                     </a>
@@ -856,6 +873,26 @@ class QuizApp {
             this.saveData();
             this.renderTOC();
         }
+    }
+
+    toggleItemPool(id) {
+        const item = this.quizData.find(s => s.id === id);
+        if (item) {
+            item.isInPool = !item.isInPool;
+            this.saveData();
+            this.renderTOC();
+        }
+    }
+
+    isItemSelectedForPool(itemId) {
+        let currentId = itemId;
+        while (currentId) {
+            const item = this.quizData.find(i => i.id === currentId);
+            if (!item) break;
+            if (item.isInPool) return true;
+            currentId = item.parentId;
+        }
+        return false;
     }
 
     deleteFolder(id) {

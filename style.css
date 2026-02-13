@@ -237,6 +237,25 @@ h2,
     margin-right: 0.2rem;
 }
 
+.toc-pool-checkbox {
+    cursor: pointer;
+    width: 14px;
+    height: 14px;
+    margin: 0;
+    accent-color: var(--accent);
+    opacity: 0.6;
+    transition: var(--transition);
+    flex-shrink: 0;
+}
+
+.toc-pool-checkbox:hover {
+    opacity: 1;
+}
+
+.toc-pool-checkbox:checked {
+    opacity: 1;
+}
+
 .drag-over-folder>.item-container {
     background: rgba(76, 201, 240, 0.4) !important;
     outline: 2px solid var(--accent) !important;
