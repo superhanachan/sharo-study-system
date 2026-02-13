@@ -134,8 +134,12 @@ h2,
     opacity: 0.5;
 }
 
-.toc-nav li.drag-over>.item-container {
-    border-top: 2px solid var(--accent);
+.toc-nav li.drag-over-top>.item-container {
+    border-top: 3px solid var(--accent);
+}
+
+.toc-nav li.drag-over-bottom>.item-container {
+    border-bottom: 3px solid var(--accent);
 }
 
 .toc-nav li a {
@@ -144,14 +148,21 @@ h2,
 
 .reorder-btns {
     display: none;
-    gap: 0.15rem;
-    flex-shrink: 0;
-    opacity: 0;
+    gap: 2px;
+    flex-wrap: wrap;
     transition: opacity 0.2s;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 4px;
+    border-radius: 6px;
+    border: 1px solid var(--glass-border);
+    margin-top: 4px;
+    width: 100%;
+    justify-content: flex-start;
 }
 
 .edit-mode .reorder-btns {
     display: flex;
+    opacity: 1;
 }
 
 .item-container:hover .reorder-btns {
@@ -159,15 +170,18 @@ h2,
 }
 
 .reorder-btn {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.08);
     border: 1px solid var(--glass-border);
     color: var(--text-secondary);
     cursor: pointer;
-    padding: 1px 4px;
+    padding: 2px 5px;
     border-radius: 4px;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     transition: var(--transition);
-    line-height: normal;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .reorder-btn:hover {
@@ -204,11 +218,18 @@ h2,
     width: 100%;
     min-height: 36px;
     box-sizing: border-box;
-    overflow: hidden;
+    flex-wrap: wrap;
+}
+
+.edit-mode .toc-nav li .item-container {
+    flex-direction: row;
+    /* Keep initially row but let it wrap */
+    align-items: center;
 }
 
 .toc-nav li.active>.item-container {
-    background: var(--bg-card);
+    background: rgba(76, 201, 240, 0.1);
+    box-shadow: inset 0 0 0 1px var(--accent);
 }
 
 .folder-toggle {
@@ -269,10 +290,15 @@ h2,
     min-width: 0;
     font-weight: 500;
     font-size: 0.85rem;
-    line-height: 1.4;
-    word-break: break-all;
-    white-space: normal;
+    line-height: normal;
     display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.edit-mode .item-container {
+    padding-right: 0.6rem;
 }
 
 .toc-nav a:hover,
@@ -484,7 +510,11 @@ input:checked+.slider:before {
     border: 1px solid var(--accent) !important;
 }
 
-/* Stats Dashboard */
+/* Visibility and State Utility */
+.hidden {
+    display: none !important;
+}
+
 .view.hidden {
     display: none;
 }
@@ -648,6 +678,58 @@ input:checked+.slider:before {
     scrollbar-color: var(--accent) rgba(255, 255, 255, 0.05);
 }
 
+.understanding-map-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 1.5rem;
+    background: var(--bg-card);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    min-height: 100px;
+}
+
+.map-cell {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: var(--transition);
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.map-cell:hover {
+    transform: scale(1.2);
+    z-index: 10;
+    box-shadow: 0 0 10px rgba(76, 201, 240, 0.5);
+}
+
+.map-cell[data-tooltip]::before {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 140%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.95);
+    color: white;
+    padding: 0.6rem 0.8rem;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    white-space: pre;
+    opacity: 0;
+    pointer-events: none;
+    transition: var(--transition);
+    z-index: 2000;
+    border: 1px solid var(--glass-border);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+    min-width: 150px;
+}
+
+.map-cell:hover::before {
+    opacity: 1;
+}
+
 .table-wrapper::-webkit-scrollbar {
     height: 8px;
 }
@@ -763,12 +845,78 @@ td:last-child {
     background: rgba(74, 222, 128, 0.2) !important;
     color: var(--success);
     border-color: var(--success);
+    font-weight: 700;
+}
+
+/* 間違えた時の派手な表示 */
+.row-wrong {
+    background: rgba(247, 37, 133, 0.08) !important;
+    animation: shake 0.5s cubic-bezier(.36, .07, .19, .97) both;
+    border-left: 4px solid var(--error) !important;
+}
+
+.row-wrong td {
+    border-top: 1px solid rgba(247, 37, 133, 0.3) !important;
+    border-bottom: 1px solid rgba(247, 37, 133, 0.3) !important;
+}
+
+/* 間違えた行の中の「本来の正解」をより目立たせる */
+.row-wrong .choice-cell.correct {
+    background: var(--success) !important;
+    color: var(--bg-dark) !important;
+    box-shadow: 0 0 15px var(--success);
+    transform: scale(1.05);
+    z-index: 10;
+    position: relative;
+    border: none !important;
+}
+
+/* 間違えた行の中の「正解」マーク（多重選択用など） */
+.row-wrong .choice-cell.correct::after {
+    content: '正解';
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    background: #000;
+    color: var(--success);
+    font-size: 0.6rem;
+    padding: 2px 4px;
+    border-radius: 4px;
+    border: 1px solid var(--success);
+    font-weight: bold;
+    z-index: 20;
+}
+
+@keyframes shake {
+
+    10%,
+    90% {
+        transform: translate3d(-1px, 0, 0);
+    }
+
+    20%,
+    80% {
+        transform: translate3d(2px, 0, 0);
+    }
+
+    30%,
+    50%,
+    70% {
+        transform: translate3d(-4px, 0, 0);
+    }
+
+    40%,
+    60% {
+        transform: translate3d(4px, 0, 0);
+    }
 }
 
 .choice-cell.wrong {
-    background: rgba(247, 37, 133, 0.2) !important;
-    color: var(--error);
+    background: var(--error) !important;
+    color: white !important;
     border-color: var(--error);
+    text-decoration: line-through;
+    opacity: 0.8;
 }
 
 /* Edit Mode states */
@@ -1000,6 +1148,39 @@ tr {
 }
 
 /* Responsive */
+/* Mini Clause Styles for Table */
+.table-clause-wrapper {
+    margin: 10px 0;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    border: 1px solid var(--glass-border);
+    text-align: left;
+}
+
+.clause-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    background: var(--accent);
+    color: white;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.clause-text-mini {
+    line-height: 2;
+    font-size: 1rem;
+    color: var(--text-primary);
+}
+
+.clause-text-mini .clause-blank {
+    min-width: 60px;
+    height: 24px;
+    font-size: 0.9rem;
+}
+
 @media (max-width: 900px) {
     .sidebar {
         transform: translateX(-100%);
@@ -1017,4 +1198,119 @@ tr {
     .menu-toggle {
         display: block;
     }
+}
+
+/* Clause Quiz Styles */
+.clause-container {
+    max-width: 900px;
+    margin: 2rem auto;
+    background: var(--bg-card);
+    border: 1px solid var(--glass-border);
+    border-radius: 24px;
+    padding: 2.5rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+}
+
+.clause-text {
+    font-size: 1.15rem;
+    line-height: 2.2;
+    color: var(--text-primary);
+    text-align: justify;
+    margin-bottom: 2.5rem;
+}
+
+.clause-blank {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 100px;
+    height: 32px;
+    margin: 0 4px;
+    padding: 0 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border-bottom: 3px solid var(--accent);
+    border-radius: 6px 6px 0 0;
+    cursor: pointer;
+    transition: var(--transition);
+    vertical-align: middle;
+    font-weight: 700;
+    color: var(--accent);
+}
+
+.clause-blank.drag-over {
+    background: rgba(76, 201, 240, 0.2);
+    border-bottom-color: var(--accent-hover);
+    transform: translateY(-2px);
+}
+
+.clause-blank.filled {
+    background: rgba(76, 201, 240, 0.1);
+}
+
+.clause-blank.correct {
+    background: rgba(74, 222, 128, 0.1);
+    border-bottom-color: var(--success);
+    color: var(--success);
+}
+
+.clause-blank.wrong {
+    background: rgba(247, 37, 133, 0.1);
+    border-bottom-color: var(--error);
+    color: var(--error);
+}
+
+.reveal-correct {
+    font-size: 0.85rem;
+    color: var(--success);
+    margin-left: 4px;
+    font-weight: 400;
+    opacity: 0.8;
+}
+
+.keyword-bank {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 16px;
+    border: 1px dashed var(--glass-border);
+    justify-content: center;
+}
+
+.keyword-card {
+    background: var(--bg-dark);
+    border: 1px solid var(--glass-border);
+    padding: 0.6rem 1.2rem;
+    border-radius: 10px;
+    color: var(--text-primary);
+    font-weight: 600;
+    cursor: grab;
+    transition: var(--transition);
+    user-select: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.keyword-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(76, 201, 240, 0.2);
+}
+
+.keyword-card.dragging {
+    opacity: 0.5;
+    cursor: grabbing;
+}
+
+.keyword-card.used {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.3);
+    pointer-events: none;
+    /* Optional: prevent re-dragging if already used */
+}
+
+.clause-display.hidden {
+    display: none;
 }

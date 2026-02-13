@@ -34,6 +34,7 @@
                     <div class="sidebar-actions hidden-quiz">
                         <button id="add-folder-btn" class="secondary-btn add-btn">+ フォルダ追加</button>
                         <button id="add-page-btn" class="secondary-btn add-btn">+ ページ追加</button>
+                        <button id="add-clause-btn" class="secondary-btn add-btn">+ 条文穴埋め追加</button>
                     </div>
                 </nav>
             </div>
@@ -67,6 +68,8 @@
                 </header>
 
                 <section class="quiz-section" style="margin-top: 2rem;">
+                    <div id="clause-display"></div>
+
                     <div class="column-controls">
                         <button id="add-column-btn" class="secondary-btn">+ 列（選択肢）を追加</button>
                     </div>
@@ -75,6 +78,22 @@
                             <thead id="table-head"></thead>
                             <tbody id="table-body"></tbody>
                         </table>
+                    </div>
+
+                    <div id="clause-editor" class="clause-container hidden-quiz" style="margin-top: 2rem;">
+                        <p style="margin-bottom: 0.5rem; font-size: 0.9rem; color: var(--accent);">
+                            ※穴埋めにしたい箇所を <code>[[キーワード]]</code> のように囲んで入力してください。
+                        </p>
+                        <textarea id="clause-text-editor" class="clause-text"
+                            style="width: 100%; min-height: 200px; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); color: var(--text-primary); padding: 1rem; border-radius: 12px; font-family: inherit; line-height: 1.6;"
+                            placeholder="条文を入力してください..."></textarea>
+                        <div style="margin-top: 1rem;">
+                            <label
+                                style="display: block; margin-bottom: 0.5rem; font-size: 0.9rem; color: var(--accent);">ダミー選択肢（カンマ区切り）:</label>
+                            <input type="text" id="clause-dummies-editor"
+                                style="width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); color: var(--text-primary); padding: 0.5rem 1rem; border-radius: 8px;"
+                                placeholder="例: 文部科学大臣, 厚生労働省令, 30日以内">
+                        </div>
                     </div>
 
                     <div class="quiz-controls">
@@ -117,6 +136,30 @@
                     <div class="stats-card">
                         <h3>総解答数</h3>
                         <div id="total-answered" class="big-number">0</div>
+                    </div>
+                </div>
+
+                <div class="history-section" style="margin-top: 3rem;">
+                    <h3>理解度マップ（全問題の正答率）</h3>
+                    <div class="map-legend"
+                        style="margin-bottom: 1rem; display: flex; gap: 1rem; font-size: 0.8rem; color: var(--text-secondary); flex-wrap: wrap;">
+                        <div style="display: flex; align-items: center; gap: 0.4rem;"><span
+                                style="width: 12px; height: 12px; border-radius: 2px; background: rgba(255,255,255,0.1); border: 1px solid var(--glass-border);"></span>
+                            未学習</div>
+                        <div style="display: flex; align-items: center; gap: 0.4rem;"><span
+                                style="width: 12px; height: 12px; border-radius: 2px; background: #ff4d4d;"></span>
+                            0-40%
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.4rem;"><span
+                                style="width: 12px; height: 12px; border-radius: 2px; background: #ffb347;"></span>
+                            41-70%
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.4rem;"><span
+                                style="width: 12px; height: 12px; border-radius: 2px; background: var(--success);"></span>
+                            71-100%</div>
+                    </div>
+                    <div id="understanding-map" class="understanding-map-container">
+                        <!-- JSで生成 -->
                     </div>
                 </div>
 
