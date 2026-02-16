@@ -1,15 +1,17 @@
 :root {
-    --bg-dark: #0f111a;
-    --bg-card: rgba(255, 255, 255, 0.05);
+    --bg-dark: #0f1117;
+    --bg-card: rgba(30, 32, 45, 0.7);
+    --text-primary: #ffffff;
+    --text-secondary: rgba(255, 255, 255, 0.7);
     --accent: #4cc9f0;
     --accent-hover: #4895ef;
     --success: #4ade80;
     --error: #f72585;
-    --text-primary: #e0e6ed;
-    --text-secondary: #94a3b8;
-    --sidebar-width: 280px;
     --glass-border: rgba(255, 255, 255, 0.1);
     --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --sidebar-width: 320px;
+    font-size: 18px;
+    /* Base font size increased */
 }
 
 * {
@@ -24,6 +26,13 @@ body {
     color: var(--text-primary);
     overflow-x: hidden;
     line-height: 1.6;
+}
+
+.app-container {
+    display: flex;
+    min-height: 100vh;
+    position: relative;
+    width: 100%;
 }
 
 h1,
@@ -55,18 +64,14 @@ h2,
 
 /* Sidebar */
 .sidebar {
-    width: var(--sidebar-width);
-    background: rgba(15, 17, 26, 0.8);
-    backdrop-filter: blur(20px);
+    width: 320px;
+    background: #1a1c27;
     border-right: 1px solid var(--glass-border);
-    padding: 2rem 1rem;
-    position: fixed;
-    height: 100vh;
-    transition: var(--transition);
-    z-index: 100;
     display: flex;
     flex-direction: column;
-    overflow-x: hidden;
+    transition: var(--transition);
+    z-index: 1000;
+    flex-shrink: 0;
 }
 
 #quiz-sidebar-content::-webkit-scrollbar {
@@ -89,11 +94,10 @@ h2,
 /* Sidebar Tabs */
 .sidebar-tabs {
     display: flex;
-    background: var(--bg-card);
-    border-radius: 12px;
-    padding: 0.25rem;
-    margin-bottom: 2rem;
-    border: 1px solid var(--glass-border);
+    gap: 0.75rem;
+    padding: 1rem;
+    background: rgba(15, 17, 23, 0.3);
+    border-bottom: 1px solid var(--glass-border);
 }
 
 .tab-btn {
@@ -101,11 +105,11 @@ h2,
     background: none;
     border: none;
     color: var(--text-secondary);
-    padding: 0.5rem;
-    border-radius: 8px;
+    padding: 0.75rem 1rem;
     cursor: pointer;
-    font-size: 0.85rem;
+    font-size: 1.1rem;
     font-weight: 600;
+    border-radius: 10px;
     transition: var(--transition);
 }
 
@@ -321,11 +325,12 @@ h2,
 
 /* Main Content */
 .main-content {
-    margin-left: var(--sidebar-width);
     flex-grow: 1;
-    padding: 2rem;
+    padding: 2rem 3rem;
+    /* Adjusted padding for better balance */
     transition: var(--transition);
-    width: calc(100% - var(--sidebar-width));
+    min-width: 0;
+    /* Ensures flex child doesn't overflow */
 }
 
 .content-header {
@@ -515,6 +520,11 @@ input:checked+.slider:before {
     display: none !important;
 }
 
+.view {
+    animation: fadeIn 0.4s ease forwards;
+    width: 100%;
+}
+
 .view.hidden {
     display: none;
 }
@@ -666,6 +676,8 @@ input:checked+.slider:before {
 
 /* Table Design */
 .table-wrapper {
+    width: 100%;
+    box-sizing: border-box;
     background: var(--bg-card);
     border-radius: 20px;
     border: 1px solid var(--glass-border);
@@ -1065,12 +1077,14 @@ td:last-child {
 
 .question-cell {
     text-align: left;
-    width: 50%;
     min-width: 300px;
     font-weight: 500;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+    vertical-align: top;
+}
+
+.question-cell>* {
+    display: block;
+    margin-bottom: 0.5rem;
 }
 
 .page-tag {
@@ -1150,8 +1164,11 @@ tr {
 /* Responsive */
 /* Mini Clause Styles for Table */
 .table-clause-wrapper {
+    width: 100%;
+    box-sizing: border-box;
     margin: 10px 0;
-    padding: 15px;
+    padding: 1.5rem;
+    /* Slightly more padding for the larger scale */
     background: rgba(255, 255, 255, 0.03);
     border-radius: 12px;
     border: 1px solid var(--glass-border);
@@ -1170,9 +1187,11 @@ tr {
 }
 
 .clause-text-mini {
-    line-height: 2;
-    font-size: 1rem;
+    line-height: 2.5;
+    font-size: 1.4rem;
+    /* Larger font in tables */
     color: var(--text-primary);
+    white-space: pre-wrap;
 }
 
 .clause-text-mini .clause-blank {
@@ -1202,40 +1221,48 @@ tr {
 
 /* Clause Quiz Styles */
 .clause-container {
-    max-width: 900px;
+    max-width: 1200px;
+    /* Wider container */
     margin: 2rem auto;
     background: var(--bg-card);
     border: 1px solid var(--glass-border);
     border-radius: 24px;
-    padding: 2.5rem;
+    padding: 3.5rem;
+    /* More padding */
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
     backdrop-filter: blur(10px);
 }
 
 .clause-text {
-    font-size: 1.15rem;
-    line-height: 2.2;
+    font-size: 1.5rem;
+    /* Larger font */
+    line-height: 2.5;
     color: var(--text-primary);
     text-align: justify;
-    margin-bottom: 2.5rem;
+    margin-bottom: 3.5rem;
+    white-space: pre-wrap;
 }
 
 .clause-blank {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 100px;
-    height: 32px;
-    margin: 0 4px;
-    padding: 0 12px;
+    min-width: 140px;
+    /* Wider blanks */
+    height: 48px;
+    /* Taller blanks */
+    margin: 0 6px;
+    padding: 0 15px;
     background: rgba(255, 255, 255, 0.05);
-    border-bottom: 3px solid var(--accent);
-    border-radius: 6px 6px 0 0;
+    border-bottom: 4px solid var(--accent);
+    border-radius: 8px 8px 0 0;
     cursor: pointer;
     transition: var(--transition);
     vertical-align: middle;
     font-weight: 700;
     color: var(--accent);
+    font-size: 1.25rem;
+    /* Larger text in blanks */
 }
 
 .clause-blank.drag-over {

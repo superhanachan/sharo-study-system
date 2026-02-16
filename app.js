@@ -195,6 +195,7 @@ class QuizApp {
         this.historyBody = document.getElementById('history-body');
         this.weakQuestionsBody = document.getElementById('weak-questions-body');
         this.genWeakBtn = document.getElementById('gen-weak-btn');
+        this.genWeakClauseBtn = document.getElementById('gen-weak-clause-btn');
         this.genRareBtn = document.getElementById('gen-rare-btn');
         this.genRandomBtn = document.getElementById('gen-random-btn');
 
@@ -245,6 +246,9 @@ class QuizApp {
         this.clonePageBtn.addEventListener('click', () => this.cloneCurrentPage());
 
         this.genWeakBtn.addEventListener('click', () => this.generateSpecialQuiz('weak'));
+        if (this.genWeakClauseBtn) {
+            this.genWeakClauseBtn.addEventListener('click', () => this.generateSpecialQuiz('clause-weak'));
+        }
         this.genRareBtn.addEventListener('click', () => this.generateSpecialQuiz('rare'));
         if (this.genRandomBtn) this.genRandomBtn.addEventListener('click', () => this.generateSpecialQuiz('random'));
 
@@ -606,18 +610,24 @@ class QuizApp {
         this.clauseDisplay.innerHTML = '';
 
         if (this.isEditMode) {
-            this.clauseTextEditor.value = set.text || '';
-            this.clauseDummiesEditor.value = (set.dummies || []).join(', ');
+            // Only set value if not focused to avoid cursor jumping and blocking delimiters like commas
+            if (document.activeElement !== this.clauseTextEditor) {
+                this.clauseTextEditor.value = set.text || '';
+            }
+            if (document.activeElement !== this.clauseDummiesEditor) {
+                this.clauseDummiesEditor.value = (set.dummies || []).join(', ');
+            }
 
             this.clauseTextEditor.oninput = () => {
                 set.text = this.clauseTextEditor.value;
                 this.saveData();
-                this.renderClauseView(set); // Immediate preview
+                this.renderClauseView(set);
             };
             this.clauseDummiesEditor.oninput = () => {
-                set.dummies = this.clauseDummiesEditor.value.split(',').map(s => s.trim()).filter(s => s);
+                // We split by both full-width and half-width commas
+                set.dummies = this.clauseDummiesEditor.value.split(/[，,]/).map(s => s.trim()).filter(s => s);
                 this.saveData();
-                this.renderClauseView(set); // Immediate preview
+                this.renderClauseView(set);
             };
         }
 
@@ -795,6 +805,22 @@ class QuizApp {
                         isMultiSelect: set.isMultiSelect
                     });
                 });
+            } else if (type === 'clause-weak' && set.type === 'clause' && set.text) {
+                const statKey = `clause-summary-${set.id}`;
+                const stat = this.questionStats[statKey] || { correct: 0, total: 0, recent: [] };
+                const recent = stat.recent || [];
+                const accuracy = recent.length > 0 ? (recent.reduce((a, b) => a + b, 0) / recent.length) : -1;
+
+                allQuestions.push({
+                    id: set.id,
+                    type: 'clause',
+                    text: set.text,
+                    dummies: set.dummies,
+                    origPage: set.title,
+                    accuracy: accuracy,
+                    total: stat.total,
+                    isMultiSelect: false
+                });
             }
         });
 
@@ -814,6 +840,16 @@ class QuizApp {
                 alert('まだ間違えた記録がありません。まずは普通に学習して回答を記録してください。');
                 return;
             }
+        } else if (type === 'clause-weak') {
+            title = "特訓：苦手な条文ワースト3";
+            filtered = allQuestions.filter(q => q.total > 0).sort((a, b) => {
+                if (a.accuracy !== b.accuracy) return a.accuracy - b.accuracy;
+                return b.total - a.total;
+            }).slice(0, 3);
+            if (filtered.length === 0) {
+                alert('まだ間違えた記録のある条文がありません。まずは各ページから条文暗記に取り組んでください。');
+                return;
+            }
         } else if (type === 'random') {
             title = "特訓：全問題からランダム10問";
             filtered = allQuestions.sort(() => Math.random() - 0.5).slice(0, 10);
@@ -824,6 +860,27 @@ class QuizApp {
                 return a.accuracy - b.accuracy;
             }).slice(0, 10);
         }
+
+        // Recalculate optimal columns - use UNION of all columns to ensure compatibility
+        let finalBestCols = ["項目"];
+        const colSet = new Set();
+        filtered.forEach(q => {
+            if (q.type === 'page' && q.columns) {
+                // Skip the first column '項目' which we already added
+                for (let i = 1; i < q.columns.length; i++) {
+                    colSet.add(q.columns[i]);
+                }
+            }
+        });
+        if (colSet.size > 0) {
+            finalBestCols = ["項目", ...Array.from(colSet)];
+        } else if (filtered.every(q => q.type === 'clause')) {
+            finalBestCols = ["条文内容"];
+        } else {
+            finalBestCols = ["項目", "選択肢"];
+        }
+        bestCols = finalBestCols;
+
         this.autoGeneratedSet = {
             id: 'temp-autogen',
             title: title,
@@ -1085,9 +1142,18 @@ class QuizApp {
             tr.appendChild(tdQ);
 
             if (q.type !== 'clause') {
-                const activeCols = this.isAutoGenerated ? q.columns || set.columns : set.columns;
-                for (let i = 1; i < activeCols.length; i++) {
-                    const choiceName = activeCols[i]; const td = document.createElement('td'); td.className = 'choice-cell'; td.textContent = choiceName;
+                // Use the header's columns to ensure all rows are the same width
+                for (let i = 1; i < set.columns.length; i++) {
+                    const colLabel = set.columns[i];
+                    const choiceName = (!q.columns || q.columns.includes(colLabel)) ? colLabel : '';
+                    const td = document.createElement('td');
+                    td.className = 'choice-cell';
+                    if (choiceName) {
+                        td.textContent = choiceName;
+                    } else {
+                        td.textContent = '';
+                        td.style.pointerEvents = 'none';
+                    }
                     if (isSetMulti) td.classList.add('multi-select');
 
                     if (this.isEditMode && !this.isAutoGenerated) {
