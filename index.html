@@ -85,7 +85,7 @@
                             ※穴埋めにしたい箇所を <code>[[キーワード]]</code> のように囲んで入力してください。
                         </p>
                         <textarea id="clause-text-editor" class="clause-text"
-                            style="width: 100%; min-height: 200px; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); color: var(--text-primary); padding: 1rem; border-radius: 12px; font-family: inherit; line-height: 1.6;"
+                            style="width: 100%; min-height: 500px; resize: vertical; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); color: var(--text-primary); padding: 1rem; border-radius: 12px; font-family: inherit; line-height: 1.6;"
                             placeholder="条文を入力してください..."></textarea>
                         <div style="margin-top: 1rem;">
                             <label
@@ -142,21 +142,39 @@
                 <div class="history-section" style="margin-top: 3rem;">
                     <h3>理解度マップ（全問題の正答率）</h3>
                     <div class="map-legend"
-                        style="margin-bottom: 1rem; display: flex; gap: 1rem; font-size: 0.8rem; color: var(--text-secondary); flex-wrap: wrap;">
-                        <div style="display: flex; align-items: center; gap: 0.4rem;"><span
-                                style="width: 12px; height: 12px; border-radius: 2px; background: rgba(255,255,255,0.1); border: 1px solid var(--glass-border);"></span>
+                        style="margin-bottom: 1rem; display: flex; gap: 0.8rem; font-size: 0.75rem; color: var(--text-secondary); flex-wrap: wrap; align-items: center;">
+                        <div style="display: flex; align-items: center; gap: 0.3rem;"><span
+                                style="width: 10px; height: 10px; border-radius: 2px; background: rgba(255,255,255,0.1); border: 1px solid var(--glass-border);"></span>
                             未学習</div>
-                        <div style="display: flex; align-items: center; gap: 0.4rem;"><span
-                                style="width: 12px; height: 12px; border-radius: 2px; background: #ff4d4d;"></span>
-                            0-40%
+                        <div style="margin-left: 0.5rem; display: flex; align-items: center; gap: 0.3rem;">
+                            <span>0%</span>
+                            <div style="display: flex; gap: 2px;">
+                                <span
+                                    style="width: 8px; height: 8px; background: hsl(0, 70%, 50%); border-radius: 1px;"></span>
+                                <span
+                                    style="width: 8px; height: 8px; background: hsl(12, 70%, 50%); border-radius: 1px;"></span>
+                                <span
+                                    style="width: 8px; height: 8px; background: hsl(24, 70%, 50%); border-radius: 1px;"></span>
+                                <span
+                                    style="width: 8px; height: 8px; background: hsl(36, 70%, 50%); border-radius: 1px;"></span>
+                                <span
+                                    style="width: 8px; height: 8px; background: hsl(48, 70%, 50%); border-radius: 1px;"></span>
+                                <span
+                                    style="width: 8px; height: 8px; background: hsl(60, 70%, 50%); border-radius: 1px;"></span>
+                                <span
+                                    style="width: 8px; height: 8px; background: hsl(72, 70%, 50%); border-radius: 1px;"></span>
+                                <span
+                                    style="width: 8px; height: 8px; background: hsl(84, 70%, 50%); border-radius: 1px;"></span>
+                                <span
+                                    style="width: 8px; height: 8px; background: hsl(96, 70%, 50%); border-radius: 1px;"></span>
+                                <span
+                                    style="width: 8px; height: 8px; background: hsl(108, 70%, 50%); border-radius: 1px;"></span>
+                                <span
+                                    style="width: 8px; height: 8px; background: hsl(120, 70%, 50%); border-radius: 1px;"></span>
+                            </div>
+                            <span>100%</span>
                         </div>
-                        <div style="display: flex; align-items: center; gap: 0.4rem;"><span
-                                style="width: 12px; height: 12px; border-radius: 2px; background: #ffb347;"></span>
-                            41-70%
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 0.4rem;"><span
-                                style="width: 12px; height: 12px; border-radius: 2px; background: var(--success);"></span>
-                            71-100%</div>
+                        <div style="margin-left: 0.5rem; color: var(--accent); opacity: 0.8;">※10%刻みで色分け</div>
                     </div>
                     <div id="understanding-map" class="understanding-map-container">
                         <!-- JSで生成 -->
