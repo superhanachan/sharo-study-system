@@ -772,13 +772,12 @@ th {
     letter-spacing: 0.1em;
     cursor: pointer;
     transition: var(--transition);
-    user-select: none;
-    position: sticky;
-    top: 4.5rem;
-    /* Account for sticky content-header height */
-    background: #1a1c27;
-    /* Dark background to cover scrollable content */
-    z-index: 100;
+    /* user-select: none removed to allow editing titles */
+    position: relative;
+    /* Remove sticky to avoid overlap issues */
+    top: 0;
+    background: var(--bg-card);
+    z-index: 20;
 }
 
 th:hover {
@@ -790,6 +789,8 @@ th::after {
     position: absolute;
     right: 0.5rem;
     opacity: 0.3;
+    pointer-events: none;
+    /* Don't block clicking the span */
 }
 
 th.sort-asc::after {
@@ -818,10 +819,11 @@ td {
 
 td:first-child,
 th:first-child {
-    position: sticky;
+    position: relative;
+    /* Remove sticky left to avoid complexity until layout stable */
     left: 0;
     z-index: 10;
-    background: #1a1c27;
+    background: var(--bg-card);
     border-left: 1px solid var(--glass-border);
 }
 
@@ -1034,11 +1036,13 @@ td:last-child {
 /* Row/Column Deletion and Sorting */
 .row-edit-controls {
     display: none;
-    gap: 0.75rem;
+    gap: 0.5rem;
     align-items: center;
-    margin-bottom: 0.5rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid var(--glass-border);
+    margin-bottom: 0.8rem;
+    padding: 0.4rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    width: fit-content;
 }
 
 .edit-mode .row-edit-controls {
@@ -1078,9 +1082,32 @@ td:last-child {
 
 .delete-col-btn {
     position: absolute;
-    top: -1.2rem;
-    right: 0.5rem;
-    font-size: 1rem;
+    top: 0.2rem;
+    /* Move slightly down to avoid floating too high */
+    right: 0.4rem;
+    font-size: 0.9rem;
+    opacity: 0.6;
+    z-index: 5;
+}
+
+.col-label-edit {
+    display: inline-block;
+    min-width: 2rem;
+    padding: 2px 5px;
+    border-radius: 4px;
+    transition: var(--transition);
+}
+
+.edit-mode .col-label-edit {
+    border: 1px dashed var(--accent);
+    background: rgba(76, 201, 240, 0.05);
+}
+
+.col-label-edit:focus {
+    outline: none;
+    background: rgba(76, 201, 240, 0.15);
+    border-style: solid;
+    box-shadow: 0 0 0 2px rgba(76, 201, 240, 0.2);
 }
 
 .question-cell {
@@ -1229,7 +1256,7 @@ tr {
 
 /* Clause Quiz Styles */
 .clause-container {
-    max-width: 1600px;
+    max-width: 2000px;
     /* Allow much wider display */
     margin: 1.5rem auto;
     width: calc(100% - 1rem);
@@ -1271,8 +1298,8 @@ tr {
     vertical-align: middle;
     font-weight: 700;
     color: var(--accent);
-    font-size: 1.25rem;
-    /* Larger text in blanks */
+    font-size: 1.4rem;
+    /* Adjusted to match larger cards */
 }
 
 .clause-blank.drag-over {
@@ -1321,7 +1348,7 @@ tr {
     z-index: 500;
     box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.6);
     margin-top: 2rem;
-    max-height: 25vh;
+    max-height: 35vh;
     /* Don't take more than quarter of screen */
     overflow-y: auto;
 }
@@ -1344,11 +1371,14 @@ tr {
 
 .keyword-card {
     background: var(--bg-dark);
-    border: 1px solid var(--glass-border);
-    padding: 0.6rem 1.2rem;
-    border-radius: 10px;
+    border: 1px solid var(--accent);
+    /* More visible border */
+    padding: 0.8rem 1.5rem;
+    border-radius: 12px;
     color: var(--text-primary);
-    font-weight: 600;
+    font-weight: 700;
+    font-size: 1.3rem;
+    /* Significantly larger text */
     cursor: grab;
     transition: var(--transition);
     user-select: none;

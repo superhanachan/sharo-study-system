@@ -1015,35 +1015,55 @@ class QuizApp {
                 }
 
                 const span = document.createElement('span');
+                span.className = 'col-label-edit';
                 span.textContent = displayLabel;
                 if (this.isEditMode) {
                     span.contentEditable = true;
+                    // Focus span when clicking the header area
+                    th.onclick = (e) => {
+                        if (e.target === th) span.focus();
+                    };
+
                     span.onblur = () => {
-                        const oldVal = col;
-                        const newVal = span.textContent.trim();
-                        if (oldVal !== newVal) {
+                        const oldRawVal = col;
+                        const widthMatch = oldRawVal.match(/\{.*?\}/);
+                        const widthSpec = widthMatch ? widthMatch[0] : '';
+
+                        let newVal = span.textContent.trim();
+                        // If user didn't type a new width, re-attach the old one
+                        if (widthSpec && !newVal.includes('{')) {
+                            newVal += widthSpec;
+                        }
+
+                        if (oldRawVal !== newVal) {
                             set.columns[index] = newVal;
+                            // Clean labels for answer comparison
+                            const oldDisplay = oldRawVal.replace(/\{.*?\}/, '').trim();
+                            const newDisplay = newVal.replace(/\{.*?\}/, '').trim();
+
                             set.questions.forEach(q => {
                                 if (Array.isArray(q.answer)) {
-                                    q.answer = q.answer.map(a => a === oldVal ? newVal : a);
-                                } else if (q.answer === oldVal) q.answer = newVal;
+                                    q.answer = q.answer.map(a => a === oldDisplay ? newDisplay : a);
+                                } else if (q.answer === oldDisplay) q.answer = newDisplay;
                             });
                             this.saveData();
                             this.renderTable();
                         }
                     };
-                    if (index > 0) {
-                        const delBtn = document.createElement('span');
-                        delBtn.className = 'delete-col-btn';
-                        delBtn.innerHTML = '×';
-                        delBtn.onclick = (e) => {
-                            e.stopPropagation();
-                            this.deleteColumn(index);
-                        };
-                        th.appendChild(delBtn);
-                    }
-                }
+                } // end if (this.isEditMode)
+
+                th.innerHTML = ''; // Clear any existing text/content
                 th.appendChild(span);
+                if (this.isEditMode && index > 0) {
+                    const delBtn = document.createElement('span');
+                    delBtn.className = 'delete-col-btn';
+                    delBtn.innerHTML = '×';
+                    delBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        this.deleteColumn(index);
+                    };
+                    th.appendChild(delBtn);
+                }
                 headTr.appendChild(th);
             });
         }
