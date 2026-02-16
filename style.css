@@ -326,8 +326,8 @@ h2,
 /* Main Content */
 .main-content {
     flex-grow: 1;
-    padding: 2rem 3rem;
-    /* Adjusted padding for better balance */
+    padding: 1.5rem 2rem;
+    /* Reduced padding to maximize content width */
     transition: var(--transition);
     min-width: 0;
     /* Ensures flex child doesn't overflow */
@@ -498,12 +498,7 @@ input:checked+.slider:before {
 }
 
 /* Quiz Controls */
-.quiz-controls {
-    margin-top: 2rem;
-    display: flex;
-    gap: 1rem;
-    justify-content: center;
-}
+/* .quiz-controls moved to bottom for sticky implementation */
 
 .edit-mode .quiz-controls {
     display: none;
@@ -779,7 +774,8 @@ th {
     transition: var(--transition);
     user-select: none;
     position: sticky;
-    top: 0;
+    top: 4.5rem;
+    /* Account for sticky content-header height */
     background: #1a1c27;
     /* Dark background to cover scrollable content */
     z-index: 100;
@@ -809,20 +805,32 @@ th.sort-desc::after {
 }
 
 td {
-    padding: 1.25rem 1rem;
+    padding: 1rem;
     background: rgba(255, 255, 255, 0.03);
     border-top: 1px solid var(--glass-border);
     border-bottom: 1px solid var(--glass-border);
     transition: var(--transition);
+    white-space: pre-wrap;
+    /* Support \n and manual line breaks */
+    line-height: 1.6;
+    vertical-align: top;
 }
 
 td:first-child,
 th:first-child {
     position: sticky;
     left: 0;
-    z-index: 200;
+    z-index: 10;
     background: #1a1c27;
     border-left: 1px solid var(--glass-border);
+}
+
+.question-cell {
+    min-width: 250px;
+}
+
+.choice-cell {
+    min-width: 120px;
 }
 
 td:first-child {
@@ -1221,14 +1229,16 @@ tr {
 
 /* Clause Quiz Styles */
 .clause-container {
-    max-width: 1200px;
-    /* Wider container */
-    margin: 2rem auto;
+    max-width: 1600px;
+    /* Allow much wider display */
+    margin: 1.5rem auto;
+    width: calc(100% - 1rem);
+    /* Avoid sticking to edges */
     background: var(--bg-card);
     border: 1px solid var(--glass-border);
     border-radius: 24px;
-    padding: 3.5rem;
-    /* More padding */
+    padding: 2rem;
+    /* Reduced padding to give more room for content */
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
     backdrop-filter: blur(10px);
 }
@@ -1298,12 +1308,38 @@ tr {
 .keyword-bank {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.75rem;
-    padding: 1.5rem;
-    background: rgba(255, 255, 255, 0.02);
+    gap: 0.6rem;
+    padding: 1rem;
+    background: rgba(26, 28, 39, 0.95);
+    backdrop-filter: blur(15px);
     border-radius: 16px;
-    border: 1px dashed var(--glass-border);
+    border: 1px solid var(--accent);
     justify-content: center;
+    position: sticky;
+    bottom: 4.5rem;
+    /* Above sticky quiz-controls */
+    z-index: 500;
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.6);
+    margin-top: 2rem;
+    max-height: 25vh;
+    /* Don't take more than quarter of screen */
+    overflow-y: auto;
+}
+
+.quiz-controls {
+    position: sticky;
+    bottom: 0.5rem;
+    z-index: 501;
+    background: rgba(15, 17, 23, 0.8);
+    backdrop-filter: blur(8px);
+    padding: 0.8rem;
+    border-radius: 12px;
+    margin-top: 1rem;
+    border-top: 1px solid var(--glass-border);
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.4);
 }
 
 .keyword-card {
@@ -1340,4 +1376,52 @@ tr {
 
 .clause-display.hidden {
     display: none;
+}
+
+/* Clause Table Styles */
+.clause-text table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--glass-border);
+}
+
+.clause-text th,
+.clause-text td {
+    padding: 1rem;
+    border: 1px solid var(--glass-border);
+    text-align: left;
+    background: transparent;
+    position: static;
+    /* Reset sticky if inherited */
+}
+
+.clause-text th {
+    background: rgba(76, 201, 240, 0.1);
+    color: var(--accent);
+    font-weight: 700;
+}
+
+.clause-text tr:hover td {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.clause-text .clause-blank {
+    min-width: 100px;
+    height: 36px;
+    font-size: 1.1rem;
+}
+
+.clause-editor-btns {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.clause-editor-btns button {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.8rem;
 }

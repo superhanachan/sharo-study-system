@@ -223,6 +223,7 @@ class QuizApp {
         this.tableWrapper = document.querySelector('.table-wrapper');
         this.columnControls = document.querySelector('.column-controls');
         this.tableControls = document.querySelector('.table-controls');
+        this.insertTableBtn = document.getElementById('insert-table-btn');
     }
 
     bindEvents() {
@@ -244,6 +245,15 @@ class QuizApp {
         this.clearDataBtn.addEventListener('click', () => this.clearData());
         this.deletePageBtn.addEventListener('click', () => this.deleteCurrentPage());
         this.clonePageBtn.addEventListener('click', () => this.cloneCurrentPage());
+
+        this.insertTableBtn.addEventListener('click', () => {
+            const template = "\n| 項目 | 内容 | 備考 |\n| --- | --- | --- |\n| [[キーワード1]] | 内容1 | 備考1 |\n| [[キーワード2]] | 内容2 | 備考2 |\n";
+            const start = this.clauseTextEditor.selectionStart;
+            const end = this.clauseTextEditor.selectionEnd;
+            const text = this.clauseTextEditor.value;
+            this.clauseTextEditor.value = text.substring(0, start) + template + text.substring(end);
+            this.clauseTextEditor.dispatchEvent(new Event('input')); // Trigger update
+        });
 
         this.genWeakBtn.addEventListener('click', () => this.generateSpecialQuiz('weak'));
         if (this.genWeakClauseBtn) {
@@ -640,70 +650,87 @@ class QuizApp {
         const clauseText = document.createElement('div');
         clauseText.className = 'clause-text';
 
-        // Parse [[keyword]]
-        const parts = set.text.split(/(\[\[.*?\]\])/g);
+        // Render clause content (with table support)
+        let htmlContent = set.text;
+        const lines = set.text.split('\n');
+        const hasTable = lines.some(l => l.trim().startsWith('|'));
+
+        if (hasTable) {
+            let processedHtml = '';
+            let tableLines = [];
+
+            lines.forEach(line => {
+                if (line.trim().startsWith('|')) {
+                    tableLines.push(line);
+                } else {
+                    if (tableLines.length > 0) {
+                        processedHtml += this.renderTableFromMarkdown(tableLines);
+                        tableLines = [];
+                    }
+                    processedHtml += line + '<br>';
+                }
+            });
+            if (tableLines.length > 0) {
+                processedHtml += this.renderTableFromMarkdown(tableLines);
+            }
+            htmlContent = processedHtml;
+        } else {
+            htmlContent = set.text.replace(/\n/g, '<br>');
+        }
+
         const keywords = [];
         let blankIndex = 0;
 
-        parts.forEach(part => {
-            if (part.startsWith('[[') && part.endsWith(']]')) {
-                const keyword = part.substring(2, part.length - 2);
-                keywords.push(keyword);
-
-                const blank = document.createElement('div');
-                blank.className = 'clause-blank';
-                const currentIdx = blankIndex;
-                blank.id = `blank-${currentIdx}`;
-
-                const savedAnswer = this.userAnswers[`${set.id}-${currentIdx}`];
-                if (savedAnswer) {
-                    blank.textContent = savedAnswer;
-                    blank.classList.add('filled');
-                } else {
-                    blank.innerHTML = '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'; // Minimum visibility
-                }
-
-                // Drag and Drop for Blanks
-                blank.ondragover = (e) => {
-                    if (this.isChecked) return;
-                    e.preventDefault();
-                    blank.classList.add('drag-over');
-                };
-                blank.ondragleave = () => blank.classList.remove('drag-over');
-                blank.ondrop = (e) => {
-                    if (this.isChecked) return;
-                    e.preventDefault();
-                    blank.classList.remove('drag-over');
-                    const text = e.dataTransfer.getData('text/plain');
-                    if (text) {
-                        this.userAnswers[`${set.id}-${currentIdx}`] = text;
-                        this.renderClauseView(set); // Use local render to avoid flickering
-                    }
-                };
-                blank.onclick = () => {
-                    if (!this.isChecked) {
-                        delete this.userAnswers[`${set.id}-${currentIdx}`];
-                        this.renderClauseView(set);
-                    }
-                };
-
-                if (this.isChecked) {
-                    const isCorrect = savedAnswer === keyword;
-                    blank.classList.add(isCorrect ? 'correct' : 'wrong');
-                    if (!isCorrect) {
-                        const reveal = document.createElement('span');
-                        reveal.className = 'reveal-correct';
-                        reveal.textContent = ` (正解: ${keyword})`;
-                        blank.appendChild(reveal);
-                    }
-                }
-
-                clauseText.appendChild(blank);
-                blankIndex++;
-            } else {
-                clauseText.appendChild(document.createTextNode(part));
-            }
+        // Use placeholder strategy for blanks to work inside any HTML (like tables)
+        const finalHtml = htmlContent.replace(/\[\[(.*?)\]\]/g, (match, keyword) => {
+            keywords.push(keyword);
+            return `<span id="placeholder-${blankIndex++}"></span>`;
         });
+
+        clauseText.innerHTML = finalHtml;
+
+        // Replace placeholders with real interactive blanks
+        for (let i = 0; i < blankIndex; i++) {
+            const placeholder = clauseText.querySelector(`#placeholder-${i}`);
+            if (!placeholder) continue;
+
+            const keyword = keywords[i];
+            const blank = document.createElement('div');
+            blank.className = 'clause-blank';
+            const currentIdx = i;
+            blank.id = `blank-${currentIdx}`;
+
+            const savedAnswer = this.userAnswers[`${set.id}-${currentIdx}`];
+            if (savedAnswer) {
+                blank.textContent = savedAnswer;
+                blank.classList.add('filled');
+            } else {
+                blank.innerHTML = '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+            }
+
+            blank.ondragover = (e) => { if (this.isChecked) return; e.preventDefault(); blank.classList.add('drag-over'); };
+            blank.ondragleave = () => blank.classList.remove('drag-over');
+            blank.ondrop = (e) => {
+                if (this.isChecked) return;
+                e.preventDefault();
+                blank.classList.remove('drag-over');
+                const text = e.dataTransfer.getData('text/plain');
+                if (text) { this.userAnswers[`${set.id}-${currentIdx}`] = text; this.renderClauseView(set); }
+            };
+            blank.onclick = () => { if (!this.isChecked) { delete this.userAnswers[`${set.id}-${currentIdx}`]; this.renderClauseView(set); } };
+
+            if (this.isChecked) {
+                const isCorrect = savedAnswer === keyword;
+                blank.classList.add(isCorrect ? 'correct' : 'wrong');
+                if (!isCorrect) {
+                    const reveal = document.createElement('span');
+                    reveal.className = 'reveal-correct';
+                    reveal.textContent = ` (正答: ${keyword})`;
+                    blank.appendChild(reveal);
+                }
+            }
+            placeholder.replaceWith(blank);
+        }
 
         container.appendChild(clauseText);
         this.clauseDisplay.appendChild(container);
@@ -752,6 +779,35 @@ class QuizApp {
             });
             this.clauseDisplay.appendChild(bank);
         }
+    }
+
+    renderTableFromMarkdown(lines) {
+        let tableHtml = '<div class="table-wrapper"><table>';
+        lines.forEach((line, idx) => {
+            const cells = line.split('|').map(c => c.trim()).filter((c, i, arr) => i > 0 && i < arr.length - 1);
+            if (cells.length === 0) return;
+            const tag = (idx === 0) ? 'th' : 'td';
+
+            tableHtml += '<tr>';
+            cells.forEach(cell => {
+                let content = cell.replace(/_br_/g, '<br>');
+                let style = '';
+
+                // Parse {width} for headers
+                if (idx === 0) {
+                    const widthMatch = content.match(/\{(.*?)\}/);
+                    if (widthMatch) {
+                        style = ` style="width: ${widthMatch[1]}; min-width: ${widthMatch[1]};"`;
+                        content = content.replace(widthMatch[0], '');
+                    }
+                }
+
+                tableHtml += `<${tag}${style}>${content}</${tag}>`;
+            });
+            tableHtml += '</tr>';
+        });
+        tableHtml += '</table></div>';
+        return tableHtml;
     }
 
     renderChart() {
@@ -948,8 +1004,18 @@ class QuizApp {
 
             set.columns.forEach((col, index) => {
                 const th = document.createElement('th');
+
+                // Parse "Label{width}" syntax
+                let displayLabel = col;
+                const widthMatch = col.match(/\{(.*?)\}/);
+                if (widthMatch) {
+                    th.style.width = widthMatch[1];
+                    th.style.minWidth = widthMatch[1];
+                    displayLabel = col.replace(widthMatch[0], '');
+                }
+
                 const span = document.createElement('span');
-                span.textContent = col;
+                span.textContent = displayLabel;
                 if (this.isEditMode) {
                     span.contentEditable = true;
                     span.onblur = () => {
