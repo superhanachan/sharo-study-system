@@ -192,15 +192,23 @@
                     <h3>特訓の作成</h3>
                     <div class="data-mgmt-status"
                         style="margin-bottom: 1rem; font-size: 0.9rem; color: var(--text-secondary);">
+                        ※「忘却曲線」は、エビングハウスの忘却曲線に基づき、定着度に応じて復習間隔を自動調整します。<br>
                         ※「苦手な問題」は、一度以上回答して間違えた記録がある問題から作成されます。<br>
                         ※「久しぶりの問題」や「ランダム」は、未学習の問題も含まれます。
                     </div>
+
                     <div class="auto-gen-controls">
+                        <button id="gen-srs-clause-btn" class="primary-btn"
+                            style="background: var(--success); color: var(--bg-dark);">忘却曲線：条文穴埋め</button>
+                        <button id="gen-srs-page-btn" class="primary-btn"
+                            style="background: #2ec4b6; color: var(--bg-dark);">忘却曲線：選択式</button>
                         <button id="gen-weak-btn" class="primary-btn">苦手な問題から作成</button>
+
                         <button id="gen-weak-clause-btn" class="primary-btn">苦手な条文（3本）</button>
                         <button id="gen-rare-btn" class="primary-btn">未学習・久しぶりの問題</button>
                         <button id="gen-random-btn" class="primary-btn">全問題からランダムに出題</button>
                     </div>
+
                 </div>
 
                 <div class="auto-gen-section history-section" style="margin-top: 3rem;">

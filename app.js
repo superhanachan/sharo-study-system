@@ -35,6 +35,11 @@ const DEFAULT_QUIZ_DATA = [
     }
 ];
 
+// Spaced Repetition System (SRS) intervals in days
+// Level 0: New, Level 1: 1 day, Level 2: 2 days, Level 3: 4 days, etc.
+const SRS_INTERVALS = [0, 1, 2, 4, 7, 14, 30, 60, 120, 180, 365];
+
+
 class QuizApp {
     constructor() {
         this.quizData = this.loadData();
@@ -146,6 +151,10 @@ class QuizApp {
                         for (let i = 0; i < count; i++) r.push(i < recentCorrect ? 1 : 0);
                         cleanedStats[key].recent = r;
                     }
+                    // Initialize SRS fields
+                    if (cleanedStats[key].srsLevel === undefined) cleanedStats[key].srsLevel = 0;
+                    if (cleanedStats[key].nextReview === undefined) cleanedStats[key].nextReview = null;
+
                 } else {
                     // Log or backup orphaned stats if needed, but for now, just track if we're deleting
                     hasWiped = true;
@@ -198,6 +207,8 @@ class QuizApp {
         this.genWeakClauseBtn = document.getElementById('gen-weak-clause-btn');
         this.genRareBtn = document.getElementById('gen-rare-btn');
         this.genRandomBtn = document.getElementById('gen-random-btn');
+        this.genSRSClauseBtn = document.getElementById('gen-srs-clause-btn');
+        this.genSRSPageBtn = document.getElementById('gen-srs-page-btn');
 
         this.chartBtns = {
             accuracy: document.getElementById('show-accuracy-btn'),
@@ -265,6 +276,8 @@ class QuizApp {
         }
         this.genRareBtn.addEventListener('click', () => this.generateSpecialQuiz('rare'));
         if (this.genRandomBtn) this.genRandomBtn.addEventListener('click', () => this.generateSpecialQuiz('random'));
+        if (this.genSRSClauseBtn) this.genSRSClauseBtn.addEventListener('click', () => this.generateSpecialQuiz('srs-clause'));
+        if (this.genSRSPageBtn) this.genSRSPageBtn.addEventListener('click', () => this.generateSpecialQuiz('srs-page'));
 
         Object.keys(this.chartBtns).forEach(mode => {
             this.chartBtns[mode].addEventListener('click', () => {
@@ -347,6 +360,26 @@ class QuizApp {
     saveHistory() { localStorage.setItem('sharoQuizHistory', JSON.stringify(this.history)); }
     loadQuestionStats() { const saved = localStorage.getItem('sharoQuestionStats'); return saved ? JSON.parse(saved) : {}; }
     saveQuestionStats() { localStorage.setItem('sharoQuestionStats', JSON.stringify(this.questionStats)); }
+
+    updateSRS(stat, isCorrect) {
+        if (!stat) return;
+        if (stat.srsLevel === undefined) stat.srsLevel = 0;
+
+        if (isCorrect) {
+            stat.srsLevel = Math.min(stat.srsLevel + 1, SRS_INTERVALS.length - 1);
+        } else {
+            // Drop 2 levels on mistake, but keep at least 0
+            stat.srsLevel = Math.max(0, stat.srsLevel - 2);
+        }
+
+        const days = SRS_INTERVALS[stat.srsLevel];
+        const nextDate = new Date();
+        nextDate.setDate(nextDate.getDate() + days);
+        // Reset to beginning of day for simpler comparison (optional, but good for "daily" review)
+        nextDate.setHours(0, 0, 0, 0);
+        stat.nextReview = nextDate.toISOString();
+    }
+
 
     switchView(view) {
         this.tabQuiz.classList.toggle('active', view === 'quiz');
@@ -442,6 +475,7 @@ class QuizApp {
             summaryStat.recent.push(allBlanksCorrect ? 1 : 0);
             if (summaryStat.recent.length > 5) summaryStat.recent.shift();
             summaryStat.text = `条文全体: ${set.title}`; summaryStat.page = set.title;
+            this.updateSRS(summaryStat, allBlanksCorrect);
         } else {
             set.questions.forEach((q) => {
                 let isCorrect = false;
@@ -498,6 +532,7 @@ class QuizApp {
                 if (stat.recent.length > 5) stat.recent.shift();
                 stat.text = q.type === 'clause' ? `条文全体: ${q.origPage}` : q.text;
                 stat.page = q.origPage || set.title;
+                this.updateSRS(stat, isCorrect);
             });
         }
 
@@ -881,7 +916,12 @@ class QuizApp {
         this.quizData.forEach(set => {
             if (!this.isItemSelectedForPool(set.id)) return;
 
+            const isSrs = type.startsWith('srs');
+            const targetType = isSrs ? type.split('-')[1] : null; // 'clause' or 'page'
+
             if (set.type === 'page' && set.questions && type !== 'clause-weak') {
+                if (isSrs && targetType !== 'page') return;
+
                 if (set.columns && set.columns.length > maxCols) {
                     maxCols = set.columns.length;
                     bestCols = [...set.columns];
@@ -902,11 +942,13 @@ class QuizApp {
                         columns: set.columns,
                         accuracy: accuracy,
                         total: stat.total,
+                        nextReview: stat.nextReview,
                         isMultiSelect: set.isMultiSelect
                     });
                 });
             } else if (set.type === 'clause' && set.text) {
-                if (type !== 'clause-weak') return;
+                if (type !== 'clause-weak' && !isSrs && type !== 'rare' && type !== 'random') return;
+                if (isSrs && targetType !== 'clause') return;
 
                 const statKey = `clause-summary-${set.id}`;
                 const stat = this.questionStats[statKey] || { correct: 0, total: 0, recent: [] };
@@ -921,6 +963,7 @@ class QuizApp {
                     origPage: set.title,
                     accuracy: accuracy,
                     total: stat.total,
+                    nextReview: stat.nextReview,
                     isMultiSelect: false
                 });
             }
@@ -951,6 +994,20 @@ class QuizApp {
             }
             // Pick from the top 10 worst clauses and shuffle for variety
             filtered = candidates.slice(0, 10).sort(() => Math.random() - 0.5).slice(0, 3);
+        } else if (type.startsWith('srs')) {
+            const mode = type.split('-')[1];
+            title = mode === 'clause' ? "特訓：忘却曲線（条文穴埋め）" : "特訓：忘却曲線（選択式）";
+            const now = new Date();
+            filtered = allQuestions.filter(q => {
+                if (!q.nextReview) return true;
+                return new Date(q.nextReview) <= now;
+            });
+            if (filtered.length === 0) {
+                alert('現在、復習が必要な問題はありません。素晴らしいですね！');
+                return;
+            }
+            // Shuffle and limit
+            filtered = filtered.sort(() => Math.random() - 0.5).slice(0, 15);
         } else if (type === 'random') {
             title = "特訓：全問題からランダム10問";
             filtered = allQuestions.sort(() => Math.random() - 0.5).slice(0, 10);
