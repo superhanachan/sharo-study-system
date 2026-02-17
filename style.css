@@ -1563,3 +1563,51 @@ tr {
     color: var(--accent);
     transform: scale(1.2);
 }
+
+/* Clause Numerical Input */
+.clause-input-blank {
+    background: var(--bg-card);
+    border: 1px dashed var(--accent);
+    color: var(--text-main);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 1rem;
+    font-family: inherit;
+    width: 80px;
+    height: 1.8rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    vertical-align: middle;
+    margin: 0 4px;
+    transition: all 0.2s;
+}
+
+.clause-input-blank:focus {
+    outline: none;
+    border-style: solid;
+    box-shadow: 0 0 0 2px rgba(64, 150, 255, 0.3);
+}
+
+.clause-input-blank.mini {
+    width: 60px;
+    font-size: 0.9rem;
+    height: 1.5rem;
+}
+
+.clause-input-blank.correct {
+    background: rgba(40, 167, 69, 0.2);
+    border: 1px solid #28a745;
+    color: #28a745;
+}
+
+.clause-input-blank.wrong {
+    background: rgba(220, 53, 69, 0.2);
+    border: 1px solid #dc3545;
+    color: #f82b41;
+}
+
+.clause-input-blank:disabled {
+    opacity: 1;
+    cursor: default;
+}

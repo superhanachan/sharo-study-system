@@ -404,6 +404,11 @@ class QuizApp {
         stat.nextReview = nextDate.toISOString();
     }
 
+    normalizeInput(str) {
+        if (!str) return "";
+        return str.trim().replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0));
+    }
+
     showSRSDetail(statKey) {
         const stat = this.questionStats[statKey];
         if (!stat) return;
@@ -537,31 +542,37 @@ class QuizApp {
         let correctCount = 0; let answeredCount = 0;
 
         if (set.type === 'clause') {
-            const keywords = [];
-            const parts = set.text.split(/(\[\[.*?\]\])/g);
+            const keywordData = [];
+            // Match both [[...]] and ((...)) in order
+            const parts = set.text.split(/(\[\[.*?\]\]|\(\(.*?\)\))/g);
             parts.forEach(part => {
                 if (part.startsWith('[[') && part.endsWith(']]')) {
-                    keywords.push(part.substring(2, part.length - 2));
+                    keywordData.push({ text: part.substring(2, part.length - 2), type: 'drag' });
+                } else if (part.startsWith('((') && part.endsWith('))')) {
+                    keywordData.push({ text: part.substring(2, part.length - 2), type: 'input' });
                 }
             });
 
             let allBlanksCorrect = true;
-            keywords.forEach((keyword, idx) => {
-                const userAnswer = this.userAnswers[`${set.id}-${idx}`];
-                if (!userAnswer) {
+            keywordData.forEach((kwInfo, idx) => {
+                const userAnswer = (this.userAnswers[`${set.id}-${idx}`] || "").toString();
+                if (!userAnswer && kwInfo.type === 'drag') {
                     allBlanksCorrect = false;
                     return;
                 }
                 answeredCount++;
 
-                const isCorrect = userAnswer === keyword;
+                const isCorrect = kwInfo.type === 'drag'
+                    ? userAnswer === kwInfo.text
+                    : this.normalizeInput(userAnswer) === this.normalizeInput(kwInfo.text);
+
                 if (isCorrect) correctCount++;
                 else allBlanksCorrect = false;
 
                 // Detailed stat per blank
                 const statKey = `clause-${set.id}-${idx}`;
                 if (!this.questionStats[statKey]) {
-                    this.questionStats[statKey] = { correct: 0, total: 0, recent: [], page: set.title, text: `穴埋め: ${keyword}` };
+                    this.questionStats[statKey] = { correct: 0, total: 0, recent: [], page: set.title, text: `穴埋め: ${kwInfo.text}` };
                 }
                 const stat = this.questionStats[statKey];
                 stat.total++;
@@ -569,8 +580,12 @@ class QuizApp {
                 if (!stat.recent) stat.recent = [];
                 stat.recent.push(isCorrect ? 1 : 0);
                 if (stat.recent.length > 5) stat.recent.shift();
-                stat.text = `穴埋め: ${keyword}`; stat.page = set.title;
+                stat.text = `穴埋め: ${kwInfo.text}`; stat.page = set.title;
             });
+
+            // Summary stat for the whole clause
+            // ... (rest remains same)
+
 
             // Summary stat for the whole clause
             const summaryKey = `clause-summary-${set.id}`;
@@ -590,26 +605,36 @@ class QuizApp {
                 let isCorrect = false;
                 const userAnswer = this.userAnswers[q.id];
 
-                if (q.type === 'clause') {
+                // Treat any question with [[...]] or ((...)) as a clause/blank type
+                if (q.type === 'clause' || /\[\[|［［|\(\(|（（/.test(q.text)) {
                     // For clause type in special quiz, count individual blanks
-                    const parts = q.text.split(/(\[\[.*?\]\])/g);
-                    const keywords = parts.filter(p => p.startsWith('[[') && p.endsWith(']]')).map(p => p.substring(2, p.length - 2));
+                    const keywordData = [];
+                    const parts = q.text.split(/(\[\[.*?\]\]|［［.*?］］|\(\(.*?\)\)|（（.*?））)/g);
+                    parts.forEach(part => {
+                        if ((part.startsWith('[[') && part.endsWith(']]')) || (part.startsWith('［［') && part.endsWith('］］'))) {
+                            keywordData.push({ text: part.substring(2, part.length - 2), type: 'drag' });
+                        } else if ((part.startsWith('((') && part.endsWith('))')) || (part.startsWith('（（') && part.endsWith('））'))) {
+                            keywordData.push({ text: part.substring(2, part.length - 2), type: 'input' });
+                        }
+                    });
 
                     let rowCorrectBlanks = 0;
                     let rowAnsweredBlanks = 0;
-
-                    keywords.forEach((kw, bIdx) => {
-                        const val = this.userAnswers[`${q.id}-${bIdx}`];
+                    keywordData.forEach((kwInfo, idx) => {
+                        const val = this.userAnswers[`${q.id}-${idx}`];
                         if (val) {
                             rowAnsweredBlanks++;
-                            if (val === kw) rowCorrectBlanks++;
+                            const isKwCorrect = kwInfo.type === 'drag'
+                                ? val === kwInfo.text
+                                : this.normalizeInput(val) === this.normalizeInput(kwInfo.text);
+                            if (isKwCorrect) rowCorrectBlanks++;
                         }
                     });
 
                     answeredCount += rowAnsweredBlanks;
                     correctCount += rowCorrectBlanks;
                     // For the overall row status/stat, consider it correct only if all blanks are correct
-                    isCorrect = (rowAnsweredBlanks === keywords.length && rowCorrectBlanks === keywords.length);
+                    isCorrect = (keywordData.length > 0 && rowAnsweredBlanks === keywordData.length && rowCorrectBlanks === keywordData.length);
                 } else {
                     if (!userAnswer || (Array.isArray(userAnswer) && userAnswer.length === 0)) return;
                     answeredCount++;
@@ -856,13 +881,15 @@ class QuizApp {
         } else {
             htmlContent = set.text.replace(/\n/g, '<br>');
         }
-
         const keywords = [];
         let blankIndex = 0;
 
         // Use placeholder strategy for blanks to work inside any HTML (like tables)
-        const finalHtml = htmlContent.replace(/\[\[(.*?)\]\]/g, (match, keyword) => {
-            keywords.push(keyword);
+        // Combine [[...]], ［［...］］ (drag) and ((...)), （（...）） (input) support
+        const finalHtml = htmlContent.replace(/\[\[(.*?)\]\]|［［(.*?)］］|\(\((.*?)\)\)|（（(.*?)））/g, (match, p1, p2, p3, p4) => {
+            const keyword = p1 || p2 || p3 || p4;
+            const type = (p1 || p2) ? 'drag' : 'input';
+            keywords.push({ text: keyword, type: type });
             return `<span id="placeholder-${blankIndex++}"></span>`;
         });
 
@@ -873,42 +900,70 @@ class QuizApp {
             const placeholder = clauseText.querySelector(`#placeholder-${i}`);
             if (!placeholder) continue;
 
-            const keyword = keywords[i];
-            const blank = document.createElement('div');
-            blank.className = 'clause-blank';
+            const kwInfo = keywords[i];
             const currentIdx = i;
-            blank.id = `blank-${currentIdx}`;
 
-            const savedAnswer = this.userAnswers[`${set.id}-${currentIdx}`];
-            if (savedAnswer) {
-                blank.textContent = savedAnswer;
-                blank.classList.add('filled');
-            } else {
-                blank.innerHTML = '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-            }
+            if (kwInfo.type === 'drag') {
+                const blank = document.createElement('div');
+                blank.className = 'clause-blank';
+                blank.id = `blank-${currentIdx}`;
 
-            blank.ondragover = (e) => { if (this.isChecked) return; e.preventDefault(); blank.classList.add('drag-over'); };
-            blank.ondragleave = () => blank.classList.remove('drag-over');
-            blank.ondrop = (e) => {
-                if (this.isChecked) return;
-                e.preventDefault();
-                blank.classList.remove('drag-over');
-                const text = e.dataTransfer.getData('text/plain');
-                if (text) { this.userAnswers[`${set.id}-${currentIdx}`] = text; this.renderClauseView(set); }
-            };
-            blank.onclick = () => { if (!this.isChecked) { delete this.userAnswers[`${set.id}-${currentIdx}`]; this.renderClauseView(set); } };
-
-            if (this.isChecked) {
-                const isCorrect = savedAnswer === keyword;
-                blank.classList.add(isCorrect ? 'correct' : 'wrong');
-                if (!isCorrect) {
-                    const reveal = document.createElement('span');
-                    reveal.className = 'reveal-correct';
-                    reveal.textContent = ` (正答: ${keyword})`;
-                    blank.appendChild(reveal);
+                const savedAnswer = this.userAnswers[`${set.id}-${currentIdx}`];
+                if (savedAnswer) {
+                    blank.textContent = savedAnswer;
+                    blank.classList.add('filled');
+                } else {
+                    blank.innerHTML = '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
                 }
+
+                if (!this.isChecked) {
+                    blank.ondragover = (e) => { e.preventDefault(); blank.classList.add('drag-over'); };
+                    blank.ondragleave = () => blank.classList.remove('drag-over');
+                    blank.ondrop = (e) => {
+                        e.preventDefault();
+                        blank.classList.remove('drag-over');
+                        const text = e.dataTransfer.getData('text/plain');
+                        if (text) { this.userAnswers[`${set.id}-${currentIdx}`] = text; this.renderClauseView(set); }
+                    };
+                    blank.onclick = () => { delete this.userAnswers[`${set.id}-${currentIdx}`]; this.renderClauseView(set); };
+                } else {
+                    const isCorrect = savedAnswer === kwInfo.text;
+                    blank.classList.add(isCorrect ? 'correct' : 'wrong');
+                    if (!isCorrect) {
+                        const reveal = document.createElement('span');
+                        reveal.className = 'reveal-correct';
+                        reveal.textContent = ` (${kwInfo.text})`;
+                        blank.appendChild(reveal);
+                    }
+                }
+                placeholder.replaceWith(blank);
+            } else {
+                // Input type
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.className = 'clause-input-blank';
+                input.id = `input-${currentIdx}`;
+
+                const savedAnswer = this.userAnswers[`${set.id}-${currentIdx}`] || '';
+                input.value = savedAnswer;
+
+                if (!this.isChecked) {
+                    input.oninput = () => {
+                        this.userAnswers[`${set.id}-${currentIdx}`] = input.value;
+                    };
+                } else {
+                    input.disabled = true;
+                    const isCorrect = this.normalizeInput(savedAnswer) === this.normalizeInput(kwInfo.text);
+                    input.classList.add(isCorrect ? 'correct' : 'wrong');
+                    if (!isCorrect) {
+                        const tip = document.createElement('span');
+                        tip.className = 'reveal-correct';
+                        tip.textContent = ` (${kwInfo.text})`;
+                        placeholder.parentNode.insertBefore(tip, placeholder.nextSibling);
+                    }
+                }
+                placeholder.replaceWith(input);
             }
-            placeholder.replaceWith(blank);
         }
 
         container.appendChild(clauseText);
@@ -919,13 +974,14 @@ class QuizApp {
             const bank = document.createElement('div');
             bank.className = 'keyword-bank';
 
-            // Count how many times each keyword is required
+            // Count how many times each drag-type keyword is required
             const requiredCounts = {};
-            keywords.forEach(kw => {
-                requiredCounts[kw] = (requiredCounts[kw] || 0) + 1;
+            const dragKeywords = keywords.filter(kw => kw.type === 'drag').map(kw => kw.text);
+            dragKeywords.forEach(text => {
+                requiredCounts[text] = (requiredCounts[text] || 0) + 1;
             });
 
-            const allOptions = [...new Set([...keywords, ...(set.dummies || [])])];
+            const allOptions = [...new Set([...dragKeywords, ...(set.dummies || [])])];
 
             // Use cached shuffle or create new
             if (!this.shuffledCache[set.id]) {
@@ -1183,296 +1239,141 @@ class QuizApp {
             return;
         }
 
-        if (set.type === 'clause') {
+        if (set.type === 'clause' && !this.isAutoGenerated) {
             this.renderClauseView(set);
             return;
         } else {
-            this.clauseEditor.classList.add('hidden'); // Use .hidden (important) to override .edit-mode .hidden-quiz
+            this.clauseEditor.classList.add('hidden');
             this.clauseEditor.classList.add('hidden-quiz');
             this.clauseDisplay.classList.add('hidden');
             this.clauseDisplay.innerHTML = '';
             this.tableWrapper.classList.remove('hidden');
-            this.columnControls.classList.toggle('hidden', !this.isEditMode);
-            this.tableControls.classList.toggle('hidden', !this.isEditMode);
+            if (this.columnControls) this.columnControls.classList.toggle('hidden', !this.isEditMode);
+            if (this.tableControls) this.tableControls.classList.toggle('hidden', !this.isEditMode);
         }
 
-        this.tableHead.innerHTML = '';
-        const headTr = document.createElement('tr');
+        this.tableWrapper.innerHTML = '';
+
         if (this.isAutoGenerated) {
-            // Use set.columns which was computed in generateSpecialQuiz
-            const cols = set.columns || ["項目", "選択肢"];
-            headTr.innerHTML = `<th>${cols[0]}</th>`;
-            for (let i = 1; i < cols.length; i++) {
-                const th = document.createElement('th');
-                th.textContent = cols[i];
-                headTr.appendChild(th);
-            }
-        } else {
-            // Pool inclusion checkbox header
-            if (this.isEditMode) {
-                const thPool = document.createElement('th');
-                thPool.innerHTML = '特訓';
-                thPool.className = 'pool-cell';
-                thPool.title = '特訓（お任せ問題）の対象に含めるか';
-                headTr.appendChild(thPool);
-            }
-
-            set.columns.forEach((col, index) => {
-                const th = document.createElement('th');
-
-                // Parse "Label{width}" syntax
-                let displayLabel = col;
-                const widthMatch = col.match(/\{(.*?)\}/);
-                if (widthMatch) {
-                    th.style.width = widthMatch[1];
-                    th.style.minWidth = widthMatch[1];
-                    displayLabel = col.replace(widthMatch[0], '');
+            // Group questions by their original column structure to avoid cross-page noise
+            const groups = [];
+            set.questions.forEach(q => {
+                // Clause types in auto-gen are always their own block
+                if (q.type === 'clause') {
+                    groups.push({ type: 'clause', questions: [q], columns: ["条文内容"] });
+                    return;
                 }
 
+                const colKey = q.columns ? q.columns.join('|') : 'default';
+                let g = groups.find(it => it.type === 'page' && it.key === colKey);
+                if (!g) {
+                    g = { type: 'page', key: colKey, questions: [], columns: q.columns || ["項目", "選択肢"] };
+                    groups.push(g);
+                }
+                g.questions.push(q);
+            });
+
+            groups.forEach(g => {
+                const table = document.createElement('table');
+                table.className = 'quiz-table auto-gen-table';
+                const thead = document.createElement('thead');
+                const tbody = document.createElement('tbody');
+                table.appendChild(thead);
+                table.appendChild(tbody);
+                this.tableWrapper.appendChild(table);
+                this.renderTableContent(g.columns, g.questions, thead, tbody, true);
+            });
+            this.quizTitle.textContent = set.title;
+        } else {
+            const table = document.createElement('table');
+            table.id = 'quiz-table';
+            const thead = document.createElement('thead'); thead.id = 'table-head';
+            const tbody = document.createElement('tbody'); tbody.id = 'table-body';
+            table.appendChild(thead);
+            table.appendChild(tbody);
+            this.tableWrapper.appendChild(table);
+            this.tableHead = thead;
+            this.tableBody = tbody;
+            this.renderTableContent(set.columns, set.questions, thead, tbody, false);
+            this.quizTitle.textContent = set.title;
+        }
+    }
+
+    renderTableContent(columns, questions, thead, tbody, isAuto) {
+        const headTr = document.createElement('tr');
+        const set = this.isAutoGenerated ? this.autoGeneratedSet : this.quizData.find(s => s.id === this.currentSetId);
+
+        // Header Rendering
+        if (isAuto) {
+            columns.forEach(col => {
+                const th = document.createElement('th');
+                th.textContent = col.replace(/\{.*?\}/, '');
+                const widthMatch = col.match(/\{(.*?)\}/);
+                if (widthMatch) { th.style.width = widthMatch[1]; th.style.minWidth = widthMatch[1]; }
+                headTr.appendChild(th);
+            });
+        } else {
+            if (this.isEditMode) {
+                const thPool = document.createElement('th');
+                thPool.innerHTML = '特訓'; thPool.className = 'pool-cell';
+                headTr.appendChild(thPool);
+            }
+            columns.forEach((col, index) => {
+                const th = document.createElement('th');
+                let displayLabel = col;
+                const widthMatch = col.match(/\{(.*?)\}/);
+                if (widthMatch) { th.style.width = widthMatch[1]; th.style.minWidth = widthMatch[1]; displayLabel = col.replace(widthMatch[0], ''); }
                 const span = document.createElement('span');
-                span.className = 'col-label-edit';
-                span.textContent = displayLabel;
+                span.className = 'col-label-edit'; span.textContent = displayLabel;
                 if (this.isEditMode) {
                     span.contentEditable = true;
-                    // Focus span when clicking the header area
-                    th.onclick = (e) => {
-                        if (e.target === th) span.focus();
-                    };
-
                     span.onblur = () => {
-                        const oldRawVal = col;
-                        const widthMatch = oldRawVal.match(/\{.*?\}/);
+                        const widthMatch = col.match(/\{.*?\}/);
                         const widthSpec = widthMatch ? widthMatch[0] : '';
-
                         let newVal = span.textContent.trim();
-                        // If user didn't type a new width, re-attach the old one
-                        if (widthSpec && !newVal.includes('{')) {
-                            newVal += widthSpec;
-                        }
-
-                        if (oldRawVal !== newVal) {
-                            set.columns[index] = newVal;
-                            // Clean labels for answer comparison
-                            const oldDisplay = oldRawVal.replace(/\{.*?\}/, '').trim();
+                        if (widthSpec && !newVal.includes('{')) newVal += widthSpec;
+                        if (col !== newVal) {
+                            const oldDisplay = col.replace(/\{.*?\}/, '').trim();
                             const newDisplay = newVal.replace(/\{.*?\}/, '').trim();
-
-                            set.questions.forEach(q => {
-                                if (Array.isArray(q.answer)) {
-                                    q.answer = q.answer.map(a => a === oldDisplay ? newDisplay : a);
-                                } else if (q.answer === oldDisplay) q.answer = newDisplay;
+                            columns[index] = newVal;
+                            questions.forEach(q => {
+                                if (Array.isArray(q.answer)) q.answer = q.answer.map(a => a === oldDisplay ? newDisplay : a);
+                                else if (q.answer === oldDisplay) q.answer = newDisplay;
                             });
-                            this.saveData();
-                            this.renderTable();
+                            this.saveData(); this.renderTable();
                         }
                     };
-                } // end if (this.isEditMode)
-
-                th.innerHTML = ''; // Clear any existing text/content
+                }
                 th.appendChild(span);
                 if (this.isEditMode && index > 0) {
-                    const delBtn = document.createElement('span');
-                    delBtn.className = 'delete-col-btn';
-                    delBtn.innerHTML = '×';
-                    delBtn.onclick = (e) => {
-                        e.stopPropagation();
-                        this.deleteColumn(index);
-                    };
+                    const delBtn = document.createElement('span'); delBtn.className = 'delete-col-btn'; delBtn.innerHTML = '×';
+                    delBtn.onclick = (e) => { e.stopPropagation(); this.deleteColumn(index); };
                     th.appendChild(delBtn);
                 }
                 headTr.appendChild(th);
             });
         }
-        this.tableHead.appendChild(headTr);
-        this.tableBody.innerHTML = '';
-        set.questions.forEach((q) => {
+        thead.appendChild(headTr);
+
+        // Rows Rendering
+        questions.forEach((q) => {
             const tr = document.createElement('tr'); tr.id = `row-${q.id}`;
-            const isSetMulti = this.isAutoGenerated ? q.isMultiSelect : set.isMultiSelect;
+            const isQMulti = isAuto ? q.isMultiSelect : set.isMultiSelect;
 
             if (this.isChecked) {
                 const userAnswer = this.userAnswers[q.id];
                 if (userAnswer && (!Array.isArray(userAnswer) || userAnswer.length > 0)) {
                     let isAllCorrect = false;
-                    if (isSetMulti) {
+                    if (isQMulti) {
                         const correctSet = new Set(q.answer); const userSet = new Set(userAnswer);
                         isAllCorrect = (correctSet.size === userSet.size && [...correctSet].every(item => userSet.has(item)));
                     } else { isAllCorrect = userAnswer === q.answer; }
                     tr.classList.add(isAllCorrect ? 'row-correct' : 'row-wrong');
                 }
             }
-            const tdQ = document.createElement('td'); tdQ.className = 'question-cell';
-            if (q.type === 'clause') {
-                // Render sub-clause view for special quiz
-                const wrapper = document.createElement('div');
-                wrapper.className = 'table-clause-wrapper';
-                const badge = document.createElement('span');
-                badge.className = 'clause-badge';
-                badge.textContent = q.origPage || "条文";
-                wrapper.appendChild(badge);
 
-                const cText = document.createElement('div');
-                cText.className = 'clause-text-mini';
-
-                // Render clause content (with table support) - same logic as renderClauseView
-                let htmlContent = q.text;
-                const lines = q.text.split('\n');
-                const hasTable = lines.some(l => l.trim().startsWith('|'));
-
-                if (hasTable) {
-                    let processedHtml = '';
-                    let tableLines = [];
-                    lines.forEach(line => {
-                        if (line.trim().startsWith('|')) {
-                            tableLines.push(line);
-                        } else {
-                            if (tableLines.length > 0) {
-                                processedHtml += this.renderTableFromMarkdown(tableLines);
-                                tableLines = [];
-                            }
-                            processedHtml += line + '<br>';
-                        }
-                    });
-                    if (tableLines.length > 0) {
-                        processedHtml += this.renderTableFromMarkdown(tableLines);
-                    }
-                    htmlContent = processedHtml;
-                } else {
-                    htmlContent = q.text.replace(/\n/g, '<br>');
-                }
-
-                const rowKeywords = [];
-                let blankIdx = 0;
-                const finalHtml = htmlContent.replace(/\[\[(.*?)\]\]/g, (match, keyword) => {
-                    rowKeywords.push(keyword);
-                    return `<span id="placeholder-${q.id}-${blankIdx++}"></span>`;
-                });
-
-                cText.innerHTML = finalHtml;
-
-                // Replace placeholders with real interactive blanks
-                for (let i = 0; i < blankIdx; i++) {
-                    const placeholder = cText.querySelector(`#placeholder-${q.id}-${i}`);
-                    if (!placeholder) continue;
-
-                    const keyword = rowKeywords[i];
-                    const blank = document.createElement('div');
-                    blank.className = 'clause-blank';
-                    const currentIdx = i;
-                    const savedAnswer = this.userAnswers[`${q.id}-${currentIdx}`];
-
-                    if (savedAnswer) {
-                        blank.textContent = savedAnswer;
-                        blank.classList.add('filled');
-                    } else {
-                        blank.innerHTML = '&nbsp;&nbsp;&nbsp;&nbsp;';
-                    }
-
-                    if (!this.isChecked) {
-                        blank.ondragover = (e) => { e.preventDefault(); blank.classList.add('drag-over'); };
-                        blank.ondragleave = () => blank.classList.remove('drag-over');
-                        blank.ondrop = (e) => {
-                            e.preventDefault(); blank.classList.remove('drag-over');
-                            const text = e.dataTransfer.getData('text/plain');
-                            if (text) { this.userAnswers[`${q.id}-${currentIdx}`] = text; this.renderTable(); }
-                        };
-                        blank.onclick = () => { delete this.userAnswers[`${q.id}-${currentIdx}`]; this.renderTable(); };
-                    } else {
-                        const isCorrect = savedAnswer === keyword;
-                        blank.classList.add(isCorrect ? 'correct' : 'wrong');
-                        if (!isCorrect) {
-                            const reveal = document.createElement('span');
-                            reveal.className = 'reveal-correct'; reveal.textContent = ` (${keyword})`;
-                            blank.appendChild(reveal);
-                        }
-                    }
-                    placeholder.replaceWith(blank);
-                }
-                wrapper.appendChild(cText);
-                tdQ.appendChild(wrapper);
-
-                // Add local keyword bank for this clause
-                if (!this.isChecked) {
-                    const rowKeywords = [];
-                    const kws = q.text.match(/\[\[(.*?)\]\]/g) || [];
-                    kws.forEach(k => rowKeywords.push(k.substring(2, k.length - 2)));
-
-                    const requiredCounts = {};
-                    rowKeywords.forEach(kw => { requiredCounts[kw] = (requiredCounts[kw] || 0) + 1; });
-
-                    const allOptions = [...new Set([...rowKeywords, ...(q.dummies || [])])];
-                    if (allOptions.length > 0) {
-                        const bankContainer = document.createElement('div');
-                        bankContainer.className = 'keyword-bank';
-                        bankContainer.style.marginTop = '1rem';
-                        bankContainer.style.background = 'rgba(0,0,0,0.1)';
-                        bankContainer.style.padding = '10px';
-                        bankContainer.style.borderRadius = '8px';
-
-                        const cacheKey = `bank-${q.id}`;
-                        if (!this.shuffledCache[cacheKey]) {
-                            this.shuffledCache[cacheKey] = allOptions.sort(() => Math.random() - 0.5);
-                        }
-                        const shuffled = this.shuffledCache[cacheKey];
-
-                        const usedCounts = {};
-                        Object.keys(this.userAnswers).forEach(key => {
-                            if (key.startsWith(`${q.id}-`)) {
-                                const ans = this.userAnswers[key];
-                                usedCounts[ans] = (usedCounts[ans] || 0) + 1;
-                            }
-                        });
-
-                        shuffled.forEach(word => {
-                            const req = requiredCounts[word] || 0;
-                            const used = usedCounts[word] || 0;
-                            const isUsed = req > 0 ? (used >= req) : (used > 0);
-
-                            const card = document.createElement('div');
-                            card.className = `keyword-card ${isUsed ? 'used' : ''}`;
-
-                            if (req > 1 && !isUsed) {
-                                card.innerHTML = `${word} <span class="keyword-count-badge">${req - used}</span>`;
-                            } else {
-                                card.textContent = word;
-                            }
-
-                            card.draggable = !isUsed;
-                            card.ondragstart = (e) => {
-                                if (isUsed) return;
-                                e.dataTransfer.setData('text/plain', word);
-                                card.classList.add('dragging');
-                            };
-                            card.ondragend = () => card.classList.remove('dragging');
-                            bankContainer.appendChild(card);
-                        });
-                        tdQ.appendChild(bankContainer);
-                    }
-                }
-                tdQ.colSpan = set.columns.length;
-            } else if (this.isEditMode && !this.isAutoGenerated) {
-                const rowControls = document.createElement('div');
-                rowControls.className = 'row-edit-controls';
-
-                const delBtn = document.createElement('span'); delBtn.className = 'delete-row-btn'; delBtn.innerHTML = '×';
-                delBtn.title = '行を削除';
-                delBtn.onclick = () => this.deleteRow(q.id);
-
-                const upBtn = document.createElement('span'); upBtn.className = 'move-row-btn'; upBtn.innerHTML = '↑';
-                upBtn.title = '上に移動';
-                upBtn.onclick = () => this.moveRow(q.id, -1);
-
-                const downBtn = document.createElement('span'); downBtn.className = 'move-row-btn'; downBtn.innerHTML = '↓';
-                downBtn.title = '下に移動';
-                downBtn.onclick = () => this.moveRow(q.id, 1);
-
-                rowControls.appendChild(delBtn);
-                rowControls.appendChild(upBtn);
-                rowControls.appendChild(downBtn);
-                tdQ.appendChild(rowControls);
-            }
-            if (this.isAutoGenerated && q.origPage) { const tag = document.createElement('div'); tag.className = 'page-tag'; tag.textContent = q.origPage; tdQ.appendChild(tag); }
-
-            // Pool inclusion checkbox cell
-            if (!this.isAutoGenerated && this.isEditMode) {
+            // Pool inclusion checkbox cell (REQUIRED FOR ALIGNMENT in edit mode)
+            if (!isAuto && this.isEditMode) {
                 const tdPool = document.createElement('td');
                 tdPool.className = 'pool-cell';
                 const poolCheck = document.createElement('input');
@@ -1486,98 +1387,217 @@ class QuizApp {
                 tr.appendChild(tdPool);
             }
 
-            // Standard text rendering - SKIP if it's a clause as it's already rendered above
-            if (q.type !== 'clause') {
+            const tdQ = document.createElement('td'); tdQ.className = 'question-cell';
+
+            // Treat any question with [[...]] or ((...)) (including full-width) as a clause/blank type
+            if (q.type === 'clause' || /\[\[|［［|\(\(|（（/.test(q.text)) {
+                const wrapper = document.createElement('div'); wrapper.className = 'table-clause-wrapper';
+                const badge = document.createElement('span'); badge.className = 'clause-badge'; badge.textContent = q.origPage || "条文";
+                wrapper.appendChild(badge);
+
+                const cText = document.createElement('div'); cText.className = 'clause-text-mini';
+                let htmlContent = q.text;
+                const lines = q.text.split('\n');
+                const hasTable = lines.some(l => l.trim().startsWith('|'));
+                if (hasTable) {
+                    let processedHtml = ''; let tableLines = [];
+                    lines.forEach(line => {
+                        if (line.trim().startsWith('|')) tableLines.push(line);
+                        else {
+                            if (tableLines.length > 0) { processedHtml += this.renderTableFromMarkdown(tableLines); tableLines = []; }
+                            processedHtml += line + '<br>';
+                        }
+                    });
+                    if (tableLines.length > 0) processedHtml += this.renderTableFromMarkdown(tableLines);
+                    htmlContent = processedHtml;
+                } else { htmlContent = q.text.replace(/\n/g, '<br>'); }
+
+                const rowKeywords = []; let blankIdx = 0;
+                // Combined drag/input support (including full-width)
+                const finalHtml = htmlContent.replace(/\[\[(.*?)\]\]|［［(.*?)］］|\(\((.*?)\)\)|（（(.*?)））/g, (match, p1, p2, p3, p4) => {
+                    const keyword = p1 || p2 || p3 || p4;
+                    const type = (p1 || p2) ? 'drag' : 'input';
+                    rowKeywords.push({ text: keyword, type: type });
+                    return `<span id="placeholder-${q.id}-${blankIdx++}"></span>`;
+                });
+                cText.innerHTML = finalHtml;
+
+                for (let i = 0; i < blankIdx; i++) {
+                    const placeholder = cText.querySelector(`#placeholder-${q.id}-${i}`);
+                    if (!placeholder) continue;
+                    const kwInfo = rowKeywords[i];
+                    const currentBlankIdx = i;
+
+                    if (kwInfo.type === 'drag') {
+                        const blank = document.createElement('div'); blank.className = 'clause-blank';
+                        const savedAnswer = this.userAnswers[`${q.id}-${currentBlankIdx}`];
+                        if (savedAnswer) { blank.textContent = savedAnswer; blank.classList.add('filled'); }
+                        else { blank.innerHTML = '&nbsp;&nbsp;&nbsp;&nbsp;'; }
+
+                        if (!this.isChecked) {
+                            blank.ondragover = (e) => { e.preventDefault(); blank.classList.add('drag-over'); };
+                            blank.ondragleave = () => blank.classList.remove('drag-over');
+                            blank.ondrop = (e) => {
+                                e.preventDefault(); blank.classList.remove('drag-over');
+                                const text = e.dataTransfer.getData('text/plain');
+                                if (text) { this.userAnswers[`${q.id}-${currentBlankIdx}`] = text; this.renderTable(); }
+                            };
+                            blank.onclick = () => { delete this.userAnswers[`${q.id}-${currentBlankIdx}`]; this.renderTable(); };
+                        } else {
+                            const isCorrect = savedAnswer === kwInfo.text;
+                            blank.classList.add(isCorrect ? 'correct' : 'wrong');
+                            if (!isCorrect) {
+                                const reveal = document.createElement('span');
+                                reveal.className = 'reveal-correct'; reveal.textContent = ` (${kwInfo.text})`;
+                                blank.appendChild(reveal);
+                            }
+                        }
+                        placeholder.replaceWith(blank);
+                    } else {
+                        // Input type
+                        const input = document.createElement('input');
+                        input.type = 'text';
+                        input.className = 'clause-input-blank mini';
+                        const savedAnswer = this.userAnswers[`${q.id}-${currentBlankIdx}`] || '';
+                        input.value = savedAnswer;
+
+                        if (!this.isChecked) {
+                            input.oninput = () => {
+                                this.userAnswers[`${q.id}-${currentBlankIdx}`] = input.value;
+                            };
+                        } else {
+                            input.disabled = true;
+                            const isCorrect = this.normalizeInput(savedAnswer) === this.normalizeInput(kwInfo.text);
+                            input.classList.add(isCorrect ? 'correct' : 'wrong');
+                            if (!isCorrect) {
+                                const tip = document.createElement('span');
+                                tip.className = 'reveal-correct';
+                                tip.textContent = ` (${kwInfo.text})`;
+                                placeholder.parentNode.insertBefore(tip, placeholder.nextSibling);
+                            }
+                        }
+                        placeholder.replaceWith(input);
+                    }
+                }
+                wrapper.appendChild(cText);
+                tdQ.appendChild(wrapper);
+
+                if (!this.isChecked) {
+                    const dragKeywords = rowKeywords.filter(kw => kw.type === 'drag').map(kw => kw.text);
+                    const requiredCounts = {}; dragKeywords.forEach(text => { requiredCounts[text] = (requiredCounts[text] || 0) + 1; });
+                    const allOptions = [...new Set([...dragKeywords, ...(q.dummies || [])])];
+                    if (allOptions.length > 0) {
+                        const bankContainer = document.createElement('div');
+                        bankContainer.className = 'keyword-bank'; bankContainer.style.marginTop = '1rem';
+                        const cacheKey = `bank-${q.id}`;
+                        if (!this.shuffledCache[cacheKey]) this.shuffledCache[cacheKey] = allOptions.sort(() => Math.random() - 0.5);
+
+                        const usedCounts = {};
+                        Object.keys(this.userAnswers).forEach(key => {
+                            if (key.startsWith(`${q.id}-`)) {
+                                const ans = this.userAnswers[key];
+                                usedCounts[ans] = (usedCounts[ans] || 0) + 1;
+                            }
+                        });
+
+                        this.shuffledCache[cacheKey].forEach(word => {
+                            const req = requiredCounts[word] || 0;
+                            const used = usedCounts[word] || 0;
+                            const isUsed = req > 0 ? (used >= req) : (used > 0);
+
+                            const card = document.createElement('div'); card.className = `keyword-card ${isUsed ? 'used' : ''}`;
+                            if (req > 1 && !isUsed) {
+                                card.innerHTML = `${word} <span class="keyword-count-badge">${req - used}</span>`;
+                            } else {
+                                card.textContent = word;
+                            }
+                            card.draggable = !isUsed;
+                            card.ondragstart = (e) => { if (isUsed) return; e.dataTransfer.setData('text/plain', word); card.classList.add('dragging'); };
+                            card.ondragend = () => card.classList.remove('dragging');
+                            bankContainer.appendChild(card);
+                        });
+                        tdQ.appendChild(bankContainer);
+                    }
+                }
+                tdQ.colSpan = columns.length + (!isAuto && this.isEditMode ? 1 : 0);
+            } else {
+                if (!isAuto && this.isEditMode) {
+                    const delBtn = document.createElement('span'); delBtn.className = 'delete-row-btn'; delBtn.innerHTML = '×';
+                    delBtn.onclick = () => this.deleteRow(q.id);
+                    tdQ.appendChild(delBtn);
+                }
+                if (isAuto && q.origPage) { const tag = document.createElement('div'); tag.className = 'page-tag'; tag.textContent = q.origPage; tdQ.appendChild(tag); }
+
                 const spanText = document.createElement('span'); spanText.textContent = q.text;
-                if (this.isEditMode && !this.isAutoGenerated) { spanText.contentEditable = true; spanText.onblur = () => { q.text = spanText.textContent.trim(); this.saveData(); }; }
+                if (!isAuto && this.isEditMode) { spanText.contentEditable = true; spanText.onblur = () => { q.text = spanText.textContent.trim(); this.saveData(); }; }
                 tdQ.appendChild(spanText);
 
-                // Memo block
-                if (this.isEditMode && !this.isAutoGenerated) {
-                    const memoEl = document.createElement('div');
-                    memoEl.className = 'memo-input';
-                    memoEl.placeholder = 'メモ・解説を入力...';
-                    memoEl.contentEditable = true;
-                    memoEl.textContent = q.memo || '';
-                    memoEl.onblur = () => { q.memo = memoEl.textContent.trim(); this.saveData(); };
+                if (!isAuto && this.isEditMode) {
+                    const memoEl = document.createElement('div'); memoEl.className = 'memo-input'; memoEl.placeholder = 'メモ...'; memoEl.contentEditable = true;
+                    memoEl.textContent = q.memo || ''; memoEl.onblur = () => { q.memo = memoEl.textContent.trim(); this.saveData(); };
                     tdQ.appendChild(memoEl);
                 } else if (this.isChecked && q.memo) {
-                    const memoEl = document.createElement('div');
-                    memoEl.className = 'memo-display';
+                    const memoEl = document.createElement('div'); memoEl.className = 'memo-display';
                     memoEl.innerHTML = `<strong>解説:</strong> ${q.memo.replace(/\n/g, '<br>')}`;
                     tdQ.appendChild(memoEl);
                 }
             }
 
-            // History visualization icon
             const statKey = q.type === 'clause' ? `clause-summary-${q.id}` : q.id;
             if (this.questionStats[statKey]) {
-                const historyBtn = document.createElement('span');
-                historyBtn.className = 'history-icon-btn';
-                historyBtn.innerHTML = ' 📈';
-                historyBtn.title = '記憶定着の推移を表示';
-                historyBtn.onclick = (e) => {
-                    e.stopPropagation();
-                    this.showSRSDetail(statKey);
-                };
+                const historyBtn = document.createElement('span'); historyBtn.className = 'history-icon-btn'; historyBtn.innerHTML = ' 📈';
+                historyBtn.onclick = (e) => { e.stopPropagation(); this.showSRSDetail(statKey); };
                 tdQ.appendChild(historyBtn);
             }
-
             tr.appendChild(tdQ);
 
             if (q.type !== 'clause') {
-                // Use the header's columns to ensure all rows are the same width
-                for (let i = 1; i < set.columns.length; i++) {
-                    const colLabel = set.columns[i];
-                    const choiceName = (!q.columns || q.columns.includes(colLabel)) ? colLabel : '';
-                    const td = document.createElement('td');
-                    td.className = 'choice-cell';
-                    if (choiceName) {
-                        td.textContent = choiceName;
-                    } else {
-                        td.textContent = '';
-                        td.style.pointerEvents = 'none';
-                    }
-                    if (isSetMulti) td.classList.add('multi-select');
+                for (let i = 1; i < columns.length; i++) {
+                    const colLabelRaw = columns[i];
+                    const colLabel = colLabelRaw.replace(/\{.*?\}/, '').trim();
+                    const td = document.createElement('td'); td.className = 'choice-cell';
+                    if (isQMulti) td.classList.add('multi-select');
+                    td.textContent = colLabel;
 
-                    if (this.isEditMode && !this.isAutoGenerated) {
-                        const isCorrect = isSetMulti ? (Array.isArray(q.answer) && q.answer.includes(choiceName)) : (q.answer === choiceName);
-                        if (isCorrect) td.classList.add(isSetMulti ? 'multi-selected' : 'correct');
-                        td.onclick = () => {
-                            if (isSetMulti) {
-                                if (!Array.isArray(q.answer)) q.answer = [];
-                                if (q.answer.includes(choiceName)) q.answer = q.answer.filter(a => a !== choiceName);
-                                else q.answer.push(choiceName);
-                            } else { q.answer = choiceName; }
-                            this.saveData(); this.renderTable();
-                        };
+                    if (this.isEditMode && !isAuto) {
+                        const isCorrect = isQMulti ? (Array.isArray(q.answer) && q.answer.includes(colLabel)) : (q.answer === colLabel);
+                        if (isCorrect) td.classList.add(isQMulti ? 'multi-selected' : 'correct');
                     } else {
                         const userAnswer = this.userAnswers[q.id];
-                        const isSelected = isSetMulti ? (Array.isArray(userAnswer) && userAnswer.includes(choiceName)) : (userAnswer === choiceName);
+                        const isSelected = isQMulti ? (Array.isArray(userAnswer) && userAnswer.includes(colLabel)) : (userAnswer === colLabel);
 
                         if (this.isChecked) {
-                            const isCorrectAnswer = isSetMulti ? (Array.isArray(q.answer) && q.answer.includes(choiceName)) : (q.answer === choiceName);
+                            const isCorrectAnswer = isQMulti ? (Array.isArray(q.answer) && q.answer.includes(colLabel)) : (q.answer === colLabel);
                             if (isCorrectAnswer) td.classList.add('correct');
                             else if (isSelected) td.classList.add('wrong');
                         } else if (isSelected) td.classList.add('selected');
-
-                        td.onclick = () => {
-                            if (!this.isChecked) {
-                                if (isSetMulti) {
-                                    if (!Array.isArray(this.userAnswers[q.id])) this.userAnswers[q.id] = [];
-                                    if (this.userAnswers[q.id].includes(choiceName)) this.userAnswers[q.id] = this.userAnswers[q.id].filter(a => a !== choiceName);
-                                    else this.userAnswers[q.id].push(choiceName);
-                                } else { this.userAnswers[q.id] = choiceName; }
-                                this.renderTable();
-                            }
-                        };
                     }
+
+                    td.onclick = () => {
+                        if (!this.isChecked && !this.isEditMode) {
+                            if (isQMulti) {
+                                if (!Array.isArray(this.userAnswers[q.id])) this.userAnswers[q.id] = [];
+                                if (this.userAnswers[q.id].includes(colLabel)) this.userAnswers[q.id] = this.userAnswers[q.id].filter(a => a !== colLabel);
+                                else this.userAnswers[q.id].push(colLabel);
+                            } else { this.userAnswers[q.id] = colLabel; }
+                            this.renderTable();
+                        } else if (this.isEditMode && !isAuto) {
+                            if (isQMulti) {
+                                if (!Array.isArray(q.answer)) q.answer = [];
+                                if (q.answer.includes(colLabel)) q.answer = q.answer.filter(a => a !== colLabel);
+                                else q.answer.push(colLabel);
+                            } else { q.answer = colLabel; }
+                            this.saveData(); this.renderTable();
+                        }
+                    };
                     tr.appendChild(td);
                 }
             }
-            this.tableBody.appendChild(tr);
+            tbody.appendChild(tr);
         });
+
     }
+
 
     deleteRow(id) {
         if (this.isAutoGenerated) return;
