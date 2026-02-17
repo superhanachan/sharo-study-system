@@ -267,7 +267,22 @@
             </div>
         </main>
     </div>
+    <div id="srs-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="srs-modal-title">忘却曲線の可視化</h3>
+                <span id="close-modal" class="close-btn">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="srs-chart-container">
+                    <canvas id="srsDetailChart"></canvas>
+                </div>
+                <div id="srs-info" class="srs-info-text"></div>
+            </div>
+        </div>
+    </div>
     <script src="app.js"></script>
+
 </body>
 
 </html>

@@ -60,7 +60,16 @@ class QuizApp {
         this.migrateData();
         this.cacheDOM();
         this.bindEvents();
+        if (this.closeModalBtn) {
+            this.closeModalBtn.addEventListener('click', () => this.srsModal.classList.add('hidden'));
+        }
+        window.addEventListener('click', (e) => {
+            if (e.target === this.srsModal) this.srsModal.classList.add('hidden');
+        });
+
+        // Initial call
         this.init();
+
     }
 
     migrateData() {
@@ -227,7 +236,13 @@ class QuizApp {
         this.dataImportInput = document.getElementById('data-import-input');
         this.dataStatusMsg = document.getElementById('data-status-msg');
         this.understandingMap = document.getElementById('understanding-map');
+        this.srsModal = document.getElementById('srs-modal');
+        this.srsInfo = document.getElementById('srs-info');
+        this.srsModalTitle = document.getElementById('srs-modal-title');
+        this.closeModalBtn = document.getElementById('close-modal');
+        this.srsDetailChart = null;
         this.clauseEditor = document.getElementById('clause-editor');
+
         this.clauseTextEditor = document.getElementById('clause-text-editor');
         this.clauseDummiesEditor = document.getElementById('clause-dummies-editor');
         this.clauseDisplay = document.getElementById('clause-display');
@@ -364,6 +379,15 @@ class QuizApp {
     updateSRS(stat, isCorrect) {
         if (!stat) return;
         if (stat.srsLevel === undefined) stat.srsLevel = 0;
+        if (!stat.history) stat.history = [];
+
+        // Record attempt
+        stat.history.push({
+            date: new Date().toISOString(),
+            isCorrect: isCorrect,
+            level: stat.srsLevel
+        });
+        if (stat.history.length > 20) stat.history.shift();
 
         if (isCorrect) {
             stat.srsLevel = Math.min(stat.srsLevel + 1, SRS_INTERVALS.length - 1);
@@ -378,6 +402,91 @@ class QuizApp {
         // Reset to beginning of day for simpler comparison (optional, but good for "daily" review)
         nextDate.setHours(0, 0, 0, 0);
         stat.nextReview = nextDate.toISOString();
+    }
+
+    showSRSDetail(statKey) {
+        const stat = this.questionStats[statKey];
+        if (!stat) return;
+
+        this.srsModal.classList.remove('hidden');
+        this.srsModalTitle.textContent = `記憶定着の推移: ${stat.text.substring(0, 40)}${stat.text.length > 40 ? '...' : ''}`;
+
+        const history = stat.history || [];
+        const nextReview = stat.nextReview ? new Date(stat.nextReview) : null;
+
+        const labels = history.map(h => new Date(h.date).toLocaleDateString());
+        const data = history.map(h => h.level);
+
+        if (nextReview) {
+            labels.push(`${nextReview.toLocaleDateString()} (予定)`);
+            data.push(stat.srsLevel);
+        }
+
+        const ctx = document.getElementById('srsDetailChart').getContext('2d');
+        if (this.srsDetailChart) this.srsDetailChart.destroy();
+
+        this.srsDetailChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: '定着レベル',
+                    data: data,
+                    borderColor: '#4cc9f0',
+                    backgroundColor: 'rgba(76, 201, 240, 0.2)',
+                    fill: true,
+                    tension: 0.3,
+                    pointBackgroundColor: [
+                        ...history.map(h => h.isCorrect ? '#4ade80' : '#f72585'),
+                        '#ffd166'
+                    ],
+                    pointRadius: 6,
+                    pointHoverRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: 'rgba(255,255,255,0.6)' } },
+                    y: {
+                        beginAtZero: true,
+                        max: SRS_INTERVALS.length,
+                        grid: { color: 'rgba(255,255,255,0.05)' },
+                        ticks: { color: 'rgba(255,255,255,0.6)', stepSize: 1 },
+                        title: { display: true, text: '習熟度レベル', color: 'rgba(255,255,255,0.8)' }
+                    }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: (context) => {
+                                const idx = context.dataIndex;
+                                if (idx < history.length) {
+                                    return `レベル: ${context.raw} (${history[idx].isCorrect ? '正解' : '不正解'})`;
+                                }
+                                return `次回予定レベル: ${context.raw}`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        this.srsInfo.innerHTML = `
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 12px;">
+                <div>
+                    <p><strong>現在の習熟度:</strong> Lv.${stat.srsLevel}</p>
+                    <p><strong>復習間隔:</strong> ${SRS_INTERVALS[stat.srsLevel]} 日</p>
+                </div>
+                <div>
+                    <p><strong>次回の復習予定:</strong> ${nextReview ? nextReview.toLocaleDateString() : '未定'}</p>
+                    <p><strong>累計成績:</strong> ${stat.correct}/${stat.total} (${Math.round((stat.correct / stat.total) * 100)}%)</p>
+                </div>
+            </div>
+            <p style="margin-top: 1rem; opacity: 0.7; font-size: 0.8rem;">※グラフ上の点は <span style="color:#4ade80">●</span> が正解、<span style="color:#f72585">●</span> が不正解を表します。</p>
+        `;
     }
 
 
@@ -593,7 +702,7 @@ class QuizApp {
             return a.total - b.total;
         }).slice(0, 10);
 
-        this.weakQuestionsBody.innerHTML = statsArray.map(s => `<tr><td style="text-align: left;">${s.text}</td><td>${s.page}</td><td>${s.total}</td><td style="color: ${s.accuracy < 50 ? 'var(--error)' : 'var(--text-primary)'}">${s.accuracy}%</td></tr>`).join('');
+        this.weakQuestionsBody.innerHTML = statsArray.map(s => `<tr><td style="text-align: left;">${s.text} <span class="history-icon-btn" onclick="app.showSRSDetail('${s.id}')" title="記憶定着の推移を見る">📈</span></td><td>${s.page}</td><td>${s.total}</td><td style="color: ${s.accuracy < 50 ? 'var(--error)' : 'var(--text-primary)'}">${s.accuracy}%</td></tr>`).join('');
         this.updateChartTabs(); this.renderChart();
         this.renderUnderstandingMap();
     }
@@ -612,7 +721,8 @@ class QuizApp {
                     const recent = stat.recent || [];
                     const rTotal = recent.length;
                     const rCorrect = recent.reduce((a, b) => a + b, 0);
-                    const accuracy = rTotal > 0 ? Math.round((rCorrect / rTotal) * 100) : -1;
+                    const accuracy = recent.length > 0 ? Math.round((recent.reduce((a, b) => a + b, 0) / recent.length) * 100) : -1;
+                    const nextReview = stat.nextReview ? new Date(stat.nextReview).toLocaleDateString() : '未定';
 
                     allQuestions.push({
                         id: q.id,
@@ -621,6 +731,8 @@ class QuizApp {
                         page: set.title,
                         accuracy: accuracy,
                         total: stat.total,
+                        srsLevel: stat.srsLevel || 0,
+                        nextReview: nextReview,
                         pageId: set.id
                     });
                 });
@@ -629,6 +741,7 @@ class QuizApp {
                 const stat = this.questionStats[statKey] || { correct: 0, total: 0, recent: [] };
                 const recent = stat.recent || [];
                 const accuracy = recent.length > 0 ? Math.round((recent.reduce((a, b) => a + b, 0) / recent.length) * 100) : -1;
+                const nextReview = stat.nextReview ? new Date(stat.nextReview).toLocaleDateString() : '未定';
 
                 allQuestions.push({
                     id: set.id,
@@ -637,8 +750,11 @@ class QuizApp {
                     page: set.title,
                     accuracy: accuracy,
                     total: stat.total,
+                    srsLevel: stat.srsLevel || 0,
+                    nextReview: nextReview,
                     pageId: set.id
                 });
+
             }
         });
 
@@ -656,7 +772,7 @@ class QuizApp {
             }
 
             cell.style.backgroundColor = bgColor;
-            cell.setAttribute('data-tooltip', `【${q.page}】\n${q.text}\n正答率: ${q.accuracy === -1 ? '未解答' : q.accuracy + '%'}`);
+            cell.setAttribute('data-tooltip', `【${q.page}】\n${q.text}\n正答率: ${q.accuracy === -1 ? '未解答' : q.accuracy + '%'}\n習熟度: Lv.${q.srsLevel} / 次回予定: ${q.nextReview}`);
 
             cell.onclick = () => {
                 if (q.pageId) {
@@ -1391,6 +1507,20 @@ class QuizApp {
                     memoEl.innerHTML = `<strong>解説:</strong> ${q.memo.replace(/\n/g, '<br>')}`;
                     tdQ.appendChild(memoEl);
                 }
+            }
+
+            // History visualization icon
+            const statKey = q.type === 'clause' ? `clause-summary-${q.id}` : q.id;
+            if (this.questionStats[statKey]) {
+                const historyBtn = document.createElement('span');
+                historyBtn.className = 'history-icon-btn';
+                historyBtn.innerHTML = ' 📈';
+                historyBtn.title = '記憶定着の推移を表示';
+                historyBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    this.showSRSDetail(statKey);
+                };
+                tdQ.appendChild(historyBtn);
             }
 
             tr.appendChild(tdQ);
