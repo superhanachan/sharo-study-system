@@ -218,6 +218,8 @@ class QuizApp {
         this.genRandomBtn = document.getElementById('gen-random-btn');
         this.genSRSClauseBtn = document.getElementById('gen-srs-clause-btn');
         this.genSRSPageBtn = document.getElementById('gen-srs-page-btn');
+        this.sidebarGenSRSClauseBtn = document.getElementById('sidebar-gen-srs-clause-btn');
+        this.sidebarGenSRSPageBtn = document.getElementById('sidebar-gen-srs-page-btn');
 
         this.chartBtns = {
             accuracy: document.getElementById('show-accuracy-btn'),
@@ -293,6 +295,8 @@ class QuizApp {
         if (this.genRandomBtn) this.genRandomBtn.addEventListener('click', () => this.generateSpecialQuiz('random'));
         if (this.genSRSClauseBtn) this.genSRSClauseBtn.addEventListener('click', () => this.generateSpecialQuiz('srs-clause'));
         if (this.genSRSPageBtn) this.genSRSPageBtn.addEventListener('click', () => this.generateSpecialQuiz('srs-page'));
+        if (this.sidebarGenSRSClauseBtn) this.sidebarGenSRSClauseBtn.addEventListener('click', () => this.generateSpecialQuiz('srs-clause'));
+        if (this.sidebarGenSRSPageBtn) this.sidebarGenSRSPageBtn.addEventListener('click', () => this.generateSpecialQuiz('srs-page'));
 
         Object.keys(this.chartBtns).forEach(mode => {
             this.chartBtns[mode].addEventListener('click', () => {

@@ -497,6 +497,14 @@ input:checked+.slider:before {
     display: flex;
 }
 
+.study-only {
+    display: flex;
+}
+
+.edit-mode .study-only {
+    display: none !important;
+}
+
 /* Quiz Controls */
 /* .quiz-controls moved to bottom for sticky implementation */
 
@@ -1493,6 +1501,46 @@ tr {
     background: rgba(76, 201, 240, 0.1);
     border-color: var(--accent);
     box-shadow: 0 0 10px rgba(76, 201, 240, 0.2);
+}
+
+.sidebar-quick-actions {
+    padding: 0.5rem 0.8rem 1rem 0.8rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.sidebar-gen-btn {
+    padding: 0.7rem;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    transition: var(--transition);
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.sidebar-gen-btn.srs-clause {
+    background: var(--success);
+    color: var(--bg-dark);
+}
+
+.sidebar-gen-btn.srs-page {
+    background: #2ec4b6;
+    color: var(--bg-dark);
+}
+
+.sidebar-gen-btn:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+}
+
+.sidebar-gen-btn:active {
+    transform: translateY(0);
 }
 
 /* Modal Styles */
