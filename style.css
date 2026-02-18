@@ -1612,6 +1612,57 @@ tr {
     transform: scale(1.2);
 }
 
+.question-link {
+    cursor: pointer;
+    transition: var(--transition);
+    border-bottom: 1px dashed transparent;
+}
+
+.question-link:hover {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+}
+
+.srs-badge {
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--glass-border);
+}
+
+.srs-badge.due {
+    border-color: var(--error);
+    background: rgba(247, 37, 133, 0.1);
+    color: var(--error);
+}
+
+.srs-badge.level-1,
+.srs-badge.level-2 {
+    color: #ff9f1c;
+}
+
+.srs-badge.level-3,
+.srs-badge.level-4 {
+    color: #ffbf69;
+}
+
+.srs-badge.level-5,
+.srs-badge.level-6 {
+    color: #cbf3f0;
+}
+
+.srs-badge.level-7,
+.srs-badge.level-8 {
+    color: #2ec4b6;
+}
+
+.srs-badge.level-9,
+.srs-badge.level-10 {
+    color: var(--success);
+}
+
 /* Clause Numerical Input */
 .clause-input-blank {
     background: var(--bg-card);
