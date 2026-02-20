@@ -1424,6 +1424,7 @@ tr {
     display: flex;
     justify-content: center;
     gap: 1.5rem;
+    flex-wrap: wrap;
     box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.4);
 }
 
