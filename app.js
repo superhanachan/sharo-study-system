@@ -235,6 +235,8 @@ class QuizApp {
         // Data management
         this.exportJsonBtn = document.getElementById('export-json-btn');
         this.importJsonBtn = document.getElementById('import-json-btn');
+        this.sidebarExportBtn = document.getElementById('sidebar-export-json-btn');
+        this.sidebarImportBtn = document.getElementById('sidebar-import-json-btn');
         this.exportCsvBtn = document.getElementById('export-csv-btn');
         this.importCsvBtn = document.getElementById('import-csv-btn');
         this.dataImportInput = document.getElementById('data-import-input');
@@ -349,6 +351,12 @@ class QuizApp {
         // Data management events
         this.exportJsonBtn.addEventListener('click', () => this.exportToJSON());
         this.importJsonBtn.addEventListener('click', () => { this.dataImportInput.accept = '.json'; this.dataImportInput.click(); });
+        if (this.sidebarExportBtn) {
+            this.sidebarExportBtn.addEventListener('click', () => this.exportToJSON());
+        }
+        if (this.sidebarImportBtn) {
+            this.sidebarImportBtn.addEventListener('click', () => { this.dataImportInput.accept = '.json'; this.dataImportInput.click(); });
+        }
         this.exportCsvBtn.addEventListener('click', () => this.exportToCSV());
         this.importCsvBtn.addEventListener('click', () => { this.dataImportInput.accept = '.csv'; this.dataImportInput.click(); });
         this.dataImportInput.addEventListener('change', (e) => this.handleFileImport(e));
@@ -963,6 +971,7 @@ class QuizApp {
     }
 
     renderClauseView(set) {
+        if (this.globalKeywordBank) this.globalKeywordBank.classList.add('hidden'); // Hide global bank in dedicated view
         this.clauseEditor.classList.remove('hidden'); // Ensure it's not logically blocked
         this.clauseEditor.classList.toggle('hidden-quiz', !this.isEditMode);
         this.clauseDisplay.classList.remove('hidden');
@@ -1115,63 +1124,22 @@ class QuizApp {
         container.appendChild(clauseText);
         this.clauseDisplay.appendChild(container);
 
-        // Keyword Bank
-        if (!this.isChecked) {
-            const bank = document.createElement('div');
-            bank.className = 'keyword-bank';
+        // Keyword Bank - Link to Global Bank in single view
+        if (!this.isChecked && !this.isEditMode) {
+            const dragKeywords = keywords.filter(kw => kw.type === 'drag');
+            const dragTexts = dragKeywords.map(kw => kw.text);
+            const allOptions = [...new Set([...dragTexts, ...(set.dummies || [])])];
 
-            // Count how many times each drag-type keyword is required
-            const requiredCounts = {};
-            const dragKeywords = keywords.filter(kw => kw.type === 'drag').map(kw => kw.text);
-            dragKeywords.forEach(text => {
-                requiredCounts[text] = (requiredCounts[text] || 0) + 1;
-            });
-
-            const allOptions = [...new Set([...dragKeywords, ...(set.dummies || [])])];
-
-            // Use cached shuffle or create new
-            if (!this.shuffledCache[set.id]) {
-                this.shuffledCache[set.id] = allOptions.sort(() => Math.random() - 0.5);
+            if (allOptions.length > 0) {
+                this.updateGlobalKeywordBank({
+                    id: `cl-${set.id}`,
+                    dataset: {
+                        qid: set.id,
+                        keywords: JSON.stringify(allOptions),
+                        requiredCounts: JSON.stringify(dragTexts.reduce((acc, t) => { acc[t] = (acc[t] || 0) + 1; return acc; }, {}))
+                    }
+                });
             }
-            const shuffled = this.shuffledCache[set.id];
-
-            // Track how many times each word is used in current answers
-            const usedCounts = {};
-            Object.keys(this.userAnswers).forEach(key => {
-                if (key.startsWith(`${set.id}-`)) {
-                    const ans = this.userAnswers[key];
-                    usedCounts[ans] = (usedCounts[ans] || 0) + 1;
-                }
-            });
-
-            shuffled.forEach(word => {
-                const req = requiredCounts[word] || 0;
-                const used = usedCounts[word] || 0;
-                // If it's a dummy or required only once, the logic remains simple.
-                // If it's required multiple times, only hide if used >= required.
-                const isUsed = req > 0 ? (used >= req) : (used > 0);
-
-                const card = document.createElement('div');
-                card.className = `keyword-card ${isUsed ? 'used' : ''}`;
-
-                if (req > 1 && !isUsed) {
-                    card.innerHTML = `${word} <span class="keyword-count-badge">${req - used}</span>`;
-                } else {
-                    card.textContent = word;
-                }
-
-                card.draggable = !isUsed;
-
-                card.ondragstart = (e) => {
-                    if (isUsed) return;
-                    e.dataTransfer.setData('text/plain', word);
-                    card.classList.add('dragging');
-                };
-                card.ondragend = () => card.classList.remove('dragging');
-
-                bank.appendChild(card);
-            });
-            this.clauseDisplay.appendChild(bank);
         }
     }
 
@@ -1373,6 +1341,12 @@ class QuizApp {
 
     renderTable() {
         this._currentActiveRowId = null; // Force refresh bank on re-render
+        if (this.globalKeywordBank) {
+            this.globalKeywordBank.innerHTML = '';
+            this.globalKeywordBank.classList.add('hidden');
+            this.globalKeywordBank.classList.remove('active-bank');
+        }
+        this.shuffledCache = {}; // Aggressive clear to prevent stale options
         if (!this.currentSetId && !this.isAutoGenerated) return;
         const set = this.isAutoGenerated ? this.autoGeneratedSet : this.quizData.find(s => s.id === this.currentSetId);
 
@@ -2479,6 +2453,11 @@ class QuizApp {
     }
 
     activateFirstVisibleBank() {
+        if (this.isEditMode) {
+            if (this.globalKeywordBank) this.globalKeywordBank.classList.add('hidden');
+            return;
+        }
+
         const rows = Array.from(document.querySelectorAll('#quiz-table tr, .auto-gen-table tr'));
         const targets = rows.filter(r => r.dataset.keywords);
         if (targets.length === 0) {
@@ -2529,11 +2508,13 @@ class QuizApp {
     }
 
     updateGlobalKeywordBank(row) {
-        if (!this.globalKeywordBank || !row || !row.dataset.keywords) return;
+        if (!this.globalKeywordBank) return;
 
-        // Hide bank if we are in "isChecked" mode
-        if (this.isChecked) {
+        // Hide bank if we are in "isChecked" mode or Edit mode
+        if (this.isChecked || this.isEditMode || !row || !row.dataset.keywords) {
             this.globalKeywordBank.classList.add('hidden');
+            this.globalKeywordBank.classList.remove('active-bank');
+            this._currentActiveRowId = null;
             return;
         }
 
