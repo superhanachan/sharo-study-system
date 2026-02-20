@@ -685,6 +685,8 @@ input:checked+.slider:before {
     border-radius: 20px;
     border: 1px solid var(--glass-border);
     padding: 1.5rem;
+    padding-bottom: 30vh;
+    /* Add large bottom padding for keyword bank visibility */
     backdrop-filter: blur(10px);
     overflow-x: auto;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
@@ -768,6 +770,8 @@ table {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0 10px;
+    margin-bottom: 20vh;
+    /* Extra spacing so the last row can clear the keyword bank */
 }
 
 th {
@@ -1191,17 +1195,25 @@ td:last-child {
 @keyframes fadeIn {
     from {
         opacity: 0;
-        transform: translateY(10px);
     }
 
     to {
         opacity: 1;
-        transform: translateY(0);
     }
 }
 
 tr {
-    animation: fadeIn 0.5s ease forwards;
+    animation: fadeInRow 0.5s ease forwards;
+}
+
+@keyframes fadeInRow {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 /* Responsive */
@@ -1344,21 +1356,59 @@ tr {
     display: flex;
     flex-wrap: wrap;
     gap: 0.6rem;
-    padding: 1rem;
-    background: rgba(26, 28, 39, 0.95);
+    padding: 1.2rem;
+    background: #1a1c27;
+    /* Solid background */
     backdrop-filter: blur(15px);
     border-radius: 16px;
-    border: 1px solid var(--accent);
+    border: 2px solid var(--accent);
+    /* Thicker border */
     justify-content: center;
-    position: sticky;
-    bottom: 4.5rem;
-    /* Above sticky quiz-controls */
-    z-index: 500;
-    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.6);
-    margin-top: 2rem;
-    max-height: 35vh;
-    /* Don't take more than quarter of screen */
+    position: fixed;
+    bottom: 5rem;
+    left: calc(var(--sidebar-width) + 2rem);
+    right: 2rem;
+    z-index: 2000;
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.8);
+    max-height: 25vh;
     overflow-y: auto;
+    transition: all 0.3s ease;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(20px);
+}
+
+.keyword-bank.active-bank {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+
+.keyword-bank.hidden {
+    display: none !important;
+}
+
+/* For mobile/small screens when sidebar is hidden/toggleable */
+@media (max-width: 900px) {
+    .keyword-bank {
+        left: 1rem;
+        right: 1rem;
+    }
+}
+
+/* Special Training: If inside table-clause-wrapper, make it slightly different or ensure visibility */
+.table-clause-wrapper .keyword-bank {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Single page view fallback */
+#clause-display .keyword-bank {
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    position: relative;
+    /* Not sticky on single page usually */
+    margin-bottom: 2rem;
 }
 
 .quiz-controls {
