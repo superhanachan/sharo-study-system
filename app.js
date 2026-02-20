@@ -424,11 +424,16 @@ class QuizApp {
         const nextReview = stat.nextReview ? new Date(stat.nextReview) : null;
 
         const labels = history.map(h => new Date(h.date).toLocaleDateString());
-        const data = history.map(h => h.level);
+        let cumulativeCorrect = 0;
+        const data = history.map((h, index) => {
+            if (h.isCorrect) cumulativeCorrect++;
+            return Math.round((cumulativeCorrect / (index + 1)) * 100);
+        });
 
         if (nextReview) {
             labels.push(`${nextReview.toLocaleDateString()} (予定)`);
-            data.push(stat.srsLevel);
+            const currentAccuracy = stat.total > 0 ? Math.round((stat.correct / stat.total) * 100) : 0;
+            data.push(currentAccuracy);
         }
 
         const ctx = document.getElementById('srsDetailChart').getContext('2d');
@@ -439,7 +444,7 @@ class QuizApp {
             data: {
                 labels: labels,
                 datasets: [{
-                    label: '定着レベル',
+                    label: '正答率 (%)',
                     data: data,
                     borderColor: '#4cc9f0',
                     backgroundColor: 'rgba(76, 201, 240, 0.2)',
@@ -460,10 +465,14 @@ class QuizApp {
                     x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: 'rgba(255,255,255,0.6)' } },
                     y: {
                         beginAtZero: true,
-                        max: SRS_INTERVALS.length,
+                        max: 100,
                         grid: { color: 'rgba(255,255,255,0.05)' },
-                        ticks: { color: 'rgba(255,255,255,0.6)', stepSize: 1 },
-                        title: { display: true, text: '習熟度レベル', color: 'rgba(255,255,255,0.8)' }
+                        ticks: {
+                            color: 'rgba(255,255,255,0.6)',
+                            stepSize: 20,
+                            callback: (value) => value + '%'
+                        },
+                        title: { display: true, text: '正答率 (%)', color: 'rgba(255,255,255,0.8)' }
                     }
                 },
                 plugins: {
@@ -473,9 +482,9 @@ class QuizApp {
                             label: (context) => {
                                 const idx = context.dataIndex;
                                 if (idx < history.length) {
-                                    return `レベル: ${context.raw} (${history[idx].isCorrect ? '正解' : '不正解'})`;
+                                    return `正答率: ${context.raw}% (${history[idx].isCorrect ? '正解' : '不正解'})`;
                                 }
-                                return `次回予定レベル: ${context.raw}`;
+                                return `現在の正答率: ${context.raw}% (予定)`;
                             }
                         }
                     }
@@ -1234,7 +1243,8 @@ class QuizApp {
                 return;
             }
             // Shuffle and limit
-            filtered = filtered.sort(() => Math.random() - 0.5).slice(0, 15);
+            const limit = mode === 'clause' ? 3 : 15;
+            filtered = filtered.sort(() => Math.random() - 0.5).slice(0, limit);
         } else if (type === 'random') {
             title = "特訓：全問題からランダム10問";
             filtered = allQuestions.sort(() => Math.random() - 0.5).slice(0, 10);
