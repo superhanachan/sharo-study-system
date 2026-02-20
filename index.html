@@ -19,8 +19,12 @@
         <!-- Sidebar for Auto-TOC -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <h1>暗記システム</h1>
+                <div class="header-top">
+                    <h1>暗記システム</h1>
+                    <button id="home-btn" class="home-btn" title="ホーム画面へ">🏠</button>
+                </div>
             </div>
+
 
             <nav class="sidebar-tabs">
                 <button id="tab-quiz" class="tab-btn active">学習</button>
@@ -79,7 +83,94 @@
                     </div>
                 </header>
 
-                <section class="quiz-section" style="margin-top: 2rem;">
+                <!-- Central Home Dashboard -->
+                <div id="home-dashboard" class="home-dashboard">
+                    <div class="welcome-banner">
+                        <h2 class="welcome-title">富士山登頂プロジェクト</h2>
+                        <p class="welcome-subtitle">毎日の継続が合格への最短ルートです</p>
+                    </div>
+
+                    <div class="main-mountain-display">
+                        <div class="mountain-graphic">
+                            <svg viewBox="0 0 200 120" class="fuji-svg large-fuji">
+                                <defs>
+                                    <linearGradient id="skyGradientLarge" x1="0%" y1="0%" x2="0%" y2="100%">
+                                        <stop offset="0%" style="stop-color:#1e293b;stop-opacity:1" />
+                                        <stop offset="100%" style="stop-color:#334155;stop-opacity:1" />
+                                    </linearGradient>
+                                </defs>
+                                <rect width="200" height="120" fill="url(#skyGradientLarge)" rx="10" />
+                                <path d="M20 110 L100 20 L180 110 Z" fill="#1e3a8a" stroke="#1d4ed8" stroke-width="2" />
+                                <path d="M82 40 L100 20 L118 40 C110 35 105 45 100 40 C95 45 90 35 82 40 Z"
+                                    fill="white" />
+                                <line x1="60" y1="65" x2="140" y2="65" stroke="rgba(255,255,255,0.2)"
+                                    stroke-dasharray="2,2" />
+                                <text x="142" y="67" class="mountain-marker">5合目</text>
+                                <line x1="85" y1="36" x2="115" y2="36" stroke="rgba(255,255,255,0.2)"
+                                    stroke-dasharray="2,2" />
+                                <text x="117" y="38" class="mountain-marker">8合目</text>
+                                <circle cx="100" cy="20" r="2" fill="#ef4444" />
+                                <text x="105" y="25" fill="white" font-size="6">3776m</text>
+                                <g id="hiker-marker" style="--hiker-x: 20px; --hiker-y: 110px;"
+                                    transform="translate(20, 110)">
+                                    <circle r="4" fill="#fbbf24" stroke="white" stroke-width="1" />
+                                    <text x="6" y="3" fill="#fbbf24" font-size="8" font-weight="bold">📍</text>
+                                </g>
+                            </svg>
+                        </div>
+
+                        <div class="main-stats-grid">
+                            <div class="main-stat-card">
+                                <span class="card-label">現在の標高</span>
+                                <span id="climb-height" class="card-value">0 m</span>
+                            </div>
+                            <div class="main-stat-card ripple-card" id="due-card">
+                                <span class="card-label">本日の復習待ち</span>
+                                <span id="srs-due-count" class="card-value">0</span>
+                                <div class="card-actions">
+                                    <button id="start-clause-review-btn" class="mini-btn srs-clause hidden">条文復習
+                                        (3題)</button>
+                                    <button id="start-page-review-btn" class="mini-btn srs-page hidden">選択式復習
+                                        (10題)</button>
+                                </div>
+                            </div>
+                            <div class="main-stat-card">
+                                <span class="card-label">全問題暗記率</span>
+                                <span id="mastery-percent" class="card-value">0%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="due-questions-container" class="due-questions-container hidden">
+                        <h3>復習待ちの問題リスト</h3>
+                        <div class="due-table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ジャンル</th>
+                                        <th>問題内容</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="due-questions-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="main-daily-row">
+                        <div class="daily-header">
+                            <span class="daily-label">今日の歩み</span>
+                            <span id="daily-count" class="daily-value">0 / 50</span>
+                        </div>
+                        <div class="daily-bar-container large-bar">
+                            <div id="daily-bar-fill" class="daily-bar-fill"></div>
+                        </div>
+                        <p class="daily-tip">※サイドバーから学習したい項目を選択するとスタートします。</p>
+                    </div>
+                </div>
+
+                <!-- Quiz Area -->
+                <div id="quiz-area" class="quiz-section hidden" style="margin-top: 2rem;">
                     <div id="clause-display"></div>
 
                     <div class="column-controls">
@@ -112,6 +203,8 @@
                         </div>
                     </div>
 
+                    <div id="quiz-content"></div>
+
                     <div class="quiz-controls">
                         <button id="check-answers-btn" class="primary-btn">一括答え合わせ</button>
                         <button id="reset-wrong-btn" class="secondary-btn">間違えた問題だけ解き直す</button>
@@ -122,7 +215,7 @@
                         <button id="add-row-btn" class="secondary-btn">+ 行を追加</button>
                         <button id="clear-data-btn" class="danger-btn">データをリセット</button>
                     </div>
-                </section>
+                </div>
             </div>
 
             <!-- Stats View -->

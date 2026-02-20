@@ -62,6 +62,313 @@ h2,
     display: block;
 }
 
+/* Dashboard Section */
+.sidebar-dashboard {
+    padding: 1rem;
+    margin: 0.5rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    border: 1px solid var(--glass-border);
+}
+
+.mountain-container {
+    position: relative;
+    width: 100%;
+    margin-bottom: 1rem;
+}
+
+.fuji-svg {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    display: block;
+}
+
+#hiker-marker {
+    transition: transform 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transform: translate(var(--hiker-x, 20px), var(--hiker-y, 110px));
+}
+
+#hiker-marker.walking {
+    animation: hikerBounce 0.5s infinite alternate ease-in-out;
+}
+
+@keyframes hikerBounce {
+    from {
+        transform: translate(var(--hiker-x), var(--hiker-y)) scale(1);
+    }
+
+    to {
+        transform: translate(var(--hiker-x), calc(var(--hiker-y) - 3px)) scale(1.1);
+    }
+}
+
+/* Main Home Dashboard */
+.home-dashboard {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    border-radius: 24px;
+    text-align: center;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+}
+
+.welcome-banner {
+    margin-bottom: 3rem;
+}
+
+.welcome-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 2.5rem;
+    background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0.5rem;
+}
+
+.welcome-subtitle {
+    color: var(--accent);
+    font-size: 1.1rem;
+    opacity: 0.8;
+}
+
+.main-mountain-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.large-fuji {
+    width: 600px;
+    height: auto;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.main-stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1.5rem;
+    width: 100%;
+    max-width: 800px;
+}
+
+.main-stat-card.due-active {
+    box-shadow: 0 0 20px rgba(247, 37, 133, 0.3);
+    border-color: rgba(247, 37, 133, 0.5);
+}
+
+.main-stat-card.due-active .card-value {
+    color: #f72585;
+}
+
+.ripple-card {
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.ripple-card:hover {
+    transform: translateY(-5px);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.card-actions {
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.mini-btn {
+    border: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 100%;
+}
+
+.mini-btn.srs-clause {
+    background: rgba(76, 201, 240, 0.2);
+    color: #4cc9f0;
+    border: 1px solid rgba(76, 201, 240, 0.3);
+}
+
+.mini-btn.srs-page {
+    background: rgba(114, 9, 183, 0.2);
+    color: #b5179e;
+    border: 1px solid rgba(114, 9, 183, 0.3);
+}
+
+.mini-btn:hover {
+    filter: brightness(1.2);
+    transform: scale(1.02);
+}
+
+.due-questions-container {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 16px;
+    border: 1px solid var(--glass-border);
+    text-align: left;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.due-questions-container h3 {
+    margin-bottom: 1rem;
+    font-size: 1rem;
+    color: var(--accent);
+}
+
+.due-table-wrapper {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.due-table-wrapper table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+.due-table-wrapper th {
+    text-align: left;
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--glass-border);
+    position: sticky;
+    top: 0;
+    background: #1e293b;
+}
+
+.due-table-wrapper td {
+    padding: 0.75rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.due-table-wrapper tr:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.main-stat-card {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 1.5rem;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.card-label {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+}
+
+.card-value {
+    font-family: 'Outfit', sans-serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: white;
+}
+
+.main-daily-row {
+    background: rgba(255, 255, 255, 0.03);
+    padding: 2rem;
+    border-radius: 20px;
+    text-align: left;
+}
+
+.large-bar {
+    height: 16px;
+    margin: 1.5rem 0;
+}
+
+.daily-tip {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    text-align: center;
+    margin-top: 1rem;
+    font-style: italic;
+}
+
+/* Mountain Progress Specifics */
+.mountain-marker {
+    font-size: 5px;
+    fill: rgba(255, 255, 255, 0.4);
+}
+
+.climb-stats {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.stat-value {
+    color: var(--accent);
+    font-weight: bold;
+}
+
+.daily-progress-section {
+    padding-top: 0.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.daily-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.4rem;
+    font-size: 0.8rem;
+}
+
+.daily-label {
+    color: var(--text-secondary);
+}
+
+.daily-value {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.daily-bar-container {
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.daily-bar-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #4cc9f0, #4361ee);
+    border-radius: 3px;
+    transition: width 0.6s ease-out;
+    box-shadow: 0 0 10px rgba(67, 97, 238, 0.4);
+}
+
 /* Sidebar */
 .sidebar {
     width: 320px;
@@ -72,6 +379,33 @@ h2,
     transition: var(--transition);
     z-index: 1000;
     flex-shrink: 0;
+}
+
+.sidebar-header {
+    margin-bottom: 2rem;
+}
+
+.header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.home-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--glass-border);
+    color: white;
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 0.4rem;
+    border-radius: 8px;
+    transition: all 0.2s;
+    line-height: 1;
+}
+
+.home-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
 }
 
 #quiz-sidebar-content::-webkit-scrollbar {
@@ -1798,4 +2132,26 @@ tr {
 .clause-input-blank:disabled {
     opacity: 1;
     cursor: default;
+}
+
+.page-tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    color: var(--text-dim);
+    margin-bottom: 0.4rem;
+    margin-right: 0.5rem;
+}
+
+.source-label {
+    opacity: 0.6;
+    margin-right: 0.3rem;
+}
+
+.choice-cell.filled {
+    color: var(--accent);
+    font-weight: 600;
 }
