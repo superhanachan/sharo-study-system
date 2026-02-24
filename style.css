@@ -1827,10 +1827,19 @@ tr {
     cursor: grabbing;
 }
 
+.keyword-card.selected {
+    background: var(--accent) !important;
+    color: var(--bg-dark) !important;
+    border-color: #fff !important;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(76, 201, 240, 0.4);
+}
+
 .keyword-card.used {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.1);
-    color: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.05) !important;
+    color: var(--text-secondary) !important;
+    opacity: 0.5;
+    cursor: default;
     pointer-events: none;
     border-style: dashed;
 }
