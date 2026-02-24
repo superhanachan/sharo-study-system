@@ -218,6 +218,7 @@ class QuizApp {
         this.dueListContainer = document.getElementById('due-questions-container');
         this.dueListBody = document.getElementById('due-questions-body');
         this.dueCard = document.getElementById('due-card');
+        this.startClauseOneReviewBtn = document.getElementById('start-clause-one-review-btn');
         this.startClauseReviewBtn = document.getElementById('start-clause-review-btn');
         this.startPageReviewBtn = document.getElementById('start-page-review-btn');
 
@@ -368,6 +369,9 @@ class QuizApp {
             this.dueCard.addEventListener('click', (e) => {
                 if (e.target.tagName !== 'BUTTON') this.toggleDueList();
             });
+        }
+        if (this.startClauseOneReviewBtn) {
+            this.startClauseOneReviewBtn.addEventListener('click', () => this.generateDueReview('clause', 1));
         }
         if (this.startClauseReviewBtn) {
             this.startClauseReviewBtn.addEventListener('click', () => this.generateDueReview('clause', 3));
@@ -1030,14 +1034,17 @@ class QuizApp {
         this.columnControls.classList.add('hidden');
         this.tableControls.classList.add('hidden');
 
-        this.clauseDisplay.innerHTML = '';
+        if (this.clauseDisplay) {
+            this.clauseDisplay.innerHTML = '';
+            this.clauseDisplay.classList.remove('hidden');
+        }
 
         if (this.isEditMode) {
-            // Only set value if not focused to avoid cursor jumping and blocking delimiters like commas
-            if (document.activeElement !== this.clauseTextEditor) {
+            // Only set value if not focused to avoid cursor jumping
+            if (this.clauseTextEditor && document.activeElement !== this.clauseTextEditor) {
                 this.clauseTextEditor.value = set.text || '';
             }
-            if (document.activeElement !== this.clauseDummiesEditor) {
+            if (this.clauseDummiesEditor && document.activeElement !== this.clauseDummiesEditor) {
                 this.clauseDummiesEditor.value = (set.dummies || []).join(', ');
             }
 
@@ -1047,7 +1054,6 @@ class QuizApp {
                 this.renderClauseView(set);
             };
             this.clauseDummiesEditor.oninput = () => {
-                // We split by both full-width and half-width commas
                 set.dummies = this.clauseDummiesEditor.value.split(/[，,]/).map(s => s.trim()).filter(s => s);
                 this.saveData();
                 this.renderClauseView(set);
@@ -1061,10 +1067,11 @@ class QuizApp {
         clauseText.className = 'clause-text';
 
         // Render clause content (with table support)
-        let htmlContent = set.text;
-        const lines = set.text.split('\n');
+        const rawText = set.text || '(条文が入力されていません)';
+        const lines = rawText.split('\n');
         const hasTable = lines.some(l => l.trim().startsWith('|'));
 
+        let htmlContent = '';
         if (hasTable) {
             let processedHtml = '';
             let tableLines = [];
@@ -1085,25 +1092,24 @@ class QuizApp {
             }
             htmlContent = processedHtml;
         } else {
-            htmlContent = set.text.replace(/\n/g, '<br>');
+            htmlContent = rawText.replace(/\n/g, '<br>');
         }
         const keywords = [];
         let blankIndex = 0;
 
-        // Use placeholder strategy for blanks to work inside any HTML (like tables)
-        // Combine [[...]], ［［...］］ (drag) and ((...)), （（...）） (input) support
+        // Use placeholder strategy for blanks
         const finalHtml = htmlContent.replace(/\[\[(.*?)\]\]|［［(.*?)］］|\(\((.*?)\)\)|（（(.*?)））/g, (match, p1, p2, p3, p4) => {
             const keyword = p1 || p2 || p3 || p4;
             const type = (p1 || p2) ? 'drag' : 'input';
             keywords.push({ text: keyword, type: type });
-            return `<span id="placeholder-${blankIndex++}"></span>`;
+            return `<span id="placeholder-${set.id.replace(/[^a-zA-Z0-9]/g, '-')}-${blankIndex++}"></span>`;
         });
 
         clauseText.innerHTML = finalHtml;
 
         // Replace placeholders with real interactive blanks
         for (let i = 0; i < blankIndex; i++) {
-            const placeholder = clauseText.querySelector(`#placeholder-${i}`);
+            const placeholder = clauseText.querySelector(`#placeholder-${set.id.replace(/[^a-zA-Z0-9]/g, '-')}-${i}`);
             if (!placeholder) continue;
 
             const kwInfo = keywords[i];
@@ -1294,6 +1300,7 @@ class QuizApp {
         const hasClauses = dueItems.some(i => i.type === 'clause');
         const hasPages = dueItems.some(i => i.type === 'page');
 
+        if (this.startClauseOneReviewBtn) this.startClauseOneReviewBtn.classList.toggle('hidden', !hasClauses);
         if (this.startClauseReviewBtn) this.startClauseReviewBtn.classList.toggle('hidden', !hasClauses);
         if (this.startPageReviewBtn) this.startPageReviewBtn.classList.toggle('hidden', !hasPages);
     }
@@ -1303,8 +1310,11 @@ class QuizApp {
         const due = [];
         // Helper to find question in quizData
         const findQuestion = (qId) => {
+            const isClauseSummary = qId.startsWith('clause-summary-');
+            const searchId = isClauseSummary ? qId.replace('clause-summary-', '') : qId;
+
             for (const set of this.quizData) {
-                if (set.type === 'clause' && set.id === qId) return { set, q: set };
+                if (set.type === 'clause' && set.id === searchId) return { set, q: set };
                 if (set.questions) {
                     const q = set.questions.find(item => item.id === qId);
                     if (q) return { set, q };
@@ -1370,7 +1380,8 @@ class QuizApp {
             // For now, simplicity: pick the first of the random selection.
             const set = selected[0].fullSet;
             this.autoGeneratedSet = JSON.parse(JSON.stringify(set));
-            this.autoGeneratedSet.title = `【復習】条文穴埋め (${selected.length}題中 1題表示)`;
+            this.autoGeneratedSet.type = 'clause'; // Explicitly enforce type
+            this.autoGeneratedSet.title = `【復習】穴埋め式問題 (${selected.length}題)`;
         } else {
             this.autoGeneratedSet = {
                 id: "auto-due-review",
@@ -1613,15 +1624,21 @@ class QuizApp {
             return;
         }
 
-        if (set.type === 'clause' && !this.isAutoGenerated) {
+        const isClause = set.type === 'clause';
+        if (this.clauseDisplay) {
+            this.clauseDisplay.classList.toggle('hidden', !isClause);
+            if (!isClause) this.clauseDisplay.innerHTML = '';
+        }
+        if (this.clauseEditor) {
+            this.clauseEditor.classList.toggle('hidden', !isClause);
+            this.clauseEditor.classList.toggle('hidden-quiz', !isClause || !this.isEditMode);
+        }
+        this.tableWrapper.classList.toggle('hidden', isClause);
+
+        if (isClause) {
             this.renderClauseView(set);
             return;
         } else {
-            this.clauseEditor.classList.add('hidden');
-            this.clauseEditor.classList.add('hidden-quiz');
-            this.clauseDisplay.classList.add('hidden');
-            this.clauseDisplay.innerHTML = '';
-            this.tableWrapper.classList.remove('hidden');
             if (this.columnControls) this.columnControls.classList.toggle('hidden', !this.isEditMode);
             if (this.tableControls) this.tableControls.classList.toggle('hidden', !this.isEditMode);
         }
