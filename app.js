@@ -340,11 +340,13 @@ class QuizApp {
         if (this.sidebarGenSRSPageBtn) this.sidebarGenSRSPageBtn.addEventListener('click', () => this.generateSpecialQuiz('srs-page'));
 
         Object.keys(this.chartBtns).forEach(mode => {
-            this.chartBtns[mode].addEventListener('click', () => {
-                this.chartMode = mode;
-                this.updateChartTabs();
-                this.renderChart();
-            });
+            if (this.chartBtns[mode]) {
+                this.chartBtns[mode].addEventListener('click', () => {
+                    this.chartMode = mode;
+                    this.updateChartTabs();
+                    this.renderChart();
+                });
+            }
         });
         this.tocList.addEventListener('click', (e) => {
             if (e.target.tagName === 'A') {
@@ -404,21 +406,25 @@ class QuizApp {
         }
 
         // Data management events
-        this.exportJsonBtn.addEventListener('click', () => this.exportToJSON());
-        this.importJsonBtn.addEventListener('click', () => { this.dataImportInput.accept = '.json'; this.dataImportInput.click(); });
-        if (this.sidebarExportBtn) {
-            this.sidebarExportBtn.addEventListener('click', () => this.exportToJSON());
+        if (this.exportJsonBtn) this.exportJsonBtn.addEventListener('click', () => this.exportToJSON());
+        if (this.importJsonBtn && this.dataImportInput) {
+            this.importJsonBtn.addEventListener('click', () => { this.dataImportInput.accept = '.json'; this.dataImportInput.click(); });
         }
-        if (this.sidebarImportBtn) {
+        if (this.sidebarExportBtn) this.sidebarExportBtn.addEventListener('click', () => this.exportToJSON());
+        if (this.sidebarImportBtn && this.dataImportInput) {
             this.sidebarImportBtn.addEventListener('click', () => { this.dataImportInput.accept = '.json'; this.dataImportInput.click(); });
         }
-        this.exportCsvBtn.addEventListener('click', () => this.exportToCSV());
-        this.importCsvBtn.addEventListener('click', () => { this.dataImportInput.accept = '.csv'; this.dataImportInput.click(); });
-        this.dataImportInput.addEventListener('change', (e) => this.handleFileImport(e));
+        if (this.exportCsvBtn) this.exportCsvBtn.addEventListener('click', () => this.exportToCSV());
+        if (this.importCsvBtn && this.dataImportInput) {
+            this.importCsvBtn.addEventListener('click', () => { this.dataImportInput.accept = '.csv'; this.dataImportInput.click(); });
+        }
+        if (this.dataImportInput) {
+            this.dataImportInput.addEventListener('change', (e) => this.handleFileImport(e));
+        }
 
         // GitHub Sync events
-        this.ghSaveConfigBtn.addEventListener('click', () => this.saveGitHubConfig());
-        this.ghSyncNowBtn.addEventListener('click', () => this.syncWithGitHub());
+        if (this.ghSaveConfigBtn) this.ghSaveConfigBtn.addEventListener('click', () => this.saveGitHubConfig());
+        if (this.ghSyncNowBtn) this.ghSyncNowBtn.addEventListener('click', () => this.syncWithGitHub());
 
         // Recovery button for internal backup
         const forceRestoreBtn = document.getElementById('force-restore-internal-btn');
