@@ -317,7 +317,7 @@
                 </div>
 
                 <div class="auto-gen-section history-section" style="margin-top: 3rem;">
-                    <h3>データのバックアップと復元</h3>
+                    <h3>データのバックアップと復元（ローカル）</h3>
                     <div id="backup-reminder" class="alert-banner" style="display: none; margin-bottom: 1.5rem;"></div>
                     <div class="data-mgmt-status" id="data-status-msg"
                         style="margin-bottom: 1rem; font-size: 0.9rem; color: var(--text-secondary);">
@@ -334,6 +334,41 @@
                             style="margin-left: auto; font-size: 0.75rem; padding: 0.4rem 0.8rem;">内部バックアップから強制復元</button>
                     </div>
                     <input type="file" id="data-import-input" hidden accept=".json,.csv">
+                </div>
+
+                <div class="auto-gen-section history-section github-sync-section" style="margin-top: 3rem;">
+                    <h3>GitHub クラウド同期</h3>
+                    <div class="data-mgmt-status"
+                        style="margin-bottom: 1.5rem; font-size: 0.9rem; color: var(--text-secondary);">
+                        ※学習データを GitHub リポジトリに保存し、複数のブラウザ間で同期できます。
+                    </div>
+
+                    <div class="github-connect-status" id="github-sync-status">
+                        未連携
+                    </div>
+
+                    <div class="github-settings-form">
+                        <div class="form-group">
+                            <label>GitHub 個人アクセストークン (classic):</label>
+                            <input type="password" id="gh-token" placeholder="ghp_xxxxxxxxxxxx">
+                            <small>※「repo」スコアが必要です。<a href="https://github.com/settings/tokens"
+                                    target="_blank">トークン発行はこちら</a></small>
+                        </div>
+                        <div class="form-group">
+                            <label>リポジトリ名 (owner/repo):</label>
+                            <input type="text" id="gh-repo" placeholder="superhanachan/sharo-study-system">
+                        </div>
+                        <div class="form-group">
+                            <label>保存ファイルパス:</label>
+                            <input type="text" id="gh-path" value="data/sharo_study_sync.json">
+                        </div>
+                    </div>
+
+                    <div class="github-sync-actions">
+                        <button id="gh-save-config-btn" class="secondary-btn">設定を保存</button>
+                        <button id="gh-sync-now-btn" class="primary-btn"
+                            style="background: var(--accent); color: var(--bg-dark);">今すぐ同期（アップロード＆ダウンロード）</button>
+                    </div>
                 </div>
 
                 <div class="history-section" style="margin-top: 3rem;">

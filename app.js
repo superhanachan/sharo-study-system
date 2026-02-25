@@ -285,6 +285,14 @@ class QuizApp {
         this.insertTableBtn = document.getElementById('insert-table-btn');
         this.clearPoolBtn = document.getElementById('clear-pool-btn');
         this.globalKeywordBank = document.getElementById('global-keyword-bank');
+
+        // GitHub Sync UI
+        this.ghTokenInput = document.getElementById('gh-token');
+        this.ghRepoInput = document.getElementById('gh-repo');
+        this.ghPathInput = document.getElementById('gh-path');
+        this.ghSyncStatus = document.getElementById('github-sync-status');
+        this.ghSaveConfigBtn = document.getElementById('gh-save-config-btn');
+        this.ghSyncNowBtn = document.getElementById('gh-sync-now-btn');
     }
 
     bindEvents() {
@@ -408,6 +416,10 @@ class QuizApp {
         this.importCsvBtn.addEventListener('click', () => { this.dataImportInput.accept = '.csv'; this.dataImportInput.click(); });
         this.dataImportInput.addEventListener('change', (e) => this.handleFileImport(e));
 
+        // GitHub Sync events
+        this.ghSaveConfigBtn.addEventListener('click', () => this.saveGitHubConfig());
+        this.ghSyncNowBtn.addEventListener('click', () => this.syncWithGitHub());
+
         // Recovery button for internal backup
         const forceRestoreBtn = document.getElementById('force-restore-internal-btn');
         if (forceRestoreBtn) {
@@ -426,6 +438,7 @@ class QuizApp {
         this.checkAndOfferRecovery();
         this.checkBackupFrequency();
         this.updateDashboard();
+        this.loadGitHubConfig();
     }
 
     loadData() { const saved = localStorage.getItem('sharoQuizData'); return saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(DEFAULT_QUIZ_DATA)); }
@@ -2994,8 +3007,160 @@ class QuizApp {
             card.ondragend = () => card.classList.remove('dragging');
             this.globalKeywordBank.appendChild(card);
         });
+        // --- GitHub Sync Methods ---
+
+        loadGitHubConfig() {
+            const config = JSON.parse(localStorage.getItem('sharoGitHubConfig') || '{}');
+            if (this.ghTokenInput) this.ghTokenInput.value = config.token || '';
+            if (this.ghRepoInput) this.ghRepoInput.value = config.repo || '';
+            if (this.ghPathInput) this.ghPathInput.value = config.path || 'data/sharo_study_sync.json';
+            this.updateGitHubStatus();
+        }
+
+        saveGitHubConfig() {
+            const config = {
+                token: this.ghTokenInput.value.trim(),
+                repo: this.ghRepoInput.value.trim(),
+                path: this.ghPathInput.value.trim()
+            };
+            localStorage.setItem('sharoGitHubConfig', JSON.stringify(config));
+            alert('GitHubの設定を保存しました。');
+            this.updateGitHubStatus();
+        }
+
+        updateGitHubStatus(msg = null) {
+            if (!this.ghSyncStatus) return;
+            const config = JSON.parse(localStorage.getItem('sharoGitHubConfig') || '{}');
+            if (!config.token || !config.repo) {
+                this.ghSyncStatus.textContent = '未連携';
+                this.ghSyncStatus.className = 'github-connect-status';
+                return;
+            }
+            this.ghSyncStatus.textContent = msg || '連携済み（同期ボタンを押してください）';
+            this.ghSyncStatus.className = 'github-connect-status synced';
+        }
+
+    async syncWithGitHub() {
+            const config = JSON.parse(localStorage.getItem('sharoGitHubConfig') || '{}');
+            if (!config.token || !config.repo) {
+                alert('GitHubの設定（トークンとリポジトリ）を先に保存してください。');
+                return;
+            }
+
+            this.ghSyncNowBtn.disabled = true;
+            this.ghSyncNowBtn.textContent = '同期中...';
+            this.updateGitHubStatus('同期中...');
+
+            try {
+                // 1. Fetch remote data
+                const remote = await this.fetchFromGitHub(config);
+                let localData = {
+                    quizData: this.quizData,
+                    questionStats: this.questionStats,
+                    history: this.history,
+                    lastModified: parseInt(localStorage.getItem('sharoLastModified') || '0')
+                };
+
+                if (remote) {
+                    // 2. Conflict handling: simple timestamp check
+                    if (remote.lastModified > localData.lastModified) {
+                        if (confirm(`GitHub上に新しいデータが見つかりました（${new Date(remote.lastModified).toLocaleString()}）。上書きしますか？`)) {
+                            this.quizData = remote.quizData;
+                            this.questionStats = remote.questionStats;
+                            this.history = remote.history;
+                            this.saveData();
+                            this.saveQuestionStats();
+                            this.saveHistory();
+                            localStorage.setItem('sharoLastModified', remote.lastModified);
+                            alert('リモートのデータを読み込みました。');
+                            location.reload(); // Reload to refresh everything
+                            return;
+                        }
+                    }
+                }
+
+                // 3. Push local data (if remote is older or user chose to push)
+                localData.lastModified = Date.now();
+                await this.pushToGitHub(config, localData);
+                localStorage.setItem('sharoLastModified', localData.lastModified);
+
+                this.updateGitHubStatus(`同期完了 (${new Date().toLocaleTimeString()})`);
+                alert('GitHubへの同期が完了しました。');
+            } catch (error) {
+                console.error('GitHub Sync Error:', error);
+                alert('同期に失敗しました: ' + error.message);
+                this.updateGitHubStatus('同期失敗');
+            } finally {
+                this.ghSyncNowBtn.disabled = false;
+                this.ghSyncNowBtn.textContent = '今すぐ同期（アップロード＆ダウンロード）';
+            }
+        }
+
+    async fetchFromGitHub(config) {
+            const url = `https://api.github.com/repos/${config.repo}/contents/${config.path}`;
+            const response = await fetch(url, {
+                headers: { 'Authorization': `token ${config.token}` }
+            });
+
+            if (response.status === 404) return null; // File doesn't exist yet
+            if (!response.ok) throw new Error(`Fetch failed: ${response.status}`);
+
+            const data = await response.json();
+            const content = this.utf8_to_b64_decode(data.content);
+            this._ghFileSha = data.sha; // Store SHA for update
+            return JSON.parse(content);
+        }
+
+    async pushToGitHub(config, data) {
+            const url = `https://api.github.com/repos/${config.repo}/contents/${config.path}`;
+            const content = this.utf8_to_b64_encode(JSON.stringify(data, null, 2));
+
+            // Need current SHA to update existing file
+            if (!this._ghFileSha) {
+                const check = await fetch(url, {
+                    headers: { 'Authorization': `token ${config.token}` }
+                });
+                if (check.ok) {
+                    const checkData = await check.json();
+                    this._ghFileSha = checkData.sha;
+                }
+            }
+
+            const body = {
+                message: 'Sync sharo study data',
+                content: content,
+                sha: this._ghFileSha
+            };
+
+            const response = await fetch(url, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `token ${config.token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(body)
+            });
+
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.message || 'Push failed');
+            }
+
+            const resData = await response.json();
+            this._ghFileSha = resData.content.sha;
+        }
+
+        // Helper for Unicode-safe Base64
+        utf8_to_b64_encode(str) {
+            return btoa(unescape(encodeURIComponent(str)));
+        }
+
+        utf8_to_b64_decode(str) {
+            // GitHub API base64 can contain newlines
+            const cleanStr = str.replace(/\n/g, '');
+            return decodeURIComponent(escape(atob(cleanStr)));
+        }
     }
-}
 let app;
 document.addEventListener('DOMContentLoaded', () => {
     app = new QuizApp();
