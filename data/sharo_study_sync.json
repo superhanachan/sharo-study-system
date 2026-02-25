@@ -912,7 +912,7 @@
       "title": "遺族の範囲",
       "type": "folder",
       "parentId": "f-1770883911973",
-      "isCollapsed": true,
+      "isCollapsed": false,
       "isInPool": false
     },
     {
@@ -4444,8 +4444,8 @@
       ]
     },
     "q-surv-1": {
-      "correct": 5,
-      "total": 5,
+      "correct": 6,
+      "total": 6,
       "page": "厚生年金保険法　遺族厚生年金　遺族範囲",
       "text": "第1順位",
       "recent": [
@@ -4455,8 +4455,8 @@
         1,
         1
       ],
-      "srsLevel": 3,
-      "nextReview": "2026-02-27T15:00:00.000Z",
+      "srsLevel": 4,
+      "nextReview": "2026-03-03T15:00:00.000Z",
       "history": [
         {
           "date": "2026-02-20T06:35:03.797Z",
@@ -4472,12 +4472,17 @@
           "date": "2026-02-24T00:43:59.618Z",
           "isCorrect": true,
           "level": 2
+        },
+        {
+          "date": "2026-02-25T01:08:33.803Z",
+          "isCorrect": true,
+          "level": 3
         }
       ]
     },
     "q-surv-2": {
-      "correct": 5,
-      "total": 5,
+      "correct": 6,
+      "total": 6,
       "page": "厚生年金保険法　遺族厚生年金　遺族範囲",
       "text": "第2順位",
       "recent": [
@@ -4487,8 +4492,8 @@
         1,
         1
       ],
-      "srsLevel": 3,
-      "nextReview": "2026-02-27T15:00:00.000Z",
+      "srsLevel": 4,
+      "nextReview": "2026-03-03T15:00:00.000Z",
       "history": [
         {
           "date": "2026-02-20T06:35:03.797Z",
@@ -4504,12 +4509,17 @@
           "date": "2026-02-24T00:43:59.618Z",
           "isCorrect": true,
           "level": 2
+        },
+        {
+          "date": "2026-02-25T01:08:33.803Z",
+          "isCorrect": true,
+          "level": 3
         }
       ]
     },
     "q-surv-3": {
-      "correct": 5,
-      "total": 5,
+      "correct": 6,
+      "total": 6,
       "page": "厚生年金保険法　遺族厚生年金　遺族範囲",
       "text": "第3順位",
       "recent": [
@@ -4519,8 +4529,8 @@
         1,
         1
       ],
-      "srsLevel": 3,
-      "nextReview": "2026-02-27T15:00:00.000Z",
+      "srsLevel": 4,
+      "nextReview": "2026-03-03T15:00:00.000Z",
       "history": [
         {
           "date": "2026-02-20T06:35:03.797Z",
@@ -4536,12 +4546,17 @@
           "date": "2026-02-24T00:43:59.618Z",
           "isCorrect": true,
           "level": 2
+        },
+        {
+          "date": "2026-02-25T01:08:33.803Z",
+          "isCorrect": true,
+          "level": 3
         }
       ]
     },
     "q-surv-4": {
-      "correct": 5,
-      "total": 5,
+      "correct": 6,
+      "total": 6,
       "page": "厚生年金保険法　遺族厚生年金　遺族範囲",
       "text": "第4順位",
       "recent": [
@@ -4551,8 +4566,8 @@
         1,
         1
       ],
-      "srsLevel": 3,
-      "nextReview": "2026-02-27T15:00:00.000Z",
+      "srsLevel": 4,
+      "nextReview": "2026-03-03T15:00:00.000Z",
       "history": [
         {
           "date": "2026-02-20T06:35:03.797Z",
@@ -4568,23 +4583,28 @@
           "date": "2026-02-24T00:43:59.618Z",
           "isCorrect": true,
           "level": 2
+        },
+        {
+          "date": "2026-02-25T01:08:33.803Z",
+          "isCorrect": true,
+          "level": 3
         }
       ]
     },
     "q-surv-5": {
-      "correct": 4,
-      "total": 5,
+      "correct": 5,
+      "total": 6,
       "page": "厚生年金保険法　遺族厚生年金　遺族範囲",
       "text": "第5順位",
       "recent": [
         1,
-        1,
         0,
+        1,
         1,
         1
       ],
-      "srsLevel": 2,
-      "nextReview": "2026-02-25T15:00:00.000Z",
+      "srsLevel": 3,
+      "nextReview": "2026-02-28T15:00:00.000Z",
       "history": [
         {
           "date": "2026-02-20T06:35:03.797Z",
@@ -4600,12 +4620,17 @@
           "date": "2026-02-24T00:43:59.618Z",
           "isCorrect": true,
           "level": 1
+        },
+        {
+          "date": "2026-02-25T01:08:33.803Z",
+          "isCorrect": true,
+          "level": 2
         }
       ]
     },
     "q-surv-6": {
-      "correct": 5,
-      "total": 5,
+      "correct": 6,
+      "total": 6,
       "page": "厚生年金保険法　遺族厚生年金　遺族範囲",
       "text": "第6順位",
       "recent": [
@@ -4615,8 +4640,8 @@
         1,
         1
       ],
-      "srsLevel": 3,
-      "nextReview": "2026-02-27T15:00:00.000Z",
+      "srsLevel": 4,
+      "nextReview": "2026-03-03T15:00:00.000Z",
       "history": [
         {
           "date": "2026-02-20T06:35:03.797Z",
@@ -4632,6 +4657,11 @@
           "date": "2026-02-24T00:43:59.618Z",
           "isCorrect": true,
           "level": 2
+        },
+        {
+          "date": "2026-02-25T01:08:33.803Z",
+          "isCorrect": true,
+          "level": 3
         }
       ]
     },
@@ -9222,9 +9252,10 @@
       ]
     },
     "q-17709471889081": {
-      "correct": 4,
-      "total": 4,
+      "correct": 5,
+      "total": 5,
       "recent": [
+        1,
         1,
         1,
         1,
@@ -9232,8 +9263,8 @@
       ],
       "page": "国民年金　未支給年金　遺族の範囲",
       "text": "第1順位",
-      "srsLevel": 2,
-      "nextReview": "2026-02-25T15:00:00.000Z",
+      "srsLevel": 3,
+      "nextReview": "2026-02-28T15:00:00.000Z",
       "history": [
         {
           "date": "2026-02-20T06:34:36.369Z",
@@ -9244,13 +9275,19 @@
           "date": "2026-02-24T00:43:24.762Z",
           "isCorrect": true,
           "level": 1
+        },
+        {
+          "date": "2026-02-25T01:08:14.655Z",
+          "isCorrect": true,
+          "level": 2
         }
       ]
     },
     "q-17709471889082": {
-      "correct": 4,
-      "total": 4,
+      "correct": 5,
+      "total": 5,
       "recent": [
+        1,
         1,
         1,
         1,
@@ -9258,8 +9295,8 @@
       ],
       "page": "国民年金　未支給年金　遺族の範囲",
       "text": "第2順位",
-      "srsLevel": 2,
-      "nextReview": "2026-02-25T15:00:00.000Z",
+      "srsLevel": 3,
+      "nextReview": "2026-02-28T15:00:00.000Z",
       "history": [
         {
           "date": "2026-02-20T06:34:36.369Z",
@@ -9270,13 +9307,19 @@
           "date": "2026-02-24T00:43:24.762Z",
           "isCorrect": true,
           "level": 1
+        },
+        {
+          "date": "2026-02-25T01:08:14.655Z",
+          "isCorrect": true,
+          "level": 2
         }
       ]
     },
     "q-17709471889083": {
-      "correct": 4,
-      "total": 4,
+      "correct": 5,
+      "total": 5,
       "recent": [
+        1,
         1,
         1,
         1,
@@ -9284,8 +9327,8 @@
       ],
       "page": "国民年金　未支給年金　遺族の範囲",
       "text": "第3順位",
-      "srsLevel": 2,
-      "nextReview": "2026-02-25T15:00:00.000Z",
+      "srsLevel": 3,
+      "nextReview": "2026-02-28T15:00:00.000Z",
       "history": [
         {
           "date": "2026-02-20T06:34:36.369Z",
@@ -9296,13 +9339,19 @@
           "date": "2026-02-24T00:43:24.762Z",
           "isCorrect": true,
           "level": 1
+        },
+        {
+          "date": "2026-02-25T01:08:14.655Z",
+          "isCorrect": true,
+          "level": 2
         }
       ]
     },
     "q-17709471889084": {
-      "correct": 4,
-      "total": 4,
+      "correct": 5,
+      "total": 5,
       "recent": [
+        1,
         1,
         1,
         1,
@@ -9310,8 +9359,8 @@
       ],
       "page": "国民年金　未支給年金　遺族の範囲",
       "text": "第4順位",
-      "srsLevel": 2,
-      "nextReview": "2026-02-25T15:00:00.000Z",
+      "srsLevel": 3,
+      "nextReview": "2026-02-28T15:00:00.000Z",
       "history": [
         {
           "date": "2026-02-20T06:34:36.369Z",
@@ -9322,13 +9371,19 @@
           "date": "2026-02-24T00:43:24.762Z",
           "isCorrect": true,
           "level": 1
+        },
+        {
+          "date": "2026-02-25T01:08:14.655Z",
+          "isCorrect": true,
+          "level": 2
         }
       ]
     },
     "q-17709471889085": {
-      "correct": 4,
-      "total": 4,
+      "correct": 5,
+      "total": 5,
       "recent": [
+        1,
         1,
         1,
         1,
@@ -9336,8 +9391,8 @@
       ],
       "page": "国民年金　未支給年金　遺族の範囲",
       "text": "第5順位",
-      "srsLevel": 2,
-      "nextReview": "2026-02-25T15:00:00.000Z",
+      "srsLevel": 3,
+      "nextReview": "2026-02-28T15:00:00.000Z",
       "history": [
         {
           "date": "2026-02-20T06:34:36.369Z",
@@ -9348,13 +9403,19 @@
           "date": "2026-02-24T00:43:24.762Z",
           "isCorrect": true,
           "level": 1
+        },
+        {
+          "date": "2026-02-25T01:08:14.655Z",
+          "isCorrect": true,
+          "level": 2
         }
       ]
     },
     "q-17709471889086": {
-      "correct": 4,
-      "total": 4,
+      "correct": 5,
+      "total": 5,
       "recent": [
+        1,
         1,
         1,
         1,
@@ -9362,8 +9423,8 @@
       ],
       "page": "国民年金　未支給年金　遺族の範囲",
       "text": "第6順位",
-      "srsLevel": 2,
-      "nextReview": "2026-02-25T15:00:00.000Z",
+      "srsLevel": 3,
+      "nextReview": "2026-02-28T15:00:00.000Z",
       "history": [
         {
           "date": "2026-02-20T06:34:36.369Z",
@@ -9374,6 +9435,11 @@
           "date": "2026-02-24T00:43:24.762Z",
           "isCorrect": true,
           "level": 1
+        },
+        {
+          "date": "2026-02-25T01:08:14.655Z",
+          "isCorrect": true,
+          "level": 2
         }
       ]
     },
@@ -9409,17 +9475,18 @@
       ]
     },
     "q-17709502304351": {
-      "correct": 3,
-      "total": 3,
+      "correct": 4,
+      "total": 4,
       "recent": [
+        1,
         1,
         1,
         1
       ],
       "page": "国民年金　遺族基礎年金",
       "text": "第1順位",
-      "srsLevel": 2,
-      "nextReview": "2026-02-25T15:00:00.000Z",
+      "srsLevel": 3,
+      "nextReview": "2026-02-28T15:00:00.000Z",
       "history": [
         {
           "date": "2026-02-20T06:34:08.866Z",
@@ -9430,135 +9497,15 @@
           "date": "2026-02-24T00:43:04.961Z",
           "isCorrect": true,
           "level": 1
+        },
+        {
+          "date": "2026-02-25T01:07:54.196Z",
+          "isCorrect": true,
+          "level": 2
         }
       ]
     },
     "q-17709502304352": {
-      "correct": 3,
-      "total": 3,
-      "recent": [
-        1,
-        1,
-        1
-      ],
-      "page": "国民年金　遺族基礎年金",
-      "text": "第2順位",
-      "srsLevel": 2,
-      "nextReview": "2026-02-25T15:00:00.000Z",
-      "history": [
-        {
-          "date": "2026-02-20T06:34:08.866Z",
-          "isCorrect": true,
-          "level": 0
-        },
-        {
-          "date": "2026-02-24T00:43:04.962Z",
-          "isCorrect": true,
-          "level": 1
-        }
-      ]
-    },
-    "q-17709502304353": {
-      "correct": 3,
-      "total": 3,
-      "recent": [
-        1,
-        1,
-        1
-      ],
-      "page": "国民年金　遺族基礎年金",
-      "text": "第3順位",
-      "srsLevel": 2,
-      "nextReview": "2026-02-25T15:00:00.000Z",
-      "history": [
-        {
-          "date": "2026-02-20T06:34:08.866Z",
-          "isCorrect": true,
-          "level": 0
-        },
-        {
-          "date": "2026-02-24T00:43:04.962Z",
-          "isCorrect": true,
-          "level": 1
-        }
-      ]
-    },
-    "q-17709502304354": {
-      "correct": 3,
-      "total": 3,
-      "recent": [
-        1,
-        1,
-        1
-      ],
-      "page": "国民年金　遺族基礎年金",
-      "text": "第4順位",
-      "srsLevel": 2,
-      "nextReview": "2026-02-25T15:00:00.000Z",
-      "history": [
-        {
-          "date": "2026-02-20T06:34:08.866Z",
-          "isCorrect": true,
-          "level": 0
-        },
-        {
-          "date": "2026-02-24T00:43:04.962Z",
-          "isCorrect": true,
-          "level": 1
-        }
-      ]
-    },
-    "q-17709502304355": {
-      "correct": 3,
-      "total": 3,
-      "recent": [
-        1,
-        1,
-        1
-      ],
-      "page": "国民年金　遺族基礎年金",
-      "text": "第5順位",
-      "srsLevel": 2,
-      "nextReview": "2026-02-25T15:00:00.000Z",
-      "history": [
-        {
-          "date": "2026-02-20T06:34:08.866Z",
-          "isCorrect": true,
-          "level": 0
-        },
-        {
-          "date": "2026-02-24T00:43:04.962Z",
-          "isCorrect": true,
-          "level": 1
-        }
-      ]
-    },
-    "q-17709502304356": {
-      "correct": 3,
-      "total": 3,
-      "recent": [
-        1,
-        1,
-        1
-      ],
-      "page": "国民年金　遺族基礎年金",
-      "text": "第6順位",
-      "srsLevel": 2,
-      "nextReview": "2026-02-25T15:00:00.000Z",
-      "history": [
-        {
-          "date": "2026-02-20T06:34:08.866Z",
-          "isCorrect": true,
-          "level": 0
-        },
-        {
-          "date": "2026-02-24T00:43:04.962Z",
-          "isCorrect": true,
-          "level": 1
-        }
-      ]
-    },
-    "q-17709506842681": {
       "correct": 4,
       "total": 4,
       "recent": [
@@ -9567,10 +9514,166 @@
         1,
         1
       ],
+      "page": "国民年金　遺族基礎年金",
+      "text": "第2順位",
+      "srsLevel": 3,
+      "nextReview": "2026-02-28T15:00:00.000Z",
+      "history": [
+        {
+          "date": "2026-02-20T06:34:08.866Z",
+          "isCorrect": true,
+          "level": 0
+        },
+        {
+          "date": "2026-02-24T00:43:04.962Z",
+          "isCorrect": true,
+          "level": 1
+        },
+        {
+          "date": "2026-02-25T01:07:54.196Z",
+          "isCorrect": true,
+          "level": 2
+        }
+      ]
+    },
+    "q-17709502304353": {
+      "correct": 4,
+      "total": 4,
+      "recent": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "page": "国民年金　遺族基礎年金",
+      "text": "第3順位",
+      "srsLevel": 3,
+      "nextReview": "2026-02-28T15:00:00.000Z",
+      "history": [
+        {
+          "date": "2026-02-20T06:34:08.866Z",
+          "isCorrect": true,
+          "level": 0
+        },
+        {
+          "date": "2026-02-24T00:43:04.962Z",
+          "isCorrect": true,
+          "level": 1
+        },
+        {
+          "date": "2026-02-25T01:07:54.196Z",
+          "isCorrect": true,
+          "level": 2
+        }
+      ]
+    },
+    "q-17709502304354": {
+      "correct": 4,
+      "total": 4,
+      "recent": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "page": "国民年金　遺族基礎年金",
+      "text": "第4順位",
+      "srsLevel": 3,
+      "nextReview": "2026-02-28T15:00:00.000Z",
+      "history": [
+        {
+          "date": "2026-02-20T06:34:08.866Z",
+          "isCorrect": true,
+          "level": 0
+        },
+        {
+          "date": "2026-02-24T00:43:04.962Z",
+          "isCorrect": true,
+          "level": 1
+        },
+        {
+          "date": "2026-02-25T01:07:54.196Z",
+          "isCorrect": true,
+          "level": 2
+        }
+      ]
+    },
+    "q-17709502304355": {
+      "correct": 4,
+      "total": 4,
+      "recent": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "page": "国民年金　遺族基礎年金",
+      "text": "第5順位",
+      "srsLevel": 3,
+      "nextReview": "2026-02-28T15:00:00.000Z",
+      "history": [
+        {
+          "date": "2026-02-20T06:34:08.866Z",
+          "isCorrect": true,
+          "level": 0
+        },
+        {
+          "date": "2026-02-24T00:43:04.962Z",
+          "isCorrect": true,
+          "level": 1
+        },
+        {
+          "date": "2026-02-25T01:07:54.196Z",
+          "isCorrect": true,
+          "level": 2
+        }
+      ]
+    },
+    "q-17709502304356": {
+      "correct": 4,
+      "total": 4,
+      "recent": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "page": "国民年金　遺族基礎年金",
+      "text": "第6順位",
+      "srsLevel": 3,
+      "nextReview": "2026-02-28T15:00:00.000Z",
+      "history": [
+        {
+          "date": "2026-02-20T06:34:08.866Z",
+          "isCorrect": true,
+          "level": 0
+        },
+        {
+          "date": "2026-02-24T00:43:04.962Z",
+          "isCorrect": true,
+          "level": 1
+        },
+        {
+          "date": "2026-02-25T01:07:54.196Z",
+          "isCorrect": true,
+          "level": 2
+        }
+      ]
+    },
+    "q-17709506842681": {
+      "correct": 7,
+      "total": 7,
+      "recent": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
       "page": "国民年金　死亡一時金",
       "text": "第1順位",
-      "srsLevel": 3,
-      "nextReview": "2026-02-27T15:00:00.000Z",
+      "srsLevel": 6,
+      "nextReview": "2026-03-26T15:00:00.000Z",
       "history": [
         {
           "date": "2026-02-17T02:15:56.704Z",
@@ -9586,13 +9689,29 @@
           "date": "2026-02-24T00:44:48.840Z",
           "isCorrect": true,
           "level": 2
+        },
+        {
+          "date": "2026-02-25T01:08:51.503Z",
+          "isCorrect": true,
+          "level": 3
+        },
+        {
+          "date": "2026-02-25T01:09:00.629Z",
+          "isCorrect": true,
+          "level": 4
+        },
+        {
+          "date": "2026-02-25T01:09:08.377Z",
+          "isCorrect": true,
+          "level": 5
         }
       ]
     },
     "q-17709506842682": {
-      "correct": 4,
-      "total": 4,
+      "correct": 7,
+      "total": 7,
       "recent": [
+        1,
         1,
         1,
         1,
@@ -9600,8 +9719,8 @@
       ],
       "page": "国民年金　死亡一時金",
       "text": "第2順位",
-      "srsLevel": 3,
-      "nextReview": "2026-02-27T15:00:00.000Z",
+      "srsLevel": 6,
+      "nextReview": "2026-03-26T15:00:00.000Z",
       "history": [
         {
           "date": "2026-02-17T02:15:56.705Z",
@@ -9617,13 +9736,29 @@
           "date": "2026-02-24T00:44:48.840Z",
           "isCorrect": true,
           "level": 2
+        },
+        {
+          "date": "2026-02-25T01:08:51.503Z",
+          "isCorrect": true,
+          "level": 3
+        },
+        {
+          "date": "2026-02-25T01:09:00.629Z",
+          "isCorrect": true,
+          "level": 4
+        },
+        {
+          "date": "2026-02-25T01:09:08.377Z",
+          "isCorrect": true,
+          "level": 5
         }
       ]
     },
     "q-17709506842683": {
-      "correct": 4,
-      "total": 4,
+      "correct": 7,
+      "total": 7,
       "recent": [
+        1,
         1,
         1,
         1,
@@ -9631,8 +9766,8 @@
       ],
       "page": "国民年金　死亡一時金",
       "text": "第3順位",
-      "srsLevel": 3,
-      "nextReview": "2026-02-27T15:00:00.000Z",
+      "srsLevel": 6,
+      "nextReview": "2026-03-26T15:00:00.000Z",
       "history": [
         {
           "date": "2026-02-17T02:15:56.705Z",
@@ -9648,13 +9783,29 @@
           "date": "2026-02-24T00:44:48.840Z",
           "isCorrect": true,
           "level": 2
+        },
+        {
+          "date": "2026-02-25T01:08:51.503Z",
+          "isCorrect": true,
+          "level": 3
+        },
+        {
+          "date": "2026-02-25T01:09:00.629Z",
+          "isCorrect": true,
+          "level": 4
+        },
+        {
+          "date": "2026-02-25T01:09:08.377Z",
+          "isCorrect": true,
+          "level": 5
         }
       ]
     },
     "q-17709506842684": {
-      "correct": 4,
-      "total": 4,
+      "correct": 7,
+      "total": 7,
       "recent": [
+        1,
         1,
         1,
         1,
@@ -9662,8 +9813,8 @@
       ],
       "page": "国民年金　死亡一時金",
       "text": "第4順位",
-      "srsLevel": 3,
-      "nextReview": "2026-02-27T15:00:00.000Z",
+      "srsLevel": 6,
+      "nextReview": "2026-03-26T15:00:00.000Z",
       "history": [
         {
           "date": "2026-02-17T02:15:56.705Z",
@@ -9679,13 +9830,29 @@
           "date": "2026-02-24T00:44:48.840Z",
           "isCorrect": true,
           "level": 2
+        },
+        {
+          "date": "2026-02-25T01:08:51.503Z",
+          "isCorrect": true,
+          "level": 3
+        },
+        {
+          "date": "2026-02-25T01:09:00.629Z",
+          "isCorrect": true,
+          "level": 4
+        },
+        {
+          "date": "2026-02-25T01:09:08.377Z",
+          "isCorrect": true,
+          "level": 5
         }
       ]
     },
     "q-17709506842685": {
-      "correct": 4,
-      "total": 4,
+      "correct": 7,
+      "total": 7,
       "recent": [
+        1,
         1,
         1,
         1,
@@ -9693,8 +9860,8 @@
       ],
       "page": "国民年金　死亡一時金",
       "text": "第5順位",
-      "srsLevel": 3,
-      "nextReview": "2026-02-27T15:00:00.000Z",
+      "srsLevel": 6,
+      "nextReview": "2026-03-26T15:00:00.000Z",
       "history": [
         {
           "date": "2026-02-17T02:15:56.705Z",
@@ -9710,22 +9877,38 @@
           "date": "2026-02-24T00:44:48.840Z",
           "isCorrect": true,
           "level": 2
+        },
+        {
+          "date": "2026-02-25T01:08:51.503Z",
+          "isCorrect": true,
+          "level": 3
+        },
+        {
+          "date": "2026-02-25T01:09:00.629Z",
+          "isCorrect": true,
+          "level": 4
+        },
+        {
+          "date": "2026-02-25T01:09:08.377Z",
+          "isCorrect": true,
+          "level": 5
         }
       ]
     },
     "q-17709506842686": {
-      "correct": 4,
-      "total": 4,
+      "correct": 5,
+      "total": 7,
       "recent": [
         1,
         1,
-        1,
+        0,
+        0,
         1
       ],
       "page": "国民年金　死亡一時金",
       "text": "第6順位",
-      "srsLevel": 3,
-      "nextReview": "2026-02-27T15:00:00.000Z",
+      "srsLevel": 1,
+      "nextReview": "2026-02-25T15:00:00.000Z",
       "history": [
         {
           "date": "2026-02-17T02:15:56.705Z",
@@ -9741,13 +9924,29 @@
           "date": "2026-02-24T00:44:48.840Z",
           "isCorrect": true,
           "level": 2
+        },
+        {
+          "date": "2026-02-25T01:08:51.503Z",
+          "isCorrect": false,
+          "level": 3
+        },
+        {
+          "date": "2026-02-25T01:09:00.629Z",
+          "isCorrect": false,
+          "level": 1
+        },
+        {
+          "date": "2026-02-25T01:09:08.377Z",
+          "isCorrect": true,
+          "level": 0
         }
       ]
     },
     "q-1770950767519": {
-      "correct": 4,
-      "total": 4,
+      "correct": 7,
+      "total": 7,
       "recent": [
+        1,
         1,
         1,
         1,
@@ -9755,8 +9954,8 @@
       ],
       "page": "国民年金　死亡一時金",
       "text": "第7順位",
-      "srsLevel": 3,
-      "nextReview": "2026-02-27T15:00:00.000Z",
+      "srsLevel": 6,
+      "nextReview": "2026-03-26T15:00:00.000Z",
       "history": [
         {
           "date": "2026-02-17T02:15:56.705Z",
@@ -9772,21 +9971,37 @@
           "date": "2026-02-24T00:44:48.840Z",
           "isCorrect": true,
           "level": 2
+        },
+        {
+          "date": "2026-02-25T01:08:51.503Z",
+          "isCorrect": true,
+          "level": 3
+        },
+        {
+          "date": "2026-02-25T01:09:00.629Z",
+          "isCorrect": true,
+          "level": 4
+        },
+        {
+          "date": "2026-02-25T01:09:08.377Z",
+          "isCorrect": true,
+          "level": 5
         }
       ]
     },
     "q-1770950743364": {
-      "correct": 3,
-      "total": 3,
+      "correct": 4,
+      "total": 4,
       "recent": [
+        1,
         1,
         1,
         1
       ],
       "page": "国民年金　未支給年金　遺族の範囲",
       "text": "第7順位",
-      "srsLevel": 2,
-      "nextReview": "2026-02-25T15:00:00.000Z",
+      "srsLevel": 3,
+      "nextReview": "2026-02-28T15:00:00.000Z",
       "history": [
         {
           "date": "2026-02-20T06:34:36.369Z",
@@ -9797,6 +10012,11 @@
           "date": "2026-02-24T00:43:24.762Z",
           "isCorrect": true,
           "level": 1
+        },
+        {
+          "date": "2026-02-25T01:08:14.655Z",
+          "isCorrect": true,
+          "level": 2
         }
       ]
     },
@@ -23519,6 +23739,54 @@
   },
   "history": [
     {
+      "timestamp": "2026/2/25 10:09:08",
+      "isoDate": "2026-02-25T01:09:08.377Z",
+      "page": "国民年金　死亡一時金",
+      "pageId": "p-1770950684268",
+      "score": "7 / 7",
+      "accuracy": 100
+    },
+    {
+      "timestamp": "2026/2/25 10:09:00",
+      "isoDate": "2026-02-25T01:09:00.629Z",
+      "page": "国民年金　死亡一時金",
+      "pageId": "p-1770950684268",
+      "score": "6 / 7",
+      "accuracy": 86
+    },
+    {
+      "timestamp": "2026/2/25 10:08:51",
+      "isoDate": "2026-02-25T01:08:51.503Z",
+      "page": "国民年金　死亡一時金",
+      "pageId": "p-1770950684268",
+      "score": "6 / 7",
+      "accuracy": 86
+    },
+    {
+      "timestamp": "2026/2/25 10:08:33",
+      "isoDate": "2026-02-25T01:08:33.803Z",
+      "page": "厚生年金保険法　遺族厚生年金　遺族範囲",
+      "pageId": "survivor-rank-1",
+      "score": "6 / 6",
+      "accuracy": 100
+    },
+    {
+      "timestamp": "2026/2/25 10:08:14",
+      "isoDate": "2026-02-25T01:08:14.655Z",
+      "page": "国民年金　未支給年金　遺族の範囲",
+      "pageId": "p-1770947188908",
+      "score": "7 / 7",
+      "accuracy": 100
+    },
+    {
+      "timestamp": "2026/2/25 10:07:54",
+      "isoDate": "2026-02-25T01:07:54.197Z",
+      "page": "国民年金　遺族基礎年金",
+      "pageId": "p-1770950230435",
+      "score": "6 / 6",
+      "accuracy": 100
+    },
+    {
       "timestamp": "2026/2/25 10:04:54",
       "isoDate": "2026-02-25T01:04:54.816Z",
       "page": "厚生年金保険法　受給権者が日本年金機構に行う届出",
@@ -23869,55 +24137,7 @@
       "pageId": "auto-due-review",
       "score": "10 / 10",
       "accuracy": 100
-    },
-    {
-      "timestamp": "2026/2/24 11:27:44",
-      "isoDate": "2026-02-24T02:27:44.792Z",
-      "page": "【復習】選択式 特訓 (10題)",
-      "pageId": "auto-due-review",
-      "score": "10 / 10",
-      "accuracy": 100
-    },
-    {
-      "timestamp": "2026/2/24 11:26:54",
-      "isoDate": "2026-02-24T02:26:54.299Z",
-      "page": "【復習】選択式 特訓 (10題)",
-      "pageId": "auto-due-review",
-      "score": "10 / 10",
-      "accuracy": 100
-    },
-    {
-      "timestamp": "2026/2/24 11:24:46",
-      "isoDate": "2026-02-24T02:24:46.015Z",
-      "page": "【復習】選択式 特訓 (10題)",
-      "pageId": "auto-due-review",
-      "score": "10 / 10",
-      "accuracy": 100
-    },
-    {
-      "timestamp": "2026/2/24 11:24:37",
-      "isoDate": "2026-02-24T02:24:37.639Z",
-      "page": "【復習】選択式 特訓 (10題)",
-      "pageId": "auto-due-review",
-      "score": "9 / 10",
-      "accuracy": 90
-    },
-    {
-      "timestamp": "2026/2/24 11:23:06",
-      "isoDate": "2026-02-24T02:23:06.484Z",
-      "page": "【復習】選択式 特訓 (10題)",
-      "pageId": "auto-due-review",
-      "score": "10 / 10",
-      "accuracy": 100
-    },
-    {
-      "timestamp": "2026/2/24 11:22:02",
-      "isoDate": "2026-02-24T02:22:02.249Z",
-      "page": "【復習】選択式 特訓 (10題)",
-      "pageId": "auto-due-review",
-      "score": "10 / 10",
-      "accuracy": 100
     }
   ],
-  "lastModified": 1771981507413
+  "lastModified": 1771981766799
 }
