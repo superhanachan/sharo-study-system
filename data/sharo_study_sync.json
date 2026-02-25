@@ -5747,8 +5747,8 @@
       ]
     },
     "q-1770870678996-0-v46mv": {
-      "correct": 10,
-      "total": 10,
+      "correct": 12,
+      "total": 12,
       "page": "厚生年金保険法　受給権者が日本年金機構に行う届出",
       "text": "胎児出生の届出",
       "recent": [
@@ -5758,8 +5758,8 @@
         1,
         1
       ],
-      "srsLevel": 5,
-      "nextReview": "2026-03-09T15:00:00.000Z",
+      "srsLevel": 7,
+      "nextReview": "2026-04-25T15:00:00.000Z",
       "history": [
         {
           "date": "2026-02-17T02:40:08.215Z",
@@ -5785,23 +5785,33 @@
           "date": "2026-02-24T01:43:15.169Z",
           "isCorrect": true,
           "level": 4
+        },
+        {
+          "date": "2026-02-25T01:04:43.963Z",
+          "isCorrect": true,
+          "level": 5
+        },
+        {
+          "date": "2026-02-25T01:04:54.815Z",
+          "isCorrect": true,
+          "level": 6
         }
       ]
     },
     "q-1770870678996-1-pchji": {
-      "correct": 9,
-      "total": 14,
+      "correct": 11,
+      "total": 16,
       "page": "厚生年金保険法　受給権者が日本年金機構に行う届出",
       "text": "加給年金額対象者の不該当の届出",
       "recent": [
-        1,
-        1,
         0,
         0,
+        1,
+        1,
         1
       ],
-      "srsLevel": 1,
-      "nextReview": "2026-02-24T15:00:00.000Z",
+      "srsLevel": 3,
+      "nextReview": "2026-02-28T15:00:00.000Z",
       "history": [
         {
           "date": "2026-02-17T02:08:56.076Z",
@@ -5847,23 +5857,33 @@
           "date": "2026-02-24T02:08:59.389Z",
           "isCorrect": true,
           "level": 0
+        },
+        {
+          "date": "2026-02-25T01:04:43.966Z",
+          "isCorrect": true,
+          "level": 1
+        },
+        {
+          "date": "2026-02-25T01:04:54.815Z",
+          "isCorrect": true,
+          "level": 2
         }
       ]
     },
     "q-1770870776304": {
-      "correct": 9,
-      "total": 10,
+      "correct": 11,
+      "total": 12,
       "page": "厚生年金保険法　受給権者が日本年金機構に行う届出",
       "text": "氏名変更の届出",
       "recent": [
-        0,
+        1,
         1,
         1,
         1,
         1
       ],
-      "srsLevel": 4,
-      "nextReview": "2026-03-02T15:00:00.000Z",
+      "srsLevel": 6,
+      "nextReview": "2026-03-26T15:00:00.000Z",
       "history": [
         {
           "date": "2026-02-17T02:42:50.733Z",
@@ -5889,12 +5909,22 @@
           "date": "2026-02-24T02:27:44.792Z",
           "isCorrect": true,
           "level": 3
+        },
+        {
+          "date": "2026-02-25T01:04:43.966Z",
+          "isCorrect": true,
+          "level": 4
+        },
+        {
+          "date": "2026-02-25T01:04:54.815Z",
+          "isCorrect": true,
+          "level": 5
         }
       ]
     },
     "q-1770870791676": {
-      "correct": 9,
-      "total": 9,
+      "correct": 11,
+      "total": 11,
       "page": "厚生年金保険法　受給権者が日本年金機構に行う届出",
       "text": "住所変更の届出",
       "recent": [
@@ -5904,8 +5934,8 @@
         1,
         1
       ],
-      "srsLevel": 4,
-      "nextReview": "2026-03-02T15:00:00.000Z",
+      "srsLevel": 6,
+      "nextReview": "2026-03-26T15:00:00.000Z",
       "history": [
         {
           "date": "2026-02-17T02:40:08.214Z",
@@ -5926,12 +5956,22 @@
           "date": "2026-02-24T02:10:38.615Z",
           "isCorrect": true,
           "level": 3
+        },
+        {
+          "date": "2026-02-25T01:04:43.966Z",
+          "isCorrect": true,
+          "level": 4
+        },
+        {
+          "date": "2026-02-25T01:04:54.815Z",
+          "isCorrect": true,
+          "level": 5
         }
       ]
     },
     "q-1770870806681": {
-      "correct": 14,
-      "total": 15,
+      "correct": 16,
+      "total": 17,
       "page": "厚生年金保険法　受給権者が日本年金機構に行う届出",
       "text": "加給年金額加算事由該当の届出",
       "recent": [
@@ -5941,8 +5981,8 @@
         1,
         1
       ],
-      "srsLevel": 4,
-      "nextReview": "2026-03-02T15:00:00.000Z",
+      "srsLevel": 6,
+      "nextReview": "2026-03-26T15:00:00.000Z",
       "history": [
         {
           "date": "2026-02-17T02:08:56.076Z",
@@ -5963,12 +6003,22 @@
           "date": "2026-02-24T02:03:13.878Z",
           "isCorrect": true,
           "level": 3
+        },
+        {
+          "date": "2026-02-25T01:04:43.966Z",
+          "isCorrect": true,
+          "level": 4
+        },
+        {
+          "date": "2026-02-25T01:04:54.815Z",
+          "isCorrect": true,
+          "level": 5
         }
       ]
     },
     "q-1770870826196": {
-      "correct": 23,
-      "total": 29,
+      "correct": 25,
+      "total": 31,
       "page": "厚生年金保険法　受給権者が日本年金機構に行う届出",
       "text": "加給年金額対象者の障害状態該当の届出",
       "recent": [
@@ -5978,8 +6028,8 @@
         1,
         1
       ],
-      "srsLevel": 5,
-      "nextReview": "2026-03-09T15:00:00.000Z",
+      "srsLevel": 7,
+      "nextReview": "2026-04-25T15:00:00.000Z",
       "history": [
         {
           "date": "2026-02-17T02:32:58.655Z",
@@ -6015,23 +6065,33 @@
           "date": "2026-02-24T01:43:15.169Z",
           "isCorrect": true,
           "level": 4
+        },
+        {
+          "date": "2026-02-25T01:04:43.966Z",
+          "isCorrect": true,
+          "level": 5
+        },
+        {
+          "date": "2026-02-25T01:04:54.815Z",
+          "isCorrect": true,
+          "level": 6
         }
       ]
     },
     "q-1770870840146": {
-      "correct": 25,
-      "total": 30,
+      "correct": 27,
+      "total": 32,
       "page": "厚生年金保険法　受給権者が日本年金機構に行う届出",
       "text": "支給停止事由該当又は支給停止事由消滅の届出",
       "recent": [
-        0,
+        1,
         1,
         1,
         1,
         1
       ],
-      "srsLevel": 4,
-      "nextReview": "2026-03-02T15:00:00.000Z",
+      "srsLevel": 6,
+      "nextReview": "2026-03-26T15:00:00.000Z",
       "history": [
         {
           "date": "2026-02-17T02:32:58.655Z",
@@ -6057,23 +6117,33 @@
           "date": "2026-02-24T02:26:54.298Z",
           "isCorrect": true,
           "level": 3
+        },
+        {
+          "date": "2026-02-25T01:04:43.966Z",
+          "isCorrect": true,
+          "level": 4
+        },
+        {
+          "date": "2026-02-25T01:04:54.815Z",
+          "isCorrect": true,
+          "level": 5
         }
       ]
     },
     "q-1770870881476": {
-      "correct": 21,
-      "total": 23,
+      "correct": 23,
+      "total": 25,
       "page": "厚生年金保険法　受給権者が日本年金機構に行う届出",
       "text": "機構保存本人確認情報の提供を受けることができない場合の年金の受給権者に係る届出",
       "recent": [
-        0,
+        1,
         1,
         1,
         1,
         1
       ],
-      "srsLevel": 4,
-      "nextReview": "2026-03-02T15:00:00.000Z",
+      "srsLevel": 6,
+      "nextReview": "2026-03-26T15:00:00.000Z",
       "history": [
         {
           "date": "2026-02-17T02:36:36.076Z",
@@ -6099,12 +6169,22 @@
           "date": "2026-02-24T01:47:10.088Z",
           "isCorrect": true,
           "level": 3
+        },
+        {
+          "date": "2026-02-25T01:04:43.966Z",
+          "isCorrect": true,
+          "level": 4
+        },
+        {
+          "date": "2026-02-25T01:04:54.815Z",
+          "isCorrect": true,
+          "level": 5
         }
       ]
     },
     "q-1770870906990": {
-      "correct": 10,
-      "total": 11,
+      "correct": 12,
+      "total": 13,
       "page": "厚生年金保険法　受給権者が日本年金機構に行う届出",
       "text": "加給年金額の対象者がある老齢厚生年金又は障害厚生年金の受給権者等の届出",
       "recent": [
@@ -6114,8 +6194,8 @@
         1,
         1
       ],
-      "srsLevel": 5,
-      "nextReview": "2026-03-09T15:00:00.000Z",
+      "srsLevel": 7,
+      "nextReview": "2026-04-25T15:00:00.000Z",
       "history": [
         {
           "date": "2026-02-17T02:30:31.255Z",
@@ -6146,12 +6226,22 @@
           "date": "2026-02-24T01:43:15.169Z",
           "isCorrect": true,
           "level": 4
+        },
+        {
+          "date": "2026-02-25T01:04:43.966Z",
+          "isCorrect": true,
+          "level": 5
+        },
+        {
+          "date": "2026-02-25T01:04:54.815Z",
+          "isCorrect": true,
+          "level": 6
         }
       ]
     },
     "q-1770870929482": {
-      "correct": 9,
-      "total": 9,
+      "correct": 11,
+      "total": 11,
       "page": "厚生年金保険法　受給権者が日本年金機構に行う届出",
       "text": "年金の受給権者に係る障害の現状に関する届出",
       "recent": [
@@ -6161,8 +6251,8 @@
         1,
         1
       ],
-      "srsLevel": 4,
-      "nextReview": "2026-03-02T15:00:00.000Z",
+      "srsLevel": 6,
+      "nextReview": "2026-03-26T15:00:00.000Z",
       "history": [
         {
           "date": "2026-02-17T02:36:36.076Z",
@@ -6183,12 +6273,22 @@
           "date": "2026-02-24T01:39:37.316Z",
           "isCorrect": true,
           "level": 3
+        },
+        {
+          "date": "2026-02-25T01:04:43.966Z",
+          "isCorrect": true,
+          "level": 4
+        },
+        {
+          "date": "2026-02-25T01:04:54.815Z",
+          "isCorrect": true,
+          "level": 5
         }
       ]
     },
     "q-1770870958090": {
-      "correct": 11,
-      "total": 11,
+      "correct": 13,
+      "total": 13,
       "page": "厚生年金保険法　受給権者が日本年金機構に行う届出",
       "text": "個人番号の変更の届出",
       "recent": [
@@ -6198,8 +6298,8 @@
         1,
         1
       ],
-      "srsLevel": 6,
-      "nextReview": "2026-03-25T15:00:00.000Z",
+      "srsLevel": 8,
+      "nextReview": "2026-06-24T15:00:00.000Z",
       "history": [
         {
           "date": "2026-02-17T02:08:56.076Z",
@@ -6230,12 +6330,22 @@
           "date": "2026-02-24T02:08:59.389Z",
           "isCorrect": true,
           "level": 5
+        },
+        {
+          "date": "2026-02-25T01:04:43.966Z",
+          "isCorrect": true,
+          "level": 6
+        },
+        {
+          "date": "2026-02-25T01:04:54.815Z",
+          "isCorrect": true,
+          "level": 7
         }
       ]
     },
     "q-1770870981493": {
-      "correct": 26,
-      "total": 30,
+      "correct": 28,
+      "total": 32,
       "page": "厚生年金保険法　受給権者が日本年金機構に行う届出",
       "text": "所在不明の届出等",
       "recent": [
@@ -6245,8 +6355,8 @@
         1,
         1
       ],
-      "srsLevel": 5,
-      "nextReview": "2026-03-09T15:00:00.000Z",
+      "srsLevel": 7,
+      "nextReview": "2026-04-25T15:00:00.000Z",
       "history": [
         {
           "date": "2026-02-17T02:28:22.591Z",
@@ -6272,12 +6382,22 @@
           "date": "2026-02-24T01:41:02.044Z",
           "isCorrect": true,
           "level": 4
+        },
+        {
+          "date": "2026-02-25T01:04:43.966Z",
+          "isCorrect": true,
+          "level": 5
+        },
+        {
+          "date": "2026-02-25T01:04:54.815Z",
+          "isCorrect": true,
+          "level": 6
         }
       ]
     },
     "q-1770871326437": {
-      "correct": 10,
-      "total": 13,
+      "correct": 11,
+      "total": 15,
       "page": "厚生年金保険法　受給権者が日本年金機構に行う届出",
       "text": "配偶者を有するに至ったときの届出",
       "recent": [
@@ -6288,7 +6408,7 @@
         1
       ],
       "srsLevel": 1,
-      "nextReview": "2026-02-24T15:00:00.000Z",
+      "nextReview": "2026-02-25T15:00:00.000Z",
       "history": [
         {
           "date": "2026-02-17T02:08:56.076Z",
@@ -6329,12 +6449,22 @@
           "date": "2026-02-24T02:12:50.560Z",
           "isCorrect": true,
           "level": 0
+        },
+        {
+          "date": "2026-02-25T01:04:43.966Z",
+          "isCorrect": false,
+          "level": 1
+        },
+        {
+          "date": "2026-02-25T01:04:54.815Z",
+          "isCorrect": true,
+          "level": 0
         }
       ]
     },
     "q-1770871365772": {
-      "correct": 11,
-      "total": 11,
+      "correct": 13,
+      "total": 13,
       "page": "厚生年金保険法　受給権者が日本年金機構に行う届出",
       "text": "障害不該当の届出",
       "recent": [
@@ -6344,8 +6474,8 @@
         1,
         1
       ],
-      "srsLevel": 6,
-      "nextReview": "2026-03-25T15:00:00.000Z",
+      "srsLevel": 8,
+      "nextReview": "2026-06-24T15:00:00.000Z",
       "history": [
         {
           "date": "2026-02-17T02:40:08.214Z",
@@ -6376,12 +6506,22 @@
           "date": "2026-02-24T02:08:59.388Z",
           "isCorrect": true,
           "level": 5
+        },
+        {
+          "date": "2026-02-25T01:04:43.966Z",
+          "isCorrect": true,
+          "level": 6
+        },
+        {
+          "date": "2026-02-25T01:04:54.815Z",
+          "isCorrect": true,
+          "level": 7
         }
       ]
     },
     "q-1770871397107": {
-      "correct": 12,
-      "total": 14,
+      "correct": 14,
+      "total": 16,
       "page": "厚生年金保険法　受給権者が日本年金機構に行う届出",
       "text": "業務上障害補償の該当の届出",
       "recent": [
@@ -6391,8 +6531,8 @@
         1,
         1
       ],
-      "srsLevel": 5,
-      "nextReview": "2026-03-09T15:00:00.000Z",
+      "srsLevel": 7,
+      "nextReview": "2026-04-25T15:00:00.000Z",
       "history": [
         {
           "date": "2026-02-17T02:30:31.255Z",
@@ -6423,6 +6563,16 @@
           "date": "2026-02-24T02:24:46.015Z",
           "isCorrect": true,
           "level": 4
+        },
+        {
+          "date": "2026-02-25T01:04:43.966Z",
+          "isCorrect": true,
+          "level": 5
+        },
+        {
+          "date": "2026-02-25T01:04:54.815Z",
+          "isCorrect": true,
+          "level": 6
         }
       ]
     },
@@ -23369,6 +23519,22 @@
   },
   "history": [
     {
+      "timestamp": "2026/2/25 10:04:54",
+      "isoDate": "2026-02-25T01:04:54.816Z",
+      "page": "厚生年金保険法　受給権者が日本年金機構に行う届出",
+      "pageId": "p-1770870678996",
+      "score": "15 / 15",
+      "accuracy": 100
+    },
+    {
+      "timestamp": "2026/2/25 10:04:43",
+      "isoDate": "2026-02-25T01:04:43.967Z",
+      "page": "厚生年金保険法　受給権者が日本年金機構に行う届出",
+      "pageId": "p-1770870678996",
+      "score": "14 / 15",
+      "accuracy": 93
+    },
+    {
       "timestamp": "2026/2/25 9:59:54",
       "isoDate": "2026-02-25T00:59:54.071Z",
       "page": "社会保険労務士法　聴聞の特例（法25 条の4）",
@@ -23751,23 +23917,7 @@
       "pageId": "auto-due-review",
       "score": "10 / 10",
       "accuracy": 100
-    },
-    {
-      "timestamp": "2026/2/24 11:20:55",
-      "isoDate": "2026-02-24T02:20:55.057Z",
-      "page": "【復習】選択式 特訓 (10題)",
-      "pageId": "auto-due-review",
-      "score": "10 / 10",
-      "accuracy": 100
-    },
-    {
-      "timestamp": "2026/2/24 11:19:20",
-      "isoDate": "2026-02-24T02:19:20.235Z",
-      "page": "【復習】選択式 特訓 (10題)",
-      "pageId": "auto-due-review",
-      "score": "10 / 10",
-      "accuracy": 100
     }
   ],
-  "lastModified": 1771981392298
+  "lastModified": 1771981507413
 }
