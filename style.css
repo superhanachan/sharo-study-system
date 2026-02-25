@@ -2255,3 +2255,53 @@ tr {
     margin: 2.5rem 0;
     opacity: 0.5;
 }
+/* Sidebar Quick Actions */
+.sidebar-quick-actions {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.sidebar-gen-btn {
+    width: 100%;
+    padding: 0.7rem 0.8rem;
+    border-radius: 10px;
+    border: none;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: var(--transition);
+    text-align: center;
+    font-family: 'Outfit', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.sidebar-gen-btn.sync-btn {
+    background: var(--accent);
+    color: var(--bg-dark);
+}
+
+.sidebar-gen-btn.srs-clause {
+    background: var(--success);
+    color: var(--bg-dark);
+}
+
+.sidebar-gen-btn.srs-page {
+    background: #2ec4b6;
+    color: var(--bg-dark);
+}
+
+.sidebar-gen-btn:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.sidebar-gen-btn:active {
+    transform: translateY(0);
+}

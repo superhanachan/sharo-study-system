@@ -293,6 +293,7 @@ class QuizApp {
         this.ghSyncStatus = document.getElementById('github-sync-status');
         this.ghSaveConfigBtn = document.getElementById('gh-save-config-btn');
         this.ghSyncNowBtn = document.getElementById('gh-sync-now-btn');
+        this.sidebarGhSyncBtn = document.getElementById('sidebar-gh-sync-btn');
     }
 
     bindEvents() {
@@ -425,6 +426,7 @@ class QuizApp {
         // GitHub Sync events
         if (this.ghSaveConfigBtn) this.ghSaveConfigBtn.addEventListener('click', () => this.saveGitHubConfig());
         if (this.ghSyncNowBtn) this.ghSyncNowBtn.addEventListener('click', () => this.syncWithGitHub());
+        if (this.sidebarGhSyncBtn) this.sidebarGhSyncBtn.addEventListener('click', () => this.syncWithGitHub());
 
         // Recovery button for internal backup
         const forceRestoreBtn = document.getElementById('force-restore-internal-btn');
@@ -3055,8 +3057,14 @@ class QuizApp {
             return;
         }
 
-        this.ghSyncNowBtn.disabled = true;
-        this.ghSyncNowBtn.textContent = '同期中...';
+        if (this.ghSyncNowBtn) {
+            this.ghSyncNowBtn.disabled = true;
+            this.ghSyncNowBtn.textContent = '同期中...';
+        }
+        if (this.sidebarGhSyncBtn) {
+            this.sidebarGhSyncBtn.disabled = true;
+            this.sidebarGhSyncBtn.textContent = '同期中...';
+        }
         this.updateGitHubStatus('同期中...');
 
         try {
@@ -3099,8 +3107,14 @@ class QuizApp {
             alert('同期に失敗しました: ' + error.message);
             this.updateGitHubStatus('同期失敗');
         } finally {
-            this.ghSyncNowBtn.disabled = false;
-            this.ghSyncNowBtn.textContent = '今すぐ同期（アップロード＆ダウンロード）';
+            if (this.ghSyncNowBtn) {
+                this.ghSyncNowBtn.disabled = false;
+                this.ghSyncNowBtn.textContent = '今すぐ同期（アップロード＆ダウンロード）';
+            }
+            if (this.sidebarGhSyncBtn) {
+                this.sidebarGhSyncBtn.disabled = false;
+                this.sidebarGhSyncBtn.textContent = '今すぐ同期';
+            }
         }
     }
 
