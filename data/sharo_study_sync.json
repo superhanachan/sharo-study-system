@@ -5,7 +5,7 @@
       "title": "労働基準法",
       "type": "folder",
       "parentId": null,
-      "isCollapsed": true,
+      "isCollapsed": false,
       "isInPool": false
     },
     {
@@ -13,7 +13,7 @@
       "title": "雇用保険法",
       "type": "folder",
       "parentId": null,
-      "isCollapsed": false,
+      "isCollapsed": true,
       "isInPool": false
     },
     {
@@ -904,7 +904,7 @@
       "title": "国民年金法",
       "type": "folder",
       "parentId": null,
-      "isCollapsed": true,
+      "isCollapsed": false,
       "isInPool": false
     },
     {
@@ -1535,7 +1535,7 @@
       "title": "厚生年金保険法",
       "type": "folder",
       "parentId": null,
-      "isCollapsed": true,
+      "isCollapsed": false,
       "isInPool": false
     },
     {
@@ -1543,7 +1543,7 @@
       "title": "健康保険法",
       "type": "folder",
       "parentId": null,
-      "isCollapsed": true,
+      "isCollapsed": false,
       "isInPool": false
     },
     {
@@ -3630,7 +3630,7 @@
       "title": "横断",
       "type": "folder",
       "parentId": null,
-      "isCollapsed": true,
+      "isCollapsed": false,
       "isInPool": false
     },
     {
@@ -3696,7 +3696,7 @@
       "title": "労働に関する一般常識",
       "type": "folder",
       "parentId": null,
-      "isCollapsed": true,
+      "isCollapsed": false,
       "isInPool": false
     },
     {
@@ -3712,7 +3712,7 @@
       "title": "労働契約法",
       "type": "folder",
       "parentId": "f-1771547463760",
-      "isCollapsed": false,
+      "isCollapsed": true,
       "isInPool": false
     },
     {
@@ -4293,6 +4293,21 @@
       "type": "clause",
       "parentId": "f-1771983875164",
       "text": "1） 偽りその他不正の行為により[[求職者給付]]又は[[就職促進給付]]の支給を受け、又は受けようとした者には、これらの給付の支給を受け、又は受けようとした日以後、[[就職促進給付]]を支給しない。ただし、やむを得ない理由がある場合には[[就職促進給付]]の[[全部又は一部]]を支給することができる。",
+      "dummies": ""
+    },
+    {
+      "id": "f-1771996150081",
+      "title": "労働施策総合推進法",
+      "type": "folder",
+      "parentId": "f-1771547463760",
+      "isCollapsed": true
+    },
+    {
+      "id": "p-1771996180716",
+      "title": "労働施策総合推進法 目的",
+      "type": "clause",
+      "parentId": "f-1771551237100",
+      "text": "労働施策総合推進法\n【目的（法1 条）】\n1）この法律は、国が、[[少子高齢化]]による人口構造の変化等の経済社会情勢の変化に対応して、労働に関し、その政策全般にわたり、必要な施策を総合的に講ずることにより、[[労働市場の機能]]が適切に発揮され、労働者の多様な事情に応じた[[雇用の安定]]及び[[職業生活の充実]]並びに[[労働生産性の向上]]を促進して、労働者がその有する能力を有効に発揮することができるようにし、これを通じて、労働者の[[職業の安定]]と[[経済的社会的地位の向上]]とを図るとともに、[[経済及び社会の発展]]並びに[[完全雇用の達成]]に資することを目的とする。\n2）この法律の運用に当たっては、労働者の[[職業選択の自由]]及び事業主の雇用の管理についての[[自主性]]を尊重しなければならず、また、職業能力の開発及び向上を図り、職業を通じて自立しようとする労働者の意欲を高め、かつ、労働者の職業を安定させるための事業主の努力を助長するように[[努めなければならない]]。",
       "dummies": ""
     }
   ],
@@ -24761,5 +24776,5 @@
       "accuracy": 100
     }
   ],
-  "lastModified": 1771995366886
+  "lastModified": 1771996630330
 }
