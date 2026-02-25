@@ -17339,18 +17339,18 @@
       "nextReview": null
     },
     "clause-summary-p-1771306841699": {
-      "correct": 4,
-      "total": 8,
+      "correct": 5,
+      "total": 9,
       "recent": [
-        0,
         0,
         1,
         0,
+        1,
         1
       ],
       "page": "基本手当 支給の期間及び日数",
       "text": "条文全体: 基本手当 支給の期間及び日数",
-      "srsLevel": 1,
+      "srsLevel": 2,
       "history": [
         {
           "date": "2026-02-17T06:13:15.646Z",
@@ -17391,9 +17391,14 @@
           "date": "2026-02-24T01:13:24.642Z",
           "isCorrect": true,
           "level": 0
+        },
+        {
+          "date": "2026-02-25T01:22:33.904Z",
+          "isCorrect": true,
+          "level": 1
         }
       ],
-      "nextReview": "2026-02-24T15:00:00.000Z"
+      "nextReview": "2026-02-26T15:00:00.000Z"
     },
     "clause-summary-p-1771313137530": {
       "correct": 5,
@@ -23115,80 +23120,104 @@
       "nextReview": null
     },
     "clause-summary-p-1771918334951": {
-      "correct": 1,
-      "total": 1,
+      "correct": 2,
+      "total": 2,
       "recent": [
+        1,
         1
       ],
       "page": "厚生年金保険法　目的等",
       "pageId": "p-1771918334951",
       "text": "条文全体: 厚生年金保険法　目的等",
-      "srsLevel": 1,
+      "srsLevel": 2,
       "history": [
         {
           "date": "2026-02-24T07:40:57.614Z",
           "isCorrect": true,
           "level": 0
+        },
+        {
+          "date": "2026-02-25T01:14:47.753Z",
+          "isCorrect": true,
+          "level": 1
         }
       ],
-      "nextReview": "2026-02-24T15:00:00.000Z"
+      "nextReview": "2026-02-26T15:00:00.000Z"
     },
     "clause-summary-p-1771919896672": {
-      "correct": 1,
-      "total": 1,
+      "correct": 2,
+      "total": 2,
       "recent": [
+        1,
         1
       ],
       "page": "厚生年金保険法　法定17 業種以外の事業",
       "pageId": "p-1771919896672",
       "text": "条文全体: 厚生年金保険法　法定17 業種以外の事業",
-      "srsLevel": 1,
+      "srsLevel": 2,
       "history": [
         {
           "date": "2026-02-24T13:09:18.128Z",
           "isCorrect": true,
           "level": 0
+        },
+        {
+          "date": "2026-02-25T01:22:33.905Z",
+          "isCorrect": true,
+          "level": 1
         }
       ],
-      "nextReview": "2026-02-24T15:00:00.000Z"
+      "nextReview": "2026-02-26T15:00:00.000Z"
     },
     "clause-summary-p-1771919258981": {
-      "correct": 1,
-      "total": 1,
+      "correct": 2,
+      "total": 2,
       "recent": [
+        1,
         1
       ],
       "page": "厚生年金保険法　適用事業所",
       "pageId": "p-1771919258981",
       "text": "条文全体: 厚生年金保険法　適用事業所",
-      "srsLevel": 1,
+      "srsLevel": 2,
       "history": [
         {
           "date": "2026-02-24T13:09:18.129Z",
           "isCorrect": true,
           "level": 0
+        },
+        {
+          "date": "2026-02-25T01:12:53.589Z",
+          "isCorrect": true,
+          "level": 1
         }
       ],
-      "nextReview": "2026-02-24T15:00:00.000Z"
+      "nextReview": "2026-02-26T15:00:00.000Z"
     },
     "clause-summary-p-1771921047606": {
-      "correct": 1,
-      "total": 1,
+      "correct": 2,
+      "total": 2,
       "recent": [
+        1,
         1
       ],
       "page": "特定適用事業所に該当しなくなったとき、特定4 分の3 未満短時間労働者を被保険者から外す方法",
       "pageId": "p-1771921047606",
       "text": "条文全体: 特定適用事業所に該当しなくなったとき、特定4 分の3 未満短時間労働者を被保険者から外す方法",
-      "srsLevel": 1,
+      "srsLevel": 2,
       "history": [
         {
           "date": "2026-02-24T13:09:18.129Z",
           "isCorrect": true,
           "level": 0
+        },
+        {
+          "date": "2026-02-25T01:24:15.029Z",
+          "isCorrect": true,
+          "level": 1
         }
       ],
-      "nextReview": "2026-02-24T15:00:00.000Z"
+      "nextReview": "2026-02-26T15:00:00.000Z"
     },
     "clause-summary-p-1771920537270": {
       "correct": 1,
@@ -23229,42 +23258,54 @@
       "nextReview": "2026-02-24T15:00:00.000Z"
     },
     "clause-summary-p-1771574559104": {
-      "correct": 1,
-      "total": 1,
+      "correct": 2,
+      "total": 2,
       "recent": [
+        1,
         1
       ],
       "page": "社会保険労務士法　登録及び登録の取消し（法14 条の2 ～法14 条の9）",
       "pageId": "p-1771574559104",
       "text": "条文全体: 社会保険労務士法　登録及び登録の取消し（法14 条の2 ～法14 条の9）",
-      "srsLevel": 1,
+      "srsLevel": 2,
       "history": [
         {
           "date": "2026-02-24T13:16:05.708Z",
           "isCorrect": true,
           "level": 0
+        },
+        {
+          "date": "2026-02-25T01:24:15.028Z",
+          "isCorrect": true,
+          "level": 1
         }
       ],
-      "nextReview": "2026-02-24T15:00:00.000Z"
+      "nextReview": "2026-02-26T15:00:00.000Z"
     },
     "clause-summary-p-1771896395553": {
-      "correct": 1,
-      "total": 1,
+      "correct": 2,
+      "total": 2,
       "recent": [
+        1,
         1
       ],
       "page": "社会保険労務士名簿（法14 条の3）",
       "pageId": "p-1771896395553",
       "text": "条文全体: 社会保険労務士名簿（法14 条の3）",
-      "srsLevel": 1,
+      "srsLevel": 2,
       "history": [
         {
           "date": "2026-02-24T13:16:05.708Z",
           "isCorrect": true,
           "level": 0
+        },
+        {
+          "date": "2026-02-25T01:22:33.904Z",
+          "isCorrect": true,
+          "level": 1
         }
       ],
-      "nextReview": "2026-02-24T15:00:00.000Z"
+      "nextReview": "2026-02-26T15:00:00.000Z"
     },
     "clause-summary-p-1771913508757": {
       "correct": 1,
@@ -23286,23 +23327,29 @@
       "nextReview": "2026-02-24T15:00:00.000Z"
     },
     "clause-summary-p-1771914743383": {
-      "correct": 1,
-      "total": 1,
+      "correct": 2,
+      "total": 2,
       "recent": [
+        1,
         1
       ],
       "page": "社会保険労務士法　報告及び検査",
       "pageId": "p-1771914743383",
       "text": "条文全体: 社会保険労務士法　報告及び検査",
-      "srsLevel": 1,
+      "srsLevel": 2,
       "history": [
         {
           "date": "2026-02-24T13:17:46.300Z",
           "isCorrect": true,
           "level": 0
+        },
+        {
+          "date": "2026-02-25T01:24:15.029Z",
+          "isCorrect": true,
+          "level": 1
         }
       ],
-      "nextReview": "2026-02-24T15:00:00.000Z"
+      "nextReview": "2026-02-26T15:00:00.000Z"
     },
     "clause-summary-p-1771896275571": {
       "correct": 1,
@@ -23768,6 +23815,38 @@
   },
   "history": [
     {
+      "timestamp": "2026/2/25 10:24:15",
+      "isoDate": "2026-02-25T01:24:15.029Z",
+      "page": "【復習】穴埋め式問題 (3題)",
+      "pageId": "auto-due-review-clause",
+      "score": "21 / 21",
+      "accuracy": 100
+    },
+    {
+      "timestamp": "2026/2/25 10:22:33",
+      "isoDate": "2026-02-25T01:22:33.905Z",
+      "page": "【復習】穴埋め式問題 (3題)",
+      "pageId": "auto-due-review-clause",
+      "score": "26 / 26",
+      "accuracy": 100
+    },
+    {
+      "timestamp": "2026/2/25 10:14:47",
+      "isoDate": "2026-02-25T01:14:47.754Z",
+      "page": "【復習】穴埋め式問題 (1題)",
+      "pageId": "auto-due-review-clause",
+      "score": "22 / 22",
+      "accuracy": 100
+    },
+    {
+      "timestamp": "2026/2/25 10:12:53",
+      "isoDate": "2026-02-25T01:12:53.591Z",
+      "page": "【復習】穴埋め式問題 (1題)",
+      "pageId": "auto-due-review-clause",
+      "score": "12 / 12",
+      "accuracy": 100
+    },
+    {
       "timestamp": "2026/2/25 10:10:30",
       "isoDate": "2026-02-25T01:10:30.713Z",
       "page": "【復習】選択式 特訓 (5題)",
@@ -24134,39 +24213,7 @@
       "pageId": "auto-due-review-clause",
       "score": "8 / 8",
       "accuracy": 100
-    },
-    {
-      "timestamp": "2026/2/24 11:36:07",
-      "isoDate": "2026-02-24T02:36:07.511Z",
-      "page": "【復習】穴埋め式問題 (1題)",
-      "pageId": "auto-due-review-clause",
-      "score": "14 / 14",
-      "accuracy": 100
-    },
-    {
-      "timestamp": "2026/2/24 11:35:07",
-      "isoDate": "2026-02-24T02:35:07.429Z",
-      "page": "【復習】穴埋め式問題 (1題)",
-      "pageId": "auto-due-review-clause",
-      "score": "4 / 4",
-      "accuracy": 100
-    },
-    {
-      "timestamp": "2026/2/24 11:30:29",
-      "isoDate": "2026-02-24T02:30:29.418Z",
-      "page": "【復習】選択式 特訓 (2題)",
-      "pageId": "auto-due-review",
-      "score": "2 / 2",
-      "accuracy": 100
-    },
-    {
-      "timestamp": "2026/2/24 11:29:49",
-      "isoDate": "2026-02-24T02:29:49.097Z",
-      "page": "【復習】選択式 特訓 (10題)",
-      "pageId": "auto-due-review",
-      "score": "10 / 10",
-      "accuracy": 100
     }
   ],
-  "lastModified": 1771981880992
+  "lastModified": 1771982661200
 }
