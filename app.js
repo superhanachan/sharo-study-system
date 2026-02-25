@@ -1151,17 +1151,35 @@ class QuizApp {
                         e.preventDefault();
                         blank.classList.remove('drag-over');
                         const text = e.dataTransfer.getData('text/plain');
-                        if (text) { this.userAnswers[`${set.id}-${currentIdx}`] = text; this.renderClauseView(set); }
+                        if (text) {
+                            this.userAnswers[`${set.id}-${currentIdx}`] = text;
+                            // Auto-fill other blanks with same correct answer
+                            keywords.forEach((otherKw, j) => {
+                                if (otherKw.text === kwInfo.text) this.userAnswers[`${set.id}-${j}`] = text;
+                            });
+                            this.renderClauseView(set);
+                        }
                     };
                     blank.onclick = () => {
                         if (this.selectedKeyword) {
                             // Click-to-Fill logic
-                            this.userAnswers[`${set.id}-${currentIdx}`] = this.selectedKeyword;
+                            const val = this.selectedKeyword;
+                            this.userAnswers[`${set.id}-${currentIdx}`] = val;
+                            // Auto-fill other blanks with same correct answer
+                            keywords.forEach((otherKw, j) => {
+                                if (otherKw.text === kwInfo.text) this.userAnswers[`${set.id}-${j}`] = val;
+                            });
                             this.selectedKeyword = null;
                             this.renderClauseView(set);
                         } else if (this.userAnswers[`${set.id}-${currentIdx}`]) {
-                            // Remove if already filled and no new selection
+                            const val = this.userAnswers[`${set.id}-${currentIdx}`];
                             delete this.userAnswers[`${set.id}-${currentIdx}`];
+                            // Sync removal
+                            keywords.forEach((otherKw, j) => {
+                                if (otherKw.text === kwInfo.text && this.userAnswers[`${set.id}-${j}`] === val) {
+                                    delete this.userAnswers[`${set.id}-${j}`];
+                                }
+                            });
                             this.renderClauseView(set);
                         }
                     };
@@ -1903,6 +1921,10 @@ class QuizApp {
                                 const text = e.dataTransfer.getData('text/plain');
                                 if (text) {
                                     this.userAnswers[`${q.id}-${currentBlankIdx}`] = text;
+                                    // Auto-fill other blanks with same correct answer
+                                    rowKeywords.forEach((otherKw, j) => {
+                                        if (otherKw.text === kwInfo.text) this.userAnswers[`${q.id}-${j}`] = text;
+                                    });
                                     this.renderTable();
                                     const trTarget = blank.closest('tr');
                                     if (trTarget) this.updateGlobalKeywordBank(trTarget);
@@ -1911,11 +1933,23 @@ class QuizApp {
                             blank.onclick = () => {
                                 if (this.selectedKeyword) {
                                     // Click-to-Fill logic
-                                    this.userAnswers[`${q.id}-${currentBlankIdx}`] = this.selectedKeyword;
+                                    const val = this.selectedKeyword;
+                                    this.userAnswers[`${q.id}-${currentBlankIdx}`] = val;
+                                    // Auto-fill other blanks with same correct answer
+                                    rowKeywords.forEach((otherKw, j) => {
+                                        if (otherKw.text === kwInfo.text) this.userAnswers[`${q.id}-${j}`] = val;
+                                    });
                                     this.selectedKeyword = null;
                                     this.renderTable();
                                 } else if (this.userAnswers[`${q.id}-${currentBlankIdx}`]) {
+                                    const val = this.userAnswers[`${q.id}-${currentBlankIdx}`];
                                     delete this.userAnswers[`${q.id}-${currentBlankIdx}`];
+                                    // Sync removal
+                                    rowKeywords.forEach((otherKw, j) => {
+                                        if (otherKw.text === kwInfo.text && this.userAnswers[`${q.id}-${j}`] === val) {
+                                            delete this.userAnswers[`${q.id}-${j}`];
+                                        }
+                                    });
                                     this.renderTable();
                                     const trTarget = blank.closest('tr');
                                     if (trTarget) this.updateGlobalKeywordBank(trTarget);
