@@ -23061,10 +23061,11 @@
       "nextReview": "2026-02-25T15:00:00.000Z"
     },
     "clause-summary-p-1771916544517": {
-      "correct": 1,
-      "total": 4,
+      "correct": 2,
+      "total": 7,
       "recent": [
         0,
+        1,
         0,
         0,
         1
@@ -23093,9 +23094,24 @@
           "date": "2026-02-24T13:26:57.444Z",
           "isCorrect": true,
           "level": 0
+        },
+        {
+          "date": "2026-02-25T00:59:28.807Z",
+          "isCorrect": false,
+          "level": 1
+        },
+        {
+          "date": "2026-02-25T00:59:40.302Z",
+          "isCorrect": false,
+          "level": 0
+        },
+        {
+          "date": "2026-02-25T00:59:54.071Z",
+          "isCorrect": true,
+          "level": 0
         }
       ],
-      "nextReview": "2026-02-24T15:00:00.000Z"
+      "nextReview": "2026-02-25T15:00:00.000Z"
     },
     "clause-summary-p-1771914193405": {
       "correct": 4,
@@ -23209,9 +23225,173 @@
         }
       ],
       "nextReview": "2026-02-24T15:00:00.000Z"
+    },
+    "clause-p-1771916544517-0": {
+      "correct": 3,
+      "total": 3,
+      "recent": [
+        1,
+        1,
+        1
+      ],
+      "page": "社会保険労務士法　聴聞の特例（法25 条の4）",
+      "pageId": "p-1771916544517",
+      "text": "穴埋め: 厚生労働大臣",
+      "srsLevel": 0,
+      "nextReview": null
+    },
+    "clause-p-1771916544517-1": {
+      "correct": 1,
+      "total": 3,
+      "recent": [
+        0,
+        0,
+        1
+      ],
+      "page": "社会保険労務士法　聴聞の特例（法25 条の4）",
+      "pageId": "p-1771916544517",
+      "text": "穴埋め: 戒告",
+      "srsLevel": 0,
+      "nextReview": null
+    },
+    "clause-p-1771916544517-2": {
+      "correct": 1,
+      "total": 3,
+      "recent": [
+        0,
+        0,
+        1
+      ],
+      "page": "社会保険労務士法　聴聞の特例（法25 条の4）",
+      "pageId": "p-1771916544517",
+      "text": "穴埋め: 業務の停止",
+      "srsLevel": 0,
+      "nextReview": null
+    },
+    "clause-p-1771916544517-3": {
+      "correct": 3,
+      "total": 3,
+      "recent": [
+        1,
+        1,
+        1
+      ],
+      "page": "社会保険労務士法　聴聞の特例（法25 条の4）",
+      "pageId": "p-1771916544517",
+      "text": "穴埋め: 聴聞",
+      "srsLevel": 0,
+      "nextReview": null
+    },
+    "clause-p-1771916544517-4": {
+      "correct": 3,
+      "total": 3,
+      "recent": [
+        1,
+        1,
+        1
+      ],
+      "page": "社会保険労務士法　聴聞の特例（法25 条の4）",
+      "pageId": "p-1771916544517",
+      "text": "穴埋め: 1",
+      "srsLevel": 0,
+      "nextReview": null
+    },
+    "clause-p-1771916544517-5": {
+      "correct": 3,
+      "total": 3,
+      "recent": [
+        1,
+        1,
+        1
+      ],
+      "page": "社会保険労務士法　聴聞の特例（法25 条の4）",
+      "pageId": "p-1771916544517",
+      "text": "穴埋め: 聴聞の期日",
+      "srsLevel": 0,
+      "nextReview": null
+    },
+    "clause-p-1771916544517-6": {
+      "correct": 3,
+      "total": 3,
+      "recent": [
+        1,
+        1,
+        1
+      ],
+      "page": "社会保険労務士法　聴聞の特例（法25 条の4）",
+      "pageId": "p-1771916544517",
+      "text": "穴埋め: 場所",
+      "srsLevel": 0,
+      "nextReview": null
+    },
+    "clause-p-1771916544517-7": {
+      "correct": 3,
+      "total": 3,
+      "recent": [
+        1,
+        1,
+        1
+      ],
+      "page": "社会保険労務士法　聴聞の特例（法25 条の4）",
+      "pageId": "p-1771916544517",
+      "text": "穴埋め: 審理",
+      "srsLevel": 0,
+      "nextReview": null
+    },
+    "clause-p-1771916544517-8": {
+      "correct": 3,
+      "total": 3,
+      "recent": [
+        1,
+        1,
+        1
+      ],
+      "page": "社会保険労務士法　聴聞の特例（法25 条の4）",
+      "pageId": "p-1771916544517",
+      "text": "穴埋め: 公開",
+      "srsLevel": 0,
+      "nextReview": null
+    },
+    "clause-p-1771916544517-9": {
+      "correct": 3,
+      "total": 3,
+      "recent": [
+        1,
+        1,
+        1
+      ],
+      "page": "社会保険労務士法　聴聞の特例（法25 条の4）",
+      "pageId": "p-1771916544517",
+      "text": "穴埋め: 連合会",
+      "srsLevel": 0,
+      "nextReview": null
     }
   },
   "history": [
+    {
+      "timestamp": "2026/2/25 9:59:54",
+      "isoDate": "2026-02-25T00:59:54.071Z",
+      "page": "社会保険労務士法　聴聞の特例（法25 条の4）",
+      "pageId": "p-1771916544517",
+      "score": "11 / 11",
+      "accuracy": 100
+    },
+    {
+      "timestamp": "2026/2/25 9:59:40",
+      "isoDate": "2026-02-25T00:59:40.302Z",
+      "page": "社会保険労務士法　聴聞の特例（法25 条の4）",
+      "pageId": "p-1771916544517",
+      "score": "9 / 11",
+      "accuracy": 82
+    },
+    {
+      "timestamp": "2026/2/25 9:59:28",
+      "isoDate": "2026-02-25T00:59:28.809Z",
+      "page": "社会保険労務士法　聴聞の特例（法25 条の4）",
+      "pageId": "p-1771916544517",
+      "score": "9 / 11",
+      "accuracy": 82
+    },
     {
       "timestamp": "2026/2/24 22:28:27",
       "isoDate": "2026-02-24T13:28:27.064Z",
@@ -23587,31 +23767,7 @@
       "pageId": "auto-due-review",
       "score": "10 / 10",
       "accuracy": 100
-    },
-    {
-      "timestamp": "2026/2/24 11:16:03",
-      "isoDate": "2026-02-24T02:16:03.249Z",
-      "page": "【復習】選択式 特訓 (10題)",
-      "pageId": "auto-due-review",
-      "score": "10 / 10",
-      "accuracy": 100
-    },
-    {
-      "timestamp": "2026/2/24 11:15:10",
-      "isoDate": "2026-02-24T02:15:10.133Z",
-      "page": "【復習】選択式 特訓 (10題)",
-      "pageId": "auto-due-review",
-      "score": "10 / 10",
-      "accuracy": 100
-    },
-    {
-      "timestamp": "2026/2/24 11:14:34",
-      "isoDate": "2026-02-24T02:14:34.789Z",
-      "page": "【復習】選択式 特訓 (10題)",
-      "pageId": "auto-due-review",
-      "score": "9 / 10",
-      "accuracy": 90
     }
   ],
-  "lastModified": 1771980793619
+  "lastModified": 1771981392298
 }
