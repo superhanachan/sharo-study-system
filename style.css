@@ -2305,3 +2305,116 @@ tr {
 .sidebar-gen-btn:active {
     transform: translateY(0);
 }
+
+/* iPad & Mobile Responsiveness */
+@media (max-width: 1024px) {
+    :root {
+        --sidebar-width: 280px;
+        font-size: 16px;
+    }
+
+    .main-content {
+        padding: 1.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    :root {
+        --sidebar-width: 100%;
+        font-size: 16px;
+    }
+
+    .sidebar {
+        position: fixed;
+        left: -100%;
+        top: 0;
+        height: 100%;
+        z-index: 2000;
+        transition: var(--transition);
+        box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .sidebar.open {
+        left: 0;
+    }
+
+    .main-content {
+        padding: 1rem;
+        width: 100%;
+    }
+
+    .header-right {
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 0.5rem;
+    }
+
+    .edit-controls {
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 0.5rem;
+    }
+
+    .home-dashboard {
+        padding: 1.5rem;
+        margin: 1rem auto;
+    }
+
+    .welcome-title {
+        font-size: 1.8rem;
+    }
+
+    /* Table Responsiveness */
+    .table-wrapper {
+        padding: 1rem;
+        border-radius: 12px;
+    }
+
+    table {
+        font-size: 0.9rem;
+    }
+
+    th, td {
+        padding: 0.8rem 0.5rem;
+    }
+
+    .question-cell {
+        min-width: 180px;
+    }
+
+    .choice-cell {
+        min-width: 80px;
+    }
+
+    /* Column Controls at top */
+    .column-controls {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .secondary-btn {
+        padding: 0.6rem 0.8rem;
+        font-size: 0.85rem;
+    }
+
+    /* GitHub Settings */
+    .github-sync-actions {
+        flex-direction: column;
+    }
+
+    .github-sync-actions button {
+        width: 100%;
+    }
+}
+
+/* Touch Device Optimizations */
+@media (hover: none) {
+    .sidebar-gen-btn, .primary-btn, .secondary-btn {
+        padding: 0.8rem 1rem; /* Slightly larger targets for touch */
+    }
+
+    .toc-nav a {
+        padding: 0.8rem 1rem;
+    }
+}
+
