@@ -21,7 +21,10 @@
             <div class="sidebar-header">
                 <div class="header-top">
                     <h1>暗記システム</h1>
-                    <button id="home-btn" class="home-btn" title="ホーム画面へ">🏠</button>
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <button id="home-btn" class="home-btn" title="ホーム画面へ">🏠</button>
+                        <button id="sidebar-close-btn" class="sidebar-close-btn" title="サイドバーを閉じる">&times;</button>
+                    </div>
                 </div>
             </div>
 
@@ -58,12 +61,12 @@
 
         <!-- Main Content Area -->
         <main class="main-content">
+            <button id="menu-toggle" class="menu-toggle-global">☰</button>
             <div id="global-keyword-bank" class="keyword-bank hidden"></div>
             <!-- Quiz View -->
             <div id="quiz-view" class="view">
                 <header class="content-header">
                     <div class="header-left">
-                        <button id="menu-toggle" class="menu-toggle">☰</button>
                         <h2 id="quiz-title">読込中...</h2>
                     </div>
                     <div class="header-right">

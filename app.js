@@ -258,6 +258,7 @@ class QuizApp {
         this.sidebar = document.getElementById('sidebar');
         this.sidebarContent = document.getElementById('quiz-sidebar-content');
         this.menuToggle = document.getElementById('menu-toggle');
+        this.sidebarCloseBtn = document.getElementById('sidebar-close-btn');
 
         // Data management
         this.exportJsonBtn = document.getElementById('export-json-btn');
@@ -400,7 +401,24 @@ class QuizApp {
             });
         }
         if (this.sidebar && this.menuToggle) {
-            this.menuToggle.addEventListener('click', () => { this.sidebar.classList.toggle('open'); });
+            this.menuToggle.addEventListener('click', () => {
+                if (window.innerWidth > 1024) {
+                    // Desktop: Toggle permanent hide/show
+                    document.body.classList.toggle('sidebar-hidden');
+                } else {
+                    // Mobile/Tablet: Toggle slide-in drawer
+                    this.sidebar.classList.toggle('open');
+                }
+            });
+        }
+        if (this.sidebarCloseBtn) {
+            this.sidebarCloseBtn.addEventListener('click', () => {
+                if (window.innerWidth > 1024) {
+                    document.body.classList.add('sidebar-hidden');
+                } else {
+                    this.sidebar.classList.remove('open');
+                }
+            });
         }
         if (this.homeBtn) {
             this.homeBtn.addEventListener('click', () => {
