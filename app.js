@@ -297,94 +297,106 @@ class QuizApp {
     }
 
     bindEvents() {
-        this.tabQuiz.addEventListener('click', () => this.switchView('quiz'));
-        this.tabStats.addEventListener('click', () => this.switchView('stats'));
+        if (this.tabQuiz) this.tabQuiz.addEventListener('click', () => this.switchView('quiz'));
+        if (this.tabStats) this.tabStats.addEventListener('click', () => this.switchView('stats'));
         if (this.clearPoolBtn) {
             this.clearPoolBtn.addEventListener('click', () => this.clearAllPoolSelections());
         }
-        this.editModeToggle.addEventListener('change', (e) => {
-            this.isEditMode = e.target.checked;
-            document.body.classList.toggle('edit-mode', this.isEditMode);
-            this.updateTitleEditability();
-            this.resetQuiz(); this.renderTOC(); this.renderTable();
-        });
-        this.checkAnswersBtn.addEventListener('click', () => this.batchCheckAnswers());
-        this.resetWrongBtn.addEventListener('click', () => this.resetWrongAnswers());
-        this.resetAllBtn.addEventListener('click', () => this.resetQuiz());
-        this.addFolderBtn.addEventListener('click', () => this.addNewFolder());
-        this.addPageBtn.addEventListener('click', () => this.addNewPage());
-        this.addClauseBtn.addEventListener('click', () => this.addNewClausePage());
-        this.addRowBtn.addEventListener('click', () => this.addNewRow());
-        this.addColumnBtn.addEventListener('click', () => this.addNewColumn());
-        this.clearDataBtn.addEventListener('click', () => this.clearData());
-        this.deletePageBtn.addEventListener('click', () => this.deleteCurrentPage());
-        this.clonePageBtn.addEventListener('click', () => this.cloneCurrentPage());
+        if (this.editModeToggle) {
+            this.editModeToggle.addEventListener('change', (e) => {
+                this.isEditMode = e.target.checked;
+                document.body.classList.toggle('edit-mode', this.isEditMode);
+                this.updateTitleEditability();
+                this.resetQuiz(); this.renderTOC(); this.renderTable();
+            });
+        }
+        if (this.checkAnswersBtn) this.checkAnswersBtn.addEventListener('click', () => this.batchCheckAnswers());
+        if (this.resetWrongBtn) this.resetWrongBtn.addEventListener('click', () => this.resetWrongAnswers());
+        if (this.resetAllBtn) this.resetAllBtn.addEventListener('click', () => this.resetQuiz());
+        if (this.addFolderBtn) this.addFolderBtn.addEventListener('click', () => this.addNewFolder());
+        if (this.addPageBtn) this.addPageBtn.addEventListener('click', () => this.addNewPage());
+        if (this.addClauseBtn) this.addClauseBtn.addEventListener('click', () => this.addNewClausePage());
+        if (this.addRowBtn) this.addRowBtn.addEventListener('click', () => this.addNewRow());
+        if (this.addColumnBtn) this.addColumnBtn.addEventListener('click', () => this.addNewColumn());
+        if (this.clearDataBtn) this.clearDataBtn.addEventListener('click', () => this.clearData());
+        if (this.deletePageBtn) this.deletePageBtn.addEventListener('click', () => this.deleteCurrentPage());
+        if (this.clonePageBtn) this.clonePageBtn.addEventListener('click', () => this.cloneCurrentPage());
 
-        this.insertTableBtn.addEventListener('click', () => {
-            const template = "\n| 項目 | 内容 | 備考 |\n| --- | --- | --- |\n| [[キーワード1]] | 内容1 | 備考1 |\n| [[キーワード2]] | 内容2 | 備考2 |\n";
-            const start = this.clauseTextEditor.selectionStart;
-            const end = this.clauseTextEditor.selectionEnd;
-            const text = this.clauseTextEditor.value;
-            this.clauseTextEditor.value = text.substring(0, start) + template + text.substring(end);
-            this.clauseTextEditor.dispatchEvent(new Event('input')); // Trigger update
-        });
+        if (this.insertTableBtn && this.clauseTextEditor) {
+            this.insertTableBtn.addEventListener('click', () => {
+                const template = "\n| 項目 | 内容 | 備考 |\n| --- | --- | --- |\n| [[キーワード1]] | 内容1 | 備考1 |\n| [[キーワード2]] | 内容2 | 備考2 |\n";
+                const start = this.clauseTextEditor.selectionStart;
+                const end = this.clauseTextEditor.selectionEnd;
+                const text = this.clauseTextEditor.value;
+                this.clauseTextEditor.value = text.substring(0, start) + template + text.substring(end);
+                this.clauseTextEditor.dispatchEvent(new Event('input')); // Trigger update
+            });
+        }
 
-        this.genWeakBtn.addEventListener('click', () => this.generateSpecialQuiz('weak'));
+        if (this.genWeakBtn) this.genWeakBtn.addEventListener('click', () => this.generateSpecialQuiz('weak'));
         if (this.genWeakClauseBtn) {
             this.genWeakClauseBtn.addEventListener('click', () => this.generateSpecialQuiz('clause-weak'));
         }
-        this.genRareBtn.addEventListener('click', () => this.generateSpecialQuiz('rare'));
+        if (this.genRareBtn) this.genRareBtn.addEventListener('click', () => this.generateSpecialQuiz('rare'));
         if (this.genRandomBtn) this.genRandomBtn.addEventListener('click', () => this.generateSpecialQuiz('random'));
         if (this.genSRSClauseBtn) this.genSRSClauseBtn.addEventListener('click', () => this.generateSpecialQuiz('srs-clause'));
         if (this.genSRSPageBtn) this.genSRSPageBtn.addEventListener('click', () => this.generateSpecialQuiz('srs-page'));
         if (this.sidebarGenSRSClauseBtn) this.sidebarGenSRSClauseBtn.addEventListener('click', () => this.generateSpecialQuiz('srs-clause'));
         if (this.sidebarGenSRSPageBtn) this.sidebarGenSRSPageBtn.addEventListener('click', () => this.generateSpecialQuiz('srs-page'));
 
-        Object.keys(this.chartBtns).forEach(mode => {
-            if (this.chartBtns[mode]) {
-                this.chartBtns[mode].addEventListener('click', () => {
-                    this.chartMode = mode;
-                    this.updateChartTabs();
-                    this.renderChart();
-                });
-            }
-        });
-        this.tocList.addEventListener('click', (e) => {
-            if (e.target.tagName === 'A') {
-                e.preventDefault();
-                const id = e.target.getAttribute('href').substring(1);
-                const item = this.quizData.find(s => s.id === id);
-                if (item && item.type === 'folder') {
-                    this.toggleFolder(id);
-                } else if (item) {
-                    this.isAutoGenerated = false;
-                    this.currentSetId = id;
-                    this.loadSet(id);
+        if (this.chartBtns) {
+            Object.keys(this.chartBtns).forEach(mode => {
+                if (this.chartBtns[mode]) {
+                    this.chartBtns[mode].addEventListener('click', () => {
+                        this.chartMode = mode;
+                        this.updateChartTabs();
+                        this.renderChart();
+                    });
                 }
-            }
-        });
+            });
+        }
+        if (this.tocList) {
+            this.tocList.addEventListener('click', (e) => {
+                if (e.target.tagName === 'A') {
+                    e.preventDefault();
+                    const id = e.target.getAttribute('href').substring(1);
+                    const item = this.quizData.find(s => s.id === id);
+                    if (item && item.type === 'folder') {
+                        this.toggleFolder(id);
+                    } else if (item) {
+                        this.isAutoGenerated = false;
+                        this.currentSetId = id;
+                        this.loadSet(id);
+                    }
+                }
+            });
+        }
 
         // Update TOC real-time when editing title
-        this.quizTitle.addEventListener('input', () => {
-            if (this.isEditMode && !this.isAutoGenerated) {
-                const set = this.quizData.find(s => s.id === this.currentSetId);
-                if (set) {
-                    set.title = this.quizTitle.textContent.trim();
-                    this.renderTOC();
+        if (this.quizTitle) {
+            this.quizTitle.addEventListener('input', () => {
+                if (this.isEditMode && !this.isAutoGenerated) {
+                    const set = this.quizData.find(s => s.id === this.currentSetId);
+                    if (set) {
+                        set.title = this.quizTitle.textContent.trim();
+                        this.renderTOC();
+                    }
                 }
-            }
-        });
+            });
 
-        this.quizTitle.addEventListener('blur', () => {
-            if (this.isEditMode && !this.isAutoGenerated) {
-                const set = this.quizData.find(s => s.id === this.currentSetId);
-                if (set) {
-                    set.title = this.quizTitle.textContent.trim();
-                    this.saveData();
+            this.quizTitle.addEventListener('blur', () => {
+                if (this.isEditMode && !this.isAutoGenerated) {
+                    const set = this.quizData.find(s => s.id === this.currentSetId);
+                    if (set) {
+                        set.title = this.quizTitle.textContent.trim();
+                        this.saveData();
+                    }
                 }
-            }
-        });
-        this.menuToggle.addEventListener('click', () => { this.sidebar.classList.toggle('open'); });
+            });
+        }
+        if (this.sidebar && this.menuToggle) {
+            this.menuToggle.addEventListener('click', () => { this.sidebar.classList.toggle('open'); });
+        }
         if (this.homeBtn) {
             this.homeBtn.addEventListener('click', () => {
                 this.isAutoGenerated = false;
