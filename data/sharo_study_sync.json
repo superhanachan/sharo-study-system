@@ -10928,9 +10928,10 @@
       ]
     },
     "clause-p-1770967814054-0": {
-      "correct": 2,
-      "total": 2,
+      "correct": 3,
+      "total": 3,
       "recent": [
+        1,
         1,
         1
       ],
@@ -10940,9 +10941,10 @@
       "nextReview": null
     },
     "clause-p-1770967814054-1": {
-      "correct": 2,
-      "total": 2,
+      "correct": 3,
+      "total": 3,
       "recent": [
+        1,
         1,
         1
       ],
@@ -10952,9 +10954,10 @@
       "nextReview": null
     },
     "clause-p-1770967814054-2": {
-      "correct": 2,
-      "total": 2,
+      "correct": 3,
+      "total": 3,
       "recent": [
+        1,
         1,
         1
       ],
@@ -10964,9 +10967,10 @@
       "nextReview": null
     },
     "clause-p-1770967814054-3": {
-      "correct": 2,
-      "total": 2,
+      "correct": 3,
+      "total": 3,
       "recent": [
+        1,
         1,
         1
       ],
@@ -10976,9 +10980,10 @@
       "nextReview": null
     },
     "clause-p-1770967814054-4": {
-      "correct": 2,
-      "total": 2,
+      "correct": 3,
+      "total": 3,
       "recent": [
+        1,
         1,
         1
       ],
@@ -10988,9 +10993,10 @@
       "nextReview": null
     },
     "clause-p-1770967814054-5": {
-      "correct": 2,
-      "total": 2,
+      "correct": 3,
+      "total": 3,
       "recent": [
+        1,
         1,
         1
       ],
@@ -11000,19 +11006,19 @@
       "nextReview": null
     },
     "clause-summary-p-1770967814054": {
-      "correct": 8,
-      "total": 11,
+      "correct": 9,
+      "total": 12,
       "recent": [
         0,
         0,
-        0,
+        1,
         1,
         1
       ],
       "page": "雇用保険　管掌",
       "text": "条文全体: 雇用保険　管掌",
-      "srsLevel": 2,
-      "nextReview": "2026-02-25T15:00:00.000Z",
+      "srsLevel": 3,
+      "nextReview": "2026-02-28T15:00:00.000Z",
       "history": [
         {
           "date": "2026-02-17T04:32:16.862Z",
@@ -11048,6 +11054,11 @@
           "date": "2026-02-24T00:57:22.975Z",
           "isCorrect": true,
           "level": 1
+        },
+        {
+          "date": "2026-02-25T07:40:07.550Z",
+          "isCorrect": true,
+          "level": 2
         }
       ]
     },
@@ -12531,9 +12542,10 @@
       ]
     },
     "clause-p-1771218384007-0": {
-      "correct": 2,
-      "total": 2,
+      "correct": 3,
+      "total": 3,
       "recent": [
+        1,
         1,
         1
       ],
@@ -12543,9 +12555,10 @@
       "nextReview": null
     },
     "clause-p-1771218384007-1": {
-      "correct": 2,
-      "total": 2,
+      "correct": 3,
+      "total": 3,
       "recent": [
+        1,
         1,
         1
       ],
@@ -12555,9 +12568,10 @@
       "nextReview": null
     },
     "clause-p-1771218384007-2": {
-      "correct": 2,
-      "total": 2,
+      "correct": 3,
+      "total": 3,
       "recent": [
+        1,
         1,
         1
       ],
@@ -12567,9 +12581,10 @@
       "nextReview": null
     },
     "clause-p-1771218384007-3": {
-      "correct": 2,
-      "total": 2,
+      "correct": 3,
+      "total": 3,
       "recent": [
+        1,
         1,
         1
       ],
@@ -12579,19 +12594,19 @@
       "nextReview": null
     },
     "clause-summary-p-1771218384007": {
-      "correct": 9,
-      "total": 12,
+      "correct": 10,
+      "total": 13,
       "recent": [
         0,
         0,
-        0,
+        1,
         1,
         1
       ],
       "page": "失業等給付（法10 条）",
       "text": "条文全体: 失業等給付（法10 条）",
-      "srsLevel": 2,
-      "nextReview": "2026-02-25T15:00:00.000Z",
+      "srsLevel": 3,
+      "nextReview": "2026-02-28T15:00:00.000Z",
       "history": [
         {
           "date": "2026-02-17T04:32:16.862Z",
@@ -12627,6 +12642,11 @@
           "date": "2026-02-24T00:57:22.975Z",
           "isCorrect": true,
           "level": 1
+        },
+        {
+          "date": "2026-02-25T07:45:40.426Z",
+          "isCorrect": true,
+          "level": 2
         }
       ]
     },
@@ -12870,9 +12890,10 @@
       ]
     },
     "clause-p-1771219786663-0": {
-      "correct": 1,
-      "total": 1,
+      "correct": 2,
+      "total": 2,
       "recent": [
+        1,
         1
       ],
       "page": "雇用保険法　受給権の保護等",
@@ -12881,9 +12902,10 @@
       "nextReview": null
     },
     "clause-p-1771219786663-1": {
-      "correct": 1,
-      "total": 1,
+      "correct": 2,
+      "total": 2,
       "recent": [
+        1,
         1
       ],
       "page": "雇用保険法　受給権の保護等",
@@ -12892,9 +12914,10 @@
       "nextReview": null
     },
     "clause-p-1771219786663-2": {
-      "correct": 1,
-      "total": 1,
+      "correct": 2,
+      "total": 2,
       "recent": [
+        1,
         1
       ],
       "page": "雇用保険法　受給権の保護等",
@@ -12903,19 +12926,19 @@
       "nextReview": null
     },
     "clause-summary-p-1771219786663": {
-      "correct": 5,
-      "total": 11,
+      "correct": 6,
+      "total": 12,
       "recent": [
         0,
         0,
-        0,
+        1,
         1,
         1
       ],
       "page": "雇用保険法　受給権の保護等",
       "text": "条文全体: 雇用保険法　受給権の保護等",
-      "srsLevel": 2,
-      "nextReview": "2026-02-25T15:00:00.000Z",
+      "srsLevel": 3,
+      "nextReview": "2026-02-28T15:00:00.000Z",
       "history": [
         {
           "date": "2026-02-17T04:32:16.862Z",
@@ -12966,6 +12989,11 @@
           "date": "2026-02-24T00:55:14.952Z",
           "isCorrect": true,
           "level": 1
+        },
+        {
+          "date": "2026-02-25T07:45:06.825Z",
+          "isCorrect": true,
+          "level": 2
         }
       ]
     },
@@ -17826,18 +17854,18 @@
       "nextReview": "2026-02-26T15:00:00.000Z"
     },
     "clause-summary-p-1771313137530": {
-      "correct": 5,
-      "total": 12,
+      "correct": 6,
+      "total": 13,
       "recent": [
         0,
         0,
-        0,
+        1,
         1,
         1
       ],
       "page": "特定受給資格者の判定理由",
       "text": "条文全体: 特定受給資格者の判定理由",
-      "srsLevel": 2,
+      "srsLevel": 3,
       "history": [
         {
           "date": "2026-02-17T07:34:38.540Z",
@@ -17898,9 +17926,14 @@
           "date": "2026-02-24T01:01:31.656Z",
           "isCorrect": true,
           "level": 1
+        },
+        {
+          "date": "2026-02-25T07:46:52.642Z",
+          "isCorrect": true,
+          "level": 2
         }
       ],
-      "nextReview": "2026-02-25T15:00:00.000Z"
+      "nextReview": "2026-02-28T15:00:00.000Z"
     },
     "q-1771317377689": {
       "correct": 4,
@@ -20960,19 +20993,19 @@
       "nextReview": "2026-02-27T15:00:00.000Z"
     },
     "clause-summary-p-1771464255208": {
-      "correct": 3,
-      "total": 7,
+      "correct": 4,
+      "total": 8,
       "recent": [
         0,
         0,
-        0,
+        1,
         1,
         1
       ],
       "page": "給付制限まとめ",
       "pageId": "p-1771464255208",
       "text": "条文全体: 給付制限まとめ",
-      "srsLevel": 2,
+      "srsLevel": 3,
       "history": [
         {
           "date": "2026-02-19T01:33:50.313Z",
@@ -21008,9 +21041,14 @@
           "date": "2026-02-24T00:57:22.975Z",
           "isCorrect": true,
           "level": 1
+        },
+        {
+          "date": "2026-02-25T07:38:08.804Z",
+          "isCorrect": true,
+          "level": 2
         }
       ],
-      "nextReview": "2026-02-25T15:00:00.000Z"
+      "nextReview": "2026-02-28T15:00:00.000Z"
     },
     "clause-summary-p-1771465446613": {
       "correct": 3,
@@ -21056,9 +21094,10 @@
       "nextReview": "2026-02-27T15:00:00.000Z"
     },
     "clause-p-1771474208396-0": {
-      "correct": 1,
-      "total": 1,
+      "correct": 2,
+      "total": 2,
       "recent": [
+        1,
         1
       ],
       "page": "日雇労働求職者給付金の受給資格（法45 条）",
@@ -21068,9 +21107,10 @@
       "nextReview": null
     },
     "clause-p-1771474208396-1": {
-      "correct": 1,
-      "total": 1,
+      "correct": 2,
+      "total": 2,
       "recent": [
+        1,
         1
       ],
       "page": "日雇労働求職者給付金の受給資格（法45 条）",
@@ -21080,9 +21120,10 @@
       "nextReview": null
     },
     "clause-p-1771474208396-2": {
-      "correct": 1,
-      "total": 1,
+      "correct": 2,
+      "total": 2,
       "recent": [
+        1,
         1
       ],
       "page": "日雇労働求職者給付金の受給資格（法45 条）",
@@ -21092,9 +21133,10 @@
       "nextReview": null
     },
     "clause-p-1771474208396-3": {
-      "correct": 1,
-      "total": 1,
+      "correct": 2,
+      "total": 2,
       "recent": [
+        1,
         1
       ],
       "page": "日雇労働求職者給付金の受給資格（法45 条）",
@@ -21104,9 +21146,10 @@
       "nextReview": null
     },
     "clause-p-1771474208396-4": {
-      "correct": 1,
-      "total": 1,
+      "correct": 2,
+      "total": 2,
       "recent": [
+        1,
         1
       ],
       "page": "日雇労働求職者給付金の受給資格（法45 条）",
@@ -21116,9 +21159,10 @@
       "nextReview": null
     },
     "clause-p-1771474208396-5": {
-      "correct": 1,
-      "total": 1,
+      "correct": 2,
+      "total": 2,
       "recent": [
+        1,
         1
       ],
       "page": "日雇労働求職者給付金の受給資格（法45 条）",
@@ -21128,19 +21172,19 @@
       "nextReview": null
     },
     "clause-summary-p-1771474208396": {
-      "correct": 3,
-      "total": 7,
+      "correct": 4,
+      "total": 8,
       "recent": [
         0,
         0,
-        0,
+        1,
         1,
         1
       ],
       "page": "日雇労働求職者給付金の受給資格（法45 条）",
       "pageId": "p-1771474208396",
       "text": "条文全体: 日雇労働求職者給付金の受給資格（法45 条）",
-      "srsLevel": 2,
+      "srsLevel": 3,
       "history": [
         {
           "date": "2026-02-19T04:18:48.836Z",
@@ -21176,24 +21220,29 @@
           "date": "2026-02-24T01:16:59.275Z",
           "isCorrect": true,
           "level": 1
+        },
+        {
+          "date": "2026-02-25T07:39:09.833Z",
+          "isCorrect": true,
+          "level": 2
         }
       ],
-      "nextReview": "2026-02-25T15:00:00.000Z"
+      "nextReview": "2026-02-28T15:00:00.000Z"
     },
     "clause-summary-p-1771474923676": {
-      "correct": 3,
-      "total": 10,
+      "correct": 4,
+      "total": 11,
       "recent": [
         0,
         0,
-        0,
+        1,
         1,
         1
       ],
       "page": "日雇労働求職者給付金の日額（法48 条）等",
       "pageId": "p-1771474923676",
       "text": "条文全体: 日雇労働求職者給付金の日額（法48 条）等",
-      "srsLevel": 2,
+      "srsLevel": 3,
       "history": [
         {
           "date": "2026-02-19T04:30:52.761Z",
@@ -21244,9 +21293,14 @@
           "date": "2026-02-24T01:08:36.886Z",
           "isCorrect": true,
           "level": 1
+        },
+        {
+          "date": "2026-02-25T07:44:36.758Z",
+          "isCorrect": true,
+          "level": 2
         }
       ],
-      "nextReview": "2026-02-25T15:00:00.000Z"
+      "nextReview": "2026-02-28T15:00:00.000Z"
     },
     "clause-p-1771475615974-0": {
       "correct": 3,
@@ -22740,18 +22794,19 @@
       "nextReview": "2026-02-25T15:00:00.000Z"
     },
     "clause-summary-p-1771562558057": {
-      "correct": 2,
-      "total": 4,
+      "correct": 3,
+      "total": 5,
       "recent": [
         0,
         0,
+        1,
         1,
         1
       ],
       "page": "社会保険労務士法  社会保険労務士の業務",
       "pageId": "p-1771562558057",
       "text": "条文全体: 社会保険労務士法  社会保険労務士の業務",
-      "srsLevel": 2,
+      "srsLevel": 3,
       "history": [
         {
           "date": "2026-02-20T05:33:39.991Z",
@@ -22772,9 +22827,14 @@
           "date": "2026-02-24T04:30:44.546Z",
           "isCorrect": true,
           "level": 1
+        },
+        {
+          "date": "2026-02-25T07:48:28.123Z",
+          "isCorrect": true,
+          "level": 2
         }
       ],
-      "nextReview": "2026-02-25T15:00:00.000Z"
+      "nextReview": "2026-02-28T15:00:00.000Z"
     },
     "clause-summary-p-1771566240245": {
       "correct": 2,
@@ -23977,19 +24037,19 @@
       "nextReview": "2026-02-25T15:00:00.000Z"
     },
     "clause-summary-p-1771916544517": {
-      "correct": 2,
-      "total": 7,
+      "correct": 4,
+      "total": 9,
       "recent": [
         0,
+        0,
         1,
-        0,
-        0,
+        1,
         1
       ],
       "page": "社会保険労務士法　聴聞の特例（法25 条の4）",
       "pageId": "p-1771916544517",
       "text": "条文全体: 社会保険労務士法　聴聞の特例（法25 条の4）",
-      "srsLevel": 1,
+      "srsLevel": 3,
       "history": [
         {
           "date": "2026-02-24T13:26:12.452Z",
@@ -24025,9 +24085,19 @@
           "date": "2026-02-25T00:59:54.071Z",
           "isCorrect": true,
           "level": 0
+        },
+        {
+          "date": "2026-02-25T07:37:24.863Z",
+          "isCorrect": true,
+          "level": 1
+        },
+        {
+          "date": "2026-02-25T07:49:38.799Z",
+          "isCorrect": true,
+          "level": 2
         }
       ],
-      "nextReview": "2026-02-25T15:00:00.000Z"
+      "nextReview": "2026-02-28T15:00:00.000Z"
     },
     "clause-summary-p-1771914193405": {
       "correct": 4,
@@ -24167,9 +24237,11 @@
       "nextReview": "2026-02-26T15:00:00.000Z"
     },
     "clause-p-1771916544517-0": {
-      "correct": 3,
-      "total": 3,
+      "correct": 5,
+      "total": 5,
       "recent": [
+        1,
+        1,
         1,
         1,
         1
@@ -24181,11 +24253,13 @@
       "nextReview": null
     },
     "clause-p-1771916544517-1": {
-      "correct": 1,
-      "total": 3,
+      "correct": 3,
+      "total": 5,
       "recent": [
         0,
         0,
+        1,
+        1,
         1
       ],
       "page": "社会保険労務士法　聴聞の特例（法25 条の4）",
@@ -24195,11 +24269,13 @@
       "nextReview": null
     },
     "clause-p-1771916544517-2": {
-      "correct": 1,
-      "total": 3,
+      "correct": 3,
+      "total": 5,
       "recent": [
         0,
         0,
+        1,
+        1,
         1
       ],
       "page": "社会保険労務士法　聴聞の特例（法25 条の4）",
@@ -24209,9 +24285,11 @@
       "nextReview": null
     },
     "clause-p-1771916544517-3": {
-      "correct": 3,
-      "total": 3,
+      "correct": 5,
+      "total": 5,
       "recent": [
+        1,
+        1,
         1,
         1,
         1
@@ -24223,9 +24301,11 @@
       "nextReview": null
     },
     "clause-p-1771916544517-4": {
-      "correct": 3,
-      "total": 3,
+      "correct": 5,
+      "total": 5,
       "recent": [
+        1,
+        1,
         1,
         1,
         1
@@ -24237,9 +24317,11 @@
       "nextReview": null
     },
     "clause-p-1771916544517-5": {
-      "correct": 3,
-      "total": 3,
+      "correct": 5,
+      "total": 5,
       "recent": [
+        1,
+        1,
         1,
         1,
         1
@@ -24251,9 +24333,11 @@
       "nextReview": null
     },
     "clause-p-1771916544517-6": {
-      "correct": 3,
-      "total": 3,
+      "correct": 5,
+      "total": 5,
       "recent": [
+        1,
+        1,
         1,
         1,
         1
@@ -24265,9 +24349,11 @@
       "nextReview": null
     },
     "clause-p-1771916544517-7": {
-      "correct": 3,
-      "total": 3,
+      "correct": 5,
+      "total": 5,
       "recent": [
+        1,
+        1,
         1,
         1,
         1
@@ -24279,9 +24365,11 @@
       "nextReview": null
     },
     "clause-p-1771916544517-8": {
-      "correct": 3,
-      "total": 3,
+      "correct": 5,
+      "total": 5,
       "recent": [
+        1,
+        1,
         1,
         1,
         1
@@ -24293,9 +24381,11 @@
       "nextReview": null
     },
     "clause-p-1771916544517-9": {
-      "correct": 3,
-      "total": 3,
+      "correct": 5,
+      "total": 5,
       "recent": [
+        1,
+        1,
         1,
         1,
         1
@@ -24432,9 +24522,341 @@
         }
       ],
       "nextReview": "2026-02-25T15:00:00.000Z"
+    },
+    "clause-p-1771464255208-0": {
+      "correct": 1,
+      "total": 1,
+      "recent": [
+        1
+      ],
+      "page": "給付制限まとめ",
+      "pageId": "p-1771464255208",
+      "text": "穴埋め: 訓練後",
+      "srsLevel": 0,
+      "nextReview": null
+    },
+    "clause-p-1771464255208-1": {
+      "correct": 1,
+      "total": 1,
+      "recent": [
+        1
+      ],
+      "page": "給付制限まとめ",
+      "pageId": "p-1771464255208",
+      "text": "穴埋め: その拒んだ日以後、支給しない",
+      "srsLevel": 0,
+      "nextReview": null
+    },
+    "clause-p-1771464255208-2": {
+      "correct": 1,
+      "total": 1,
+      "recent": [
+        1
+      ],
+      "page": "給付制限まとめ",
+      "pageId": "p-1771464255208",
+      "text": "穴埋め: 1箇月間",
+      "srsLevel": 0,
+      "nextReview": null
+    },
+    "clause-p-1771464255208-3": {
+      "correct": 1,
+      "total": 1,
+      "recent": [
+        1
+      ],
+      "page": "給付制限まとめ",
+      "pageId": "p-1771464255208",
+      "text": "穴埋め: 1箇月を超えない範囲内",
+      "srsLevel": 0,
+      "nextReview": null
+    },
+    "clause-p-1771464255208-4": {
+      "correct": 1,
+      "total": 1,
+      "recent": [
+        1
+      ],
+      "page": "給付制限まとめ",
+      "pageId": "p-1771464255208",
+      "text": "穴埋め: 待期満了後、1箇月以上3箇月以内",
+      "srsLevel": 0,
+      "nextReview": null
+    },
+    "clause-p-1771464255208-5": {
+      "correct": 1,
+      "total": 1,
+      "recent": [
+        1
+      ],
+      "page": "給付制限まとめ",
+      "pageId": "p-1771464255208",
+      "text": "穴埋め: 7日間",
+      "srsLevel": 0,
+      "nextReview": null
+    },
+    "clause-p-1771464255208-6": {
+      "correct": 1,
+      "total": 1,
+      "recent": [
+        1
+      ],
+      "page": "給付制限まとめ",
+      "pageId": "p-1771464255208",
+      "text": "穴埋め: その月およびその月の翌月から3箇月間",
+      "srsLevel": 0,
+      "nextReview": null
+    },
+    "clause-p-1771562558057-0": {
+      "correct": 1,
+      "total": 1,
+      "recent": [
+        1
+      ],
+      "page": "社会保険労務士法  社会保険労務士の業務",
+      "pageId": "p-1771562558057",
+      "text": "穴埋め: 業",
+      "srsLevel": 0,
+      "nextReview": null
+    },
+    "clause-p-1771562558057-1": {
+      "correct": 1,
+      "total": 1,
+      "recent": [
+        1
+      ],
+      "page": "社会保険労務士法  社会保険労務士の業務",
+      "pageId": "p-1771562558057",
+      "text": "穴埋め: 申請書等",
+      "srsLevel": 0,
+      "nextReview": null
+    },
+    "clause-p-1771562558057-2": {
+      "correct": 1,
+      "total": 1,
+      "recent": [
+        1
+      ],
+      "page": "社会保険労務士法  社会保険労務士の業務",
+      "pageId": "p-1771562558057",
+      "text": "穴埋め: 提出に関する手続",
+      "srsLevel": 0,
+      "nextReview": null
+    },
+    "clause-p-1771562558057-3": {
+      "correct": 1,
+      "total": 1,
+      "recent": [
+        1
+      ],
+      "page": "社会保険労務士法  社会保険労務士の業務",
+      "pageId": "p-1771562558057",
+      "text": "穴埋め: 主張若しくは陳述",
+      "srsLevel": 0,
+      "nextReview": null
+    },
+    "clause-p-1771562558057-4": {
+      "correct": 1,
+      "total": 1,
+      "recent": [
+        1
+      ],
+      "page": "社会保険労務士法  社会保険労務士の業務",
+      "pageId": "p-1771562558057",
+      "text": "穴埋め: 事務代理",
+      "srsLevel": 0,
+      "nextReview": null
+    },
+    "clause-p-1771562558057-5": {
+      "correct": 1,
+      "total": 1,
+      "recent": [
+        1
+      ],
+      "page": "社会保険労務士法  社会保険労務士の業務",
+      "pageId": "p-1771562558057",
+      "text": "穴埋め: 調停の手続",
+      "srsLevel": 0,
+      "nextReview": null
+    },
+    "clause-p-1771562558057-6": {
+      "correct": 1,
+      "total": 1,
+      "recent": [
+        1
+      ],
+      "page": "社会保険労務士法  社会保険労務士の業務",
+      "pageId": "p-1771562558057",
+      "text": "穴埋め: 都道府県知事",
+      "srsLevel": 0,
+      "nextReview": null
+    },
+    "clause-p-1771562558057-7": {
+      "correct": 1,
+      "total": 1,
+      "recent": [
+        1
+      ],
+      "page": "社会保険労務士法  社会保険労務士の業務",
+      "pageId": "p-1771562558057",
+      "text": "穴埋め: 都道府県労働委員会",
+      "srsLevel": 0,
+      "nextReview": null
+    },
+    "clause-p-1771562558057-8": {
+      "correct": 1,
+      "total": 1,
+      "recent": [
+        1
+      ],
+      "page": "社会保険労務士法  社会保険労務士の業務",
+      "pageId": "p-1771562558057",
+      "text": "穴埋め: あっせんの手続",
+      "srsLevel": 0,
+      "nextReview": null
+    },
+    "clause-p-1771562558057-9": {
+      "correct": 1,
+      "total": 1,
+      "recent": [
+        1
+      ],
+      "page": "社会保険労務士法  社会保険労務士の業務",
+      "pageId": "p-1771562558057",
+      "text": "穴埋め: 民間紛争解決手続",
+      "srsLevel": 0,
+      "nextReview": null
+    },
+    "clause-p-1771562558057-10": {
+      "correct": 1,
+      "total": 1,
+      "recent": [
+        1
+      ],
+      "page": "社会保険労務士法  社会保険労務士の業務",
+      "pageId": "p-1771562558057",
+      "text": "穴埋め: 120 万円",
+      "srsLevel": 0,
+      "nextReview": null
+    },
+    "clause-p-1771562558057-11": {
+      "correct": 1,
+      "total": 1,
+      "recent": [
+        1
+      ],
+      "page": "社会保険労務士法  社会保険労務士の業務",
+      "pageId": "p-1771562558057",
+      "text": "穴埋め: 帳簿書類",
+      "srsLevel": 0,
+      "nextReview": null
+    },
+    "clause-p-1771562558057-12": {
+      "correct": 1,
+      "total": 1,
+      "recent": [
+        1
+      ],
+      "page": "社会保険労務士法  社会保険労務士の業務",
+      "pageId": "p-1771562558057",
+      "text": "穴埋め: 相談",
+      "srsLevel": 0,
+      "nextReview": null
+    },
+    "clause-p-1771562558057-13": {
+      "correct": 1,
+      "total": 1,
+      "recent": [
+        1
+      ],
+      "page": "社会保険労務士法  社会保険労務士の業務",
+      "pageId": "p-1771562558057",
+      "text": "穴埋め: 指導",
+      "srsLevel": 0,
+      "nextReview": null
     }
   },
   "history": [
+    {
+      "timestamp": "2026/2/25 16:49:38",
+      "isoDate": "2026-02-25T07:49:38.799Z",
+      "page": "社会保険労務士法　聴聞の特例（法25 条の4）",
+      "pageId": "p-1771916544517",
+      "score": "11 / 11",
+      "accuracy": 100
+    },
+    {
+      "timestamp": "2026/2/25 16:48:28",
+      "isoDate": "2026-02-25T07:48:28.123Z",
+      "page": "社会保険労務士法  社会保険労務士の業務",
+      "pageId": "p-1771562558057",
+      "score": "14 / 14",
+      "accuracy": 100
+    },
+    {
+      "timestamp": "2026/2/25 16:46:52",
+      "isoDate": "2026-02-25T07:46:52.642Z",
+      "page": "特定受給資格者の判定理由",
+      "pageId": "p-1771313137530",
+      "score": "16 / 16",
+      "accuracy": 100
+    },
+    {
+      "timestamp": "2026/2/25 16:45:40",
+      "isoDate": "2026-02-25T07:45:40.426Z",
+      "page": "失業等給付（法10 条）",
+      "pageId": "p-1771218384007",
+      "score": "4 / 4",
+      "accuracy": 100
+    },
+    {
+      "timestamp": "2026/2/25 16:45:06",
+      "isoDate": "2026-02-25T07:45:06.825Z",
+      "page": "雇用保険法　受給権の保護等",
+      "pageId": "p-1771219786663",
+      "score": "3 / 3",
+      "accuracy": 100
+    },
+    {
+      "timestamp": "2026/2/25 16:44:36",
+      "isoDate": "2026-02-25T07:44:36.759Z",
+      "page": "日雇労働求職者給付金の日額（法48 条）等",
+      "pageId": "p-1771474923676",
+      "score": "13 / 13",
+      "accuracy": 100
+    },
+    {
+      "timestamp": "2026/2/25 16:40:07",
+      "isoDate": "2026-02-25T07:40:07.550Z",
+      "page": "雇用保険　管掌",
+      "pageId": "p-1770967814054",
+      "score": "6 / 6",
+      "accuracy": 100
+    },
+    {
+      "timestamp": "2026/2/25 16:39:09",
+      "isoDate": "2026-02-25T07:39:09.834Z",
+      "page": "日雇労働求職者給付金の受給資格（法45 条）",
+      "pageId": "p-1771474208396",
+      "score": "8 / 8",
+      "accuracy": 100
+    },
+    {
+      "timestamp": "2026/2/25 16:38:08",
+      "isoDate": "2026-02-25T07:38:08.804Z",
+      "page": "給付制限まとめ",
+      "pageId": "p-1771464255208",
+      "score": "7 / 7",
+      "accuracy": 100
+    },
+    {
+      "timestamp": "2026/2/25 16:37:24",
+      "isoDate": "2026-02-25T07:37:24.865Z",
+      "page": "社会保険労務士法　聴聞の特例（法25 条の4）",
+      "pageId": "p-1771916544517",
+      "score": "11 / 11",
+      "accuracy": 100
+    },
     {
       "timestamp": "2026/2/25 11:54:27",
       "isoDate": "2026-02-25T02:54:27.062Z",
@@ -24754,87 +25176,7 @@
       "pageId": "auto-due-review-clause",
       "score": "8 / 8",
       "accuracy": 100
-    },
-    {
-      "timestamp": "2026/2/24 13:28:45",
-      "isoDate": "2026-02-24T04:28:45.896Z",
-      "page": "【復習】穴埋め式問題 (1題)",
-      "pageId": "auto-due-review-clause",
-      "score": "6 / 8",
-      "accuracy": 75
-    },
-    {
-      "timestamp": "2026/2/24 13:27:14",
-      "isoDate": "2026-02-24T04:27:14.099Z",
-      "page": "【復習】穴埋め式問題 (1題)",
-      "pageId": "auto-due-review-clause",
-      "score": "11 / 11",
-      "accuracy": 100
-    },
-    {
-      "timestamp": "2026/2/24 13:25:37",
-      "isoDate": "2026-02-24T04:25:37.084Z",
-      "page": "【復習】穴埋め式問題 (1題)",
-      "pageId": "auto-due-review-clause",
-      "score": "4 / 4",
-      "accuracy": 100
-    },
-    {
-      "timestamp": "2026/2/24 13:24:54",
-      "isoDate": "2026-02-24T04:24:54.534Z",
-      "page": "労働契約法　労働契約の成立・変更・継続・終了（法6 条～法16 条）",
-      "pageId": "p-1771548980129",
-      "score": "17 / 17",
-      "accuracy": 100
-    },
-    {
-      "timestamp": "2026/2/24 13:22:04",
-      "isoDate": "2026-02-24T04:22:04.737Z",
-      "page": "高額介護合算療養費（法115 条の2）",
-      "pageId": "p-1771485973004",
-      "score": "17 / 17",
-      "accuracy": 100
-    },
-    {
-      "timestamp": "2026/2/24 13:18:14",
-      "isoDate": "2026-02-24T04:18:14.173Z",
-      "page": "特定疾病に係る高額療養費算定基準額（令42 条9 項）",
-      "pageId": "p-1771484808349",
-      "score": "4 / 4",
-      "accuracy": 100
-    },
-    {
-      "timestamp": "2026/2/24 13:17:23",
-      "isoDate": "2026-02-24T04:17:23.475Z",
-      "page": "【復習】穴埋め式問題 (3題)",
-      "pageId": "auto-due-review-clause",
-      "score": "40 / 40",
-      "accuracy": 100
-    },
-    {
-      "timestamp": "2026/2/24 13:11:37",
-      "isoDate": "2026-02-24T04:11:37.561Z",
-      "page": "高額療養費算定基準額",
-      "pageId": "p-1771479342594",
-      "score": "31 / 31",
-      "accuracy": 100
-    },
-    {
-      "timestamp": "2026/2/24 13:07:56",
-      "isoDate": "2026-02-24T04:07:56.915Z",
-      "page": "特訓：忘却曲線（条文穴埋め）",
-      "pageId": "temp-autogen",
-      "score": "32 / 32",
-      "accuracy": 100
-    },
-    {
-      "timestamp": "2026/2/24 13:01:35",
-      "isoDate": "2026-02-24T04:01:35.041Z",
-      "page": "労働基準法 １年単位の変形労働時間制",
-      "pageId": "p-1771378728885",
-      "score": "11 / 11",
-      "accuracy": 100
     }
   ],
-  "lastModified": 1772003482435
+  "lastModified": 1772005823425
 }
