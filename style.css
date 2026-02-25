@@ -2255,6 +2255,7 @@ tr {
     margin: 2.5rem 0;
     opacity: 0.5;
 }
+
 /* Sidebar Quick Actions */
 .sidebar-quick-actions {
     padding: 1rem;
@@ -2309,17 +2310,6 @@ tr {
 /* iPad & Mobile Responsiveness */
 @media (max-width: 1024px) {
     :root {
-        --sidebar-width: 280px;
-        font-size: 16px;
-    }
-
-    .main-content {
-        padding: 1.5rem;
-    }
-}
-
-@media (max-width: 768px) {
-    :root {
         --sidebar-width: 100%;
         font-size: 16px;
     }
@@ -2332,6 +2322,8 @@ tr {
         z-index: 2000;
         transition: var(--transition);
         box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+        background-color: var(--bg-dark);
+        /* Ensure background is solid when overlapping */
     }
 
     .sidebar.open {
@@ -2339,8 +2331,9 @@ tr {
     }
 
     .main-content {
-        padding: 1rem;
+        padding: 1.5rem;
         width: 100%;
+        margin-left: 0 !important;
     }
 
     .header-right {
@@ -2374,7 +2367,8 @@ tr {
         font-size: 0.9rem;
     }
 
-    th, td {
+    th,
+    td {
         padding: 0.8rem 0.5rem;
     }
 
@@ -2407,14 +2401,28 @@ tr {
     }
 }
 
+/* Specific small mobile tweaks */
+@media (max-width: 480px) {
+    .main-content {
+        padding: 1rem;
+    }
+
+    .welcome-title {
+        font-size: 1.5rem;
+    }
+}
+
 /* Touch Device Optimizations */
 @media (hover: none) {
-    .sidebar-gen-btn, .primary-btn, .secondary-btn {
-        padding: 0.8rem 1rem; /* Slightly larger targets for touch */
+
+    .sidebar-gen-btn,
+    .primary-btn,
+    .secondary-btn {
+        padding: 0.8rem 1rem;
+        /* Slightly larger targets for touch */
     }
 
     .toc-nav a {
         padding: 0.8rem 1rem;
     }
 }
-

@@ -368,8 +368,8 @@ class QuizApp {
                         this.currentSetId = id;
                         this.loadSet(id);
 
-                        // Auto-close sidebar on mobile after selection
-                        if (window.innerWidth <= 768 && this.sidebar) {
+                        // Auto-close sidebar on mobile/tablet after selection
+                        if (window.innerWidth <= 1024 && this.sidebar) {
                             this.sidebar.classList.remove('open');
                         }
                     }
