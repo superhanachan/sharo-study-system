@@ -2967,14 +2967,12 @@ class QuizApp {
             return;
         }
 
-        const rows = Array.from(document.querySelectorAll('#quiz-table tr, .auto-gen-table tr'));
-        const targets = rows.filter(r => r.dataset.keywords);
+        const targets = Array.from(document.querySelectorAll('#quiz-table tr, .auto-gen-table tr')).filter(r => r.dataset.keywords);
 
         const isSingleClause = !this.clauseDisplay.classList.contains('hidden');
-        const isHome = !this.homeDashboard.classList.contains('hidden');
+        const isHome = this.homeDashboard && !this.homeDashboard.classList.contains('hidden');
 
         if (targets.length === 0) {
-            // Only hide if we aren't in single clause mode or home
             if (!isSingleClause || isHome) {
                 if (this.globalKeywordBank) {
                     this.globalKeywordBank.classList.add('hidden');
@@ -2985,25 +2983,31 @@ class QuizApp {
             return;
         }
 
+        // 画面上部から40%の位置を「切り替えの閾値」とする
+        const focusThreshold = window.innerHeight * 0.4;
         let bestRow = null;
-        let minDistanceToCenter = Infinity;
-        const centerY = window.innerHeight * 0.4; // Target slightly above center for natural focus
 
-        targets.forEach(tr => {
+        // ビューポート内にあるターゲットを取得
+        const visibleTargets = targets.filter(tr => {
             const rect = tr.getBoundingClientRect();
-            // rowCenter for short rows, top part for tall rows
-            const rowFocusPoint = rect.height < window.innerHeight * 0.6 ? (rect.top + rect.height / 2) : rect.top + 100;
-            const distance = Math.abs(rowFocusPoint - centerY);
-
-            if (distance < minDistanceToCenter) {
-                minDistanceToCenter = distance;
-                bestRow = tr;
-            }
+            return rect.top < window.innerHeight && rect.bottom > 0;
         });
 
-        // Threshold: If the closest keyword row is too far off-screen, hide the bank
-        if (bestRow && minDistanceToCenter > window.innerHeight * 0.8) {
-            bestRow = null;
+        if (visibleTargets.length > 0) {
+            // 「現在の行」の底辺が閾値より下にある限り、その行を優先する（上から順に探す）
+            bestRow = visibleTargets.find(tr => {
+                const rect = tr.getBoundingClientRect();
+                return rect.bottom > focusThreshold;
+            });
+
+            // すべてが閾値より上に行った場合は、一番下の可視行を選択
+            if (!bestRow) bestRow = visibleTargets[visibleTargets.length - 1];
+        }
+
+        // 選択された行があっても、画面外（極端に下など）すぎる場合は非表示
+        if (bestRow) {
+            const rect = bestRow.getBoundingClientRect();
+            if (rect.top > window.innerHeight * 0.9) bestRow = null;
         }
 
         if (bestRow) {
