@@ -1577,15 +1577,17 @@ td:last-child {
 }
 
 .page-tag {
-    font-size: 1rem;
-    background: rgba(76, 201, 240, 0.1);
-    color: var(--accent);
-    padding: 4px 12px;
-    border-radius: 6px;
+    font-size: 0.95rem;
+    background: var(--accent);
+    color: white;
+    padding: 6px 14px;
+    border-radius: 8px;
     width: fit-content;
-    font-weight: 600;
-    border: 1px solid rgba(76, 201, 240, 0.3);
-    margin-bottom: 0.25rem;
+    font-weight: 700;
+    margin-bottom: 0.6rem;
+    box-shadow: 0 4px 10px rgba(76, 201, 240, 0.3);
+    display: inline-flex;
+    align-items: center;
 }
 
 .edit-mode .question-cell {
@@ -1674,13 +1676,14 @@ tr {
 
 .clause-badge {
     display: inline-block;
-    padding: 2px 8px;
+    padding: 6px 14px;
     background: var(--accent);
     color: white;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    font-weight: bold;
-    margin-bottom: 8px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 800;
+    margin-bottom: 12px;
+    box-shadow: 0 4px 10px rgba(76, 201, 240, 0.3);
 }
 
 .clause-text-mini {
@@ -2213,17 +2216,7 @@ tr {
     cursor: default;
 }
 
-.page-tag {
-    display: inline-block;
-    font-size: 0.7rem;
-    padding: 0.2rem 0.5rem;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
-    color: var(--text-dim);
-    margin-bottom: 0.4rem;
-    margin-right: 0.5rem;
-}
+/* Removed redundant .page-tag */
 
 .source-label {
     opacity: 0.6;
