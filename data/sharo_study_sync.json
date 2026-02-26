@@ -19913,18 +19913,18 @@
       "nextReview": null
     },
     "clause-summary-p-1771389349393": {
-      "correct": 4,
-      "total": 9,
+      "correct": 5,
+      "total": 10,
       "recent": [
         1,
-        1,
         0,
+        1,
         1,
         1
       ],
       "page": "三六協定　延長の制限",
       "text": "条文全体: 三六協定　延長の制限",
-      "srsLevel": 2,
+      "srsLevel": 3,
       "history": [
         {
           "date": "2026-02-18T04:42:24.095Z",
@@ -19970,9 +19970,14 @@
           "date": "2026-02-24T04:07:56.915Z",
           "isCorrect": true,
           "level": 1
+        },
+        {
+          "date": "2026-02-26T02:30:53.072Z",
+          "isCorrect": true,
+          "level": 2
         }
       ],
-      "nextReview": "2026-02-25T15:00:00.000Z"
+      "nextReview": "2026-03-01T15:00:00.000Z"
     },
     "q-1771390256425": {
       "correct": 3,
@@ -22873,16 +22878,17 @@
       "nextReview": "2026-02-25T15:00:00.000Z"
     },
     "clause-summary-p-1771555342863": {
-      "correct": 2,
-      "total": 2,
+      "correct": 3,
+      "total": 3,
       "recent": [
+        1,
         1,
         1
       ],
       "page": "労働契約期間　無契約期間（空白期間：法18 条2 項）",
       "pageId": "p-1771555342863",
       "text": "条文全体: 労働契約期間　無契約期間（空白期間：法18 条2 項）",
-      "srsLevel": 2,
+      "srsLevel": 3,
       "history": [
         {
           "date": "2026-02-20T02:46:14.240Z",
@@ -22893,9 +22899,14 @@
           "date": "2026-02-24T04:25:37.083Z",
           "isCorrect": true,
           "level": 1
+        },
+        {
+          "date": "2026-02-26T02:30:53.071Z",
+          "isCorrect": true,
+          "level": 2
         }
       ],
-      "nextReview": "2026-02-25T15:00:00.000Z"
+      "nextReview": "2026-03-01T15:00:00.000Z"
     },
     "clause-p-1771555709460-0": {
       "correct": 1,
@@ -25434,23 +25445,29 @@
       "nextReview": "2026-02-26T15:00:00.000Z"
     },
     "clause-summary-p-1771996840410": {
-      "correct": 1,
-      "total": 1,
+      "correct": 2,
+      "total": 2,
       "recent": [
+        1,
         1
       ],
       "page": "労働施策総合推進法 外国人の雇用管理の改善等（法7 条）",
       "pageId": "p-1771996840410",
       "text": "条文全体: 労働施策総合推進法 外国人の雇用管理の改善等（法7 条）",
-      "srsLevel": 1,
+      "srsLevel": 2,
       "history": [
         {
           "date": "2026-02-25T11:55:49.957Z",
           "isCorrect": true,
           "level": 0
+        },
+        {
+          "date": "2026-02-26T02:30:53.072Z",
+          "isCorrect": true,
+          "level": 1
         }
       ],
-      "nextReview": "2026-02-25T15:00:00.000Z"
+      "nextReview": "2026-02-27T15:00:00.000Z"
     },
     "clause-summary-p-1771998368129": {
       "correct": 2,
@@ -26264,6 +26281,14 @@
   },
   "history": [
     {
+      "timestamp": "2026/2/26 11:30:53",
+      "isoDate": "2026-02-26T02:30:53.072Z",
+      "page": "【復習】穴埋め式問題 (3題)",
+      "pageId": "auto-due-review-clause",
+      "score": "22 / 22",
+      "accuracy": 100
+    },
+    {
       "timestamp": "2026/2/26 11:28:15",
       "isoDate": "2026-02-26T02:28:15.919Z",
       "page": "【復習】穴埋め式問題 (3題)",
@@ -26654,15 +26679,7 @@
       "pageId": "p-1770957274570",
       "score": "7 / 7",
       "accuracy": 100
-    },
-    {
-      "timestamp": "2026/2/25 10:38:59",
-      "isoDate": "2026-02-25T01:38:59.483Z",
-      "page": "労働基準法　罰則",
-      "pageId": "p-1771304541813",
-      "score": "4 / 4",
-      "accuracy": 100
     }
   ],
-  "lastModified": 1772072926268
+  "lastModified": 1772073088578
 }
