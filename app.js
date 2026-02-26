@@ -541,90 +541,129 @@ class QuizApp {
         this.srsModal.classList.remove('hidden');
         this.srsModalTitle.textContent = `記憶定着の推移: ${stat.text.substring(0, 40)}${stat.text.length > 40 ? '...' : ''}`;
 
-        const history = stat.history || [];
-        const nextReview = stat.nextReview ? new Date(stat.nextReview) : null;
-
-        const labels = history.map(h => new Date(h.date).toLocaleDateString());
-        let cumulativeCorrect = 0;
-        const data = history.map((h, index) => {
-            if (h.isCorrect) cumulativeCorrect++;
-            return Math.round((cumulativeCorrect / (index + 1)) * 100);
-        });
-
-        if (nextReview) {
-            labels.push(`${nextReview.toLocaleDateString()} (予定)`);
-            const currentAccuracy = stat.total > 0 ? Math.round((stat.correct / stat.total) * 100) : 0;
-            data.push(currentAccuracy);
+        // Ensure history exists or reconstruct from recent for legacy data
+        let history = stat.history || [];
+        if (history.length === 0 && stat.recent && stat.recent.length > 0) {
+            history = stat.recent.map((isCorrect, i) => ({
+                date: new Date(Date.now() - (stat.recent.length - 1 - i) * 60000).toISOString(),
+                isCorrect: !!isCorrect
+            }));
+            // Persist the reconstructed history so it shows up next time and is synced
+            stat.history = history;
+            this.saveQuestionStats();
         }
 
-        const ctx = document.getElementById('srsDetailChart').getContext('2d');
-        if (this.srsDetailChart) this.srsDetailChart.destroy();
+        const nextReview = stat.nextReview ? new Date(stat.nextReview) : null;
 
-        this.srsDetailChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: '正答率 (%)',
-                    data: data,
-                    borderColor: '#4cc9f0',
-                    backgroundColor: 'rgba(76, 201, 240, 0.2)',
-                    fill: true,
-                    tension: 0.3,
-                    pointBackgroundColor: [
-                        ...history.map(h => h.isCorrect ? '#4ade80' : '#f72585'),
-                        '#ffd166'
-                    ],
-                    pointRadius: 6,
-                    pointHoverRadius: 8
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: 'rgba(255,255,255,0.6)' } },
-                    y: {
-                        beginAtZero: true,
-                        max: 100,
-                        grid: { color: 'rgba(255,255,255,0.05)' },
-                        ticks: {
-                            color: 'rgba(255,255,255,0.6)',
-                            stepSize: 20,
-                            callback: (value) => value + '%'
-                        },
-                        title: { display: true, text: '正答率 (%)', color: 'rgba(255,255,255,0.8)' }
-                    }
+        const labels = history.map((h, i) => {
+            const d = new Date(h.date);
+            const dateStr = isNaN(d) ? '?' : (d.getMonth() + 1) + '/' + d.getDate();
+            return `${i + 1}回目 (${dateStr})`;
+        });
+
+        const data = history.map((h, index) => {
+            // 直近5回分（自分を含む）の正答率を計算
+            const start = Math.max(0, index - 4);
+            const window = history.slice(start, index + 1);
+            const correctInWindow = window.filter(x => x.isCorrect).length;
+            return Math.round((correctInWindow / window.length) * 100);
+        });
+
+        const pointColors = history.map(h => h.isCorrect ? '#4ade80' : '#f72585');
+
+        // 直近5回の正答率を取得（最新のデータから）
+        const recentAccuracy = data.length > 0 ? data[data.length - 1] : 0;
+
+        if (nextReview) {
+            labels.push(`次回 (${(nextReview.getMonth() + 1)}/${nextReview.getDate()})`);
+            data.push(recentAccuracy);
+            pointColors.push('#ffd166');
+        }
+
+        if (this.srsDetailChart) {
+            this.srsDetailChart.destroy();
+            this.srsDetailChart = null;
+        }
+
+        // Use a short delay to ensure canvas is ready and sized
+        setTimeout(() => {
+            const canvas = document.getElementById('srsDetailChart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+
+            this.srsDetailChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '正答率 (%)',
+                        data: data,
+                        borderColor: '#4cc9f0',
+                        backgroundColor: 'rgba(76, 201, 240, 0.2)',
+                        fill: true,
+                        tension: 0.1, // Reduced tension to avoid weird curves with few points
+                        pointBackgroundColor: pointColors,
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        showLine: true
+                    }]
                 },
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        callbacks: {
-                            label: (context) => {
-                                const idx = context.dataIndex;
-                                if (idx < history.length) {
-                                    return `正答率: ${context.raw}% (${history[idx].isCorrect ? '正解' : '不正解'})`;
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: { color: 'rgba(255,255,255,0.8)', font: { size: 10 } }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: {
+                                color: 'rgba(255,255,255,0.8)',
+                                stepSize: 20,
+                                callback: (value) => value + '%'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => {
+                                    const idx = context.dataIndex;
+                                    if (idx < history.length) {
+                                        return `正答率: ${context.raw}% (${history[idx].isCorrect ? '正解' : '不正解'})`;
+                                    }
+                                    return `現在の正答率: ${context.raw}%`;
                                 }
-                                return `現在の正答率: ${context.raw}% (予定)`;
                             }
                         }
                     }
                 }
-            }
-        });
+            });
+        }, 100);
+
+        // Calculate recent accuracy from indices
+        const recentHistory = history.slice(-5);
+        const recentCorrect = recentHistory.filter(h => h.isCorrect).length;
+        const recentTotal = recentHistory.length;
+        const recentRate = recentTotal > 0 ? Math.round((recentCorrect / recentTotal) * 100) : 0;
 
         this.srsInfo.innerHTML = `
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 12px;">
                 <div>
-                    <p><strong>現在の習熟度:</strong> Lv.${stat.srsLevel}</p>
-                    <p><strong>復習間隔:</strong> ${SRS_INTERVALS[stat.srsLevel]} 日</p>
+                    <p><strong>現在の習熟度:</strong> Lv.${stat.srsLevel || 0}</p>
+                    <p><strong>復習間隔:</strong> ${SRS_INTERVALS[stat.srsLevel || 0]} 日</p>
                 </div>
                 <div>
                     <p><strong>次回の復習予定:</strong> ${nextReview ? nextReview.toLocaleDateString() : '未定'}</p>
-                    <p><strong>累計成績:</strong> ${stat.correct}/${stat.total} (${Math.round((stat.correct / stat.total) * 100)}%)</p>
+                    <p><strong>直近5回の成績:</strong> ${recentCorrect}/${recentTotal} (${recentRate}%)</p>
                 </div>
             </div>
-            <p style="margin-top: 1rem; opacity: 0.7; font-size: 0.8rem;">※グラフ上の点は <span style="color:#4ade80">●</span> が正解、<span style="color:#f72585">●</span> が不正解を表します。</p>
+            <p style="margin-top: 0.5rem; opacity: 0.6; font-size: 0.75rem; text-align: right;">累計成績: ${stat.correct}/${stat.total} (${stat.total > 0 ? Math.round((stat.correct / stat.total) * 100) : 0}%)</p>
+            <p style="margin-top: 1rem; opacity: 0.7; font-size: 0.8rem;">※グラフは直近5回分の移動平均を表示しています。 <span style="color:#4ade80">●</span> が正解、<span style="color:#f72585">●</span> が不正解です。</p>
         `;
     }
 
@@ -826,6 +865,7 @@ class QuizApp {
                 stat.recent.push(isCorrect ? 1 : 0);
                 if (stat.recent.length > 5) stat.recent.shift();
                 stat.text = `穴埋め: ${kwInfo.text}`; stat.page = set.title;
+                this.updateSRS(stat, isCorrect);
             });
 
 
@@ -3101,6 +3141,7 @@ class QuizApp {
             this.sidebarGhSyncBtn.textContent = '同期中...';
         }
         this.updateGitHubStatus('同期中...');
+        console.log('Starting GitHub Sync...');
 
         try {
             // 1. Fetch remote data
@@ -3138,8 +3179,8 @@ class QuizApp {
             this.updateGitHubStatus(`同期完了 (${new Date().toLocaleTimeString()})`);
             alert('GitHubへの同期が完了しました。');
         } catch (error) {
-            console.error('GitHub Sync Error:', error);
-            alert('同期に失敗しました: ' + error.message);
+            console.error('GitHub Sync Error details:', error);
+            alert('同期に失敗しました: ' + error.message + '\n\n※トークンの有効期限や権限（repo）、またはリポジトリ名が正しいかご確認ください。');
             this.updateGitHubStatus('同期失敗');
         } finally {
             if (this.ghSyncNowBtn) {
@@ -3156,11 +3197,18 @@ class QuizApp {
     async fetchFromGitHub(config) {
         const url = `https://api.github.com/repos/${config.repo}/contents/${config.path}`;
         const response = await fetch(url, {
-            headers: { 'Authorization': `token ${config.token}` }
+            headers: { 'Authorization': config.token.startsWith('ghp_') ? `token ${config.token}` : `Bearer ${config.token}` }
         });
 
         if (response.status === 404) return null; // File doesn't exist yet
-        if (!response.ok) throw new Error(`Fetch failed: ${response.status}`);
+        if (!response.ok) {
+            let errorMsg = `Fetch failed: ${response.status}`;
+            try {
+                const errData = await response.json();
+                if (errData.message) errorMsg += ` (${errData.message})`;
+            } catch (e) { }
+            throw new Error(errorMsg);
+        }
 
         const data = await response.json();
         const content = this.utf8_to_b64_decode(data.content);
@@ -3192,7 +3240,7 @@ class QuizApp {
         const response = await fetch(url, {
             method: 'PUT',
             headers: {
-                'Authorization': `token ${config.token}`,
+                'Authorization': config.token.startsWith('ghp_') ? `token ${config.token}` : `Bearer ${config.token}`,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify(body)
