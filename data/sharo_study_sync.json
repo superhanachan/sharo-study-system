@@ -4663,19 +4663,19 @@
       ]
     },
     "q-1770709252327-4-za9d0": {
-      "correct": 20,
-      "total": 21,
+      "correct": 22,
+      "total": 23,
       "page": "国民年金法9条 強制被保険者　資格喪失日",
       "text": "ニ）厚生年金保険法に基づく老齢給付等を受けることができる者その他この法律の適用を除外すべき特別の理由がある者として厚生労働省令で定める者となったとき（第2 号被保険者又は第3 号被保険者に該当するときを除く）",
       "recent": [
-        1,
-        1,
         0,
+        1,
+        1,
         1,
         1
       ],
-      "srsLevel": 2,
-      "nextReview": "2026-02-25T15:00:00.000Z",
+      "srsLevel": 4,
+      "nextReview": "2026-03-04T15:00:00.000Z",
       "history": [
         {
           "date": "2026-02-17T02:30:31.255Z",
@@ -4701,6 +4701,16 @@
           "date": "2026-02-24T02:10:38.615Z",
           "isCorrect": true,
           "level": 1
+        },
+        {
+          "date": "2026-02-26T02:15:22.870Z",
+          "isCorrect": true,
+          "level": 2
+        },
+        {
+          "date": "2026-02-26T02:15:44.487Z",
+          "isCorrect": true,
+          "level": 3
         }
       ]
     },
@@ -5493,19 +5503,19 @@
       ]
     },
     "q-1770711374769": {
-      "correct": 8,
-      "total": 9,
+      "correct": 10,
+      "total": 11,
       "page": "厚生年金保険法　事業主の届出　一般事業主",
       "text": "短時間労働者の区別変更届",
       "recent": [
         1,
-        1,
-        1,
         0,
+        1,
+        1,
         1
       ],
-      "srsLevel": 2,
-      "nextReview": "2026-02-25T15:00:00.000Z",
+      "srsLevel": 4,
+      "nextReview": "2026-03-04T15:00:00.000Z",
       "history": [
         {
           "date": "2026-02-17T02:22:17.295Z",
@@ -5531,23 +5541,33 @@
           "date": "2026-02-24T01:49:41.252Z",
           "isCorrect": true,
           "level": 1
+        },
+        {
+          "date": "2026-02-26T02:15:22.870Z",
+          "isCorrect": true,
+          "level": 2
+        },
+        {
+          "date": "2026-02-26T02:15:44.487Z",
+          "isCorrect": true,
+          "level": 3
         }
       ]
     },
     "q-1770711387447": {
-      "correct": 8,
-      "total": 9,
+      "correct": 9,
+      "total": 10,
       "page": "厚生年金保険法　事業主の届出　一般事業主",
       "text": "事業主の氏名又は住所等の変更の届出",
       "recent": [
         1,
         1,
-        1,
         0,
+        1,
         1
       ],
-      "srsLevel": 2,
-      "nextReview": "2026-02-25T15:00:00.000Z",
+      "srsLevel": 3,
+      "nextReview": "2026-03-01T15:00:00.000Z",
       "history": [
         {
           "date": "2026-02-17T02:28:22.591Z",
@@ -5573,6 +5593,11 @@
           "date": "2026-02-24T01:49:41.252Z",
           "isCorrect": true,
           "level": 1
+        },
+        {
+          "date": "2026-02-26T02:13:53.389Z",
+          "isCorrect": true,
+          "level": 2
         }
       ]
     },
@@ -5920,19 +5945,19 @@
       ]
     },
     "q-1770870130491": {
-      "correct": 8,
-      "total": 10,
+      "correct": 9,
+      "total": 11,
       "page": "厚生年金保険法　被保険者が日本年金機構に行う届出",
       "text": "ｄ）適用事業所に使用される高齢任意加入被保険者の氏名変更の届出",
       "recent": [
         1,
         1,
-        1,
         0,
+        1,
         1
       ],
-      "srsLevel": 2,
-      "nextReview": "2026-02-25T15:00:00.000Z",
+      "srsLevel": 3,
+      "nextReview": "2026-03-01T15:00:00.000Z",
       "history": [
         {
           "date": "2026-02-17T02:36:36.076Z",
@@ -5963,23 +5988,28 @@
           "date": "2026-02-24T01:41:02.044Z",
           "isCorrect": true,
           "level": 1
+        },
+        {
+          "date": "2026-02-26T02:13:53.389Z",
+          "isCorrect": true,
+          "level": 2
         }
       ]
     },
     "q-1770870255588": {
-      "correct": 8,
-      "total": 9,
+      "correct": 10,
+      "total": 11,
       "page": "厚生年金保険法　被保険者が日本年金機構に行う届出",
       "text": "ｅ）適用事業所に使用される高齢任意加入被保険者の住所変更の届出",
       "recent": [
-        1,
-        1,
         0,
+        1,
+        1,
         1,
         1
       ],
-      "srsLevel": 2,
-      "nextReview": "2026-02-25T15:00:00.000Z",
+      "srsLevel": 4,
+      "nextReview": "2026-03-04T15:00:00.000Z",
       "history": [
         {
           "date": "2026-02-17T02:42:50.733Z",
@@ -6005,6 +6035,16 @@
           "date": "2026-02-24T02:20:55.057Z",
           "isCorrect": true,
           "level": 1
+        },
+        {
+          "date": "2026-02-26T02:15:22.870Z",
+          "isCorrect": true,
+          "level": 2
+        },
+        {
+          "date": "2026-02-26T02:15:44.487Z",
+          "isCorrect": true,
+          "level": 3
         }
       ]
     },
@@ -6811,19 +6851,19 @@
       ]
     },
     "q-1770871326437": {
-      "correct": 11,
-      "total": 15,
+      "correct": 12,
+      "total": 16,
       "page": "厚生年金保険法　受給権者が日本年金機構に行う届出",
       "text": "配偶者を有するに至ったときの届出",
       "recent": [
-        1,
         0,
         1,
         0,
+        1,
         1
       ],
-      "srsLevel": 1,
-      "nextReview": "2026-02-25T15:00:00.000Z",
+      "srsLevel": 2,
+      "nextReview": "2026-02-27T15:00:00.000Z",
       "history": [
         {
           "date": "2026-02-17T02:08:56.076Z",
@@ -6874,6 +6914,11 @@
           "date": "2026-02-25T01:04:54.815Z",
           "isCorrect": true,
           "level": 0
+        },
+        {
+          "date": "2026-02-26T02:13:53.389Z",
+          "isCorrect": true,
+          "level": 1
         }
       ]
     },
@@ -6992,19 +7037,19 @@
       ]
     },
     "q-1770869440678-0-nfmx1": {
-      "correct": 8,
-      "total": 10,
+      "correct": 10,
+      "total": 12,
       "page": "厚生年金保険法　事業主の届出　船舶所有者",
       "text": "新規適用事業所の届出",
       "recent": [
         1,
-        1,
-        1,
         0,
+        1,
+        1,
         1
       ],
-      "srsLevel": 2,
-      "nextReview": "2026-02-25T15:00:00.000Z",
+      "srsLevel": 4,
+      "nextReview": "2026-03-04T15:00:00.000Z",
       "history": [
         {
           "date": "2026-02-17T02:25:11.487Z",
@@ -7035,6 +7080,16 @@
           "date": "2026-02-24T01:49:41.252Z",
           "isCorrect": true,
           "level": 1
+        },
+        {
+          "date": "2026-02-26T02:15:22.870Z",
+          "isCorrect": true,
+          "level": 2
+        },
+        {
+          "date": "2026-02-26T02:15:44.487Z",
+          "isCorrect": true,
+          "level": 3
         }
       ]
     },
@@ -9435,19 +9490,19 @@
       ]
     },
     "q-1770946332047": {
-      "correct": 6,
-      "total": 7,
+      "correct": 7,
+      "total": 8,
       "recent": [
         1,
         1,
-        1,
         0,
+        1,
         1
       ],
       "page": "国民年金法　受給権者の届出のまとめ",
       "text": "遺族基礎年金の受給権者の氏名変更の届出",
-      "srsLevel": 2,
-      "nextReview": "2026-02-25T15:00:00.000Z",
+      "srsLevel": 3,
+      "nextReview": "2026-03-01T15:00:00.000Z",
       "history": [
         {
           "date": "2026-02-17T08:05:19.453Z",
@@ -9473,6 +9528,11 @@
           "date": "2026-02-24T01:43:15.169Z",
           "isCorrect": true,
           "level": 1
+        },
+        {
+          "date": "2026-02-26T02:13:53.389Z",
+          "isCorrect": true,
+          "level": 2
         }
       ]
     },
@@ -11410,19 +11470,19 @@
       ]
     },
     "clause-summary-p-1770969147488": {
-      "correct": 9,
-      "total": 19,
+      "correct": 10,
+      "total": 20,
       "recent": [
+        0,
+        0,
         1,
-        0,
-        0,
         1,
         1
       ],
-      "page": "【復習】穴埋め式問題 (1題)",
-      "text": "条文全体: 【復習】穴埋め式問題 (1題)",
-      "srsLevel": 2,
-      "nextReview": "2026-02-25T15:00:00.000Z",
+      "page": "雇用保険　雇用保険事業（法3 条）",
+      "text": "条文全体: 雇用保険　雇用保険事業（法3 条）",
+      "srsLevel": 3,
+      "nextReview": "2026-03-01T15:00:00.000Z",
       "history": [
         {
           "date": "2026-02-17T04:32:16.862Z",
@@ -11458,12 +11518,17 @@
           "date": "2026-02-24T00:47:11.017Z",
           "isCorrect": true,
           "level": 1
+        },
+        {
+          "date": "2026-02-26T02:17:30.527Z",
+          "isCorrect": true,
+          "level": 2
         }
       ]
     },
     "clause-p-1770969147488-0": {
-      "correct": 8,
-      "total": 8,
+      "correct": 9,
+      "total": 9,
       "recent": [
         1,
         1,
@@ -11471,14 +11536,14 @@
         1,
         1
       ],
-      "page": "【復習】穴埋め式問題 (1題)",
+      "page": "雇用保険　雇用保険事業（法3 条）",
       "text": "穴埋め: 失業等給付",
       "srsLevel": 0,
       "nextReview": null
     },
     "clause-p-1770969147488-1": {
-      "correct": 8,
-      "total": 8,
+      "correct": 9,
+      "total": 9,
       "recent": [
         1,
         1,
@@ -11486,37 +11551,37 @@
         1,
         1
       ],
-      "page": "【復習】穴埋め式問題 (1題)",
+      "page": "雇用保険　雇用保険事業（法3 条）",
       "text": "穴埋め: 育児休業等給付",
       "srsLevel": 0,
       "nextReview": null
     },
     "clause-p-1770969147488-2": {
-      "correct": 5,
-      "total": 9,
+      "correct": 6,
+      "total": 10,
       "recent": [
-        1,
         1,
         0,
         1,
+        1,
         1
       ],
-      "page": "【復習】穴埋め式問題 (1題)",
+      "page": "雇用保険　雇用保険事業（法3 条）",
       "text": "穴埋め: 雇用安定事業",
       "srsLevel": 0,
       "nextReview": null
     },
     "clause-p-1770969147488-3": {
-      "correct": 5,
-      "total": 10,
+      "correct": 6,
+      "total": 11,
       "recent": [
-        1,
         1,
         0,
         1,
+        1,
         1
       ],
-      "page": "【復習】穴埋め式問題 (1題)",
+      "page": "雇用保険　雇用保険事業（法3 条）",
       "text": "穴埋め: 能力開発事業",
       "srsLevel": 0,
       "nextReview": null
@@ -11676,19 +11741,19 @@
       "nextReview": null
     },
     "clause-summary-p-1771202815954": {
-      "correct": 5,
-      "total": 6,
+      "correct": 6,
+      "total": 7,
       "recent": [
         1,
-        1,
         0,
+        1,
         1,
         1
       ],
       "page": "雇用保険　用語の定義",
       "text": "条文全体: 雇用保険　用語の定義",
-      "srsLevel": 2,
-      "nextReview": "2026-02-25T15:00:00.000Z",
+      "srsLevel": 3,
+      "nextReview": "2026-03-01T15:00:00.000Z",
       "history": [
         {
           "date": "2026-02-17T04:32:16.862Z",
@@ -11714,6 +11779,11 @@
           "date": "2026-02-24T01:01:31.656Z",
           "isCorrect": true,
           "level": 1
+        },
+        {
+          "date": "2026-02-26T02:22:24.829Z",
+          "isCorrect": true,
+          "level": 2
         }
       ]
     },
@@ -12368,19 +12438,19 @@
       ]
     },
     "q-1771216212264": {
-      "correct": 7,
-      "total": 8,
+      "correct": 9,
+      "total": 10,
       "recent": [
         1,
-        1,
-        1,
         0,
+        1,
+        1,
         1
       ],
       "page": "雇用保険被保険者に関する届出",
       "text": "雇用保険被保険者個人番号変更届",
-      "srsLevel": 2,
-      "nextReview": "2026-02-25T15:00:00.000Z",
+      "srsLevel": 4,
+      "nextReview": "2026-03-04T15:00:00.000Z",
       "history": [
         {
           "date": "2026-02-17T08:03:50.287Z",
@@ -12406,6 +12476,16 @@
           "date": "2026-02-24T01:22:09.403Z",
           "isCorrect": true,
           "level": 1
+        },
+        {
+          "date": "2026-02-26T02:15:22.870Z",
+          "isCorrect": true,
+          "level": 2
+        },
+        {
+          "date": "2026-02-26T02:15:44.487Z",
+          "isCorrect": true,
+          "level": 3
         }
       ]
     },
@@ -12985,19 +13065,19 @@
       "nextReview": null
     },
     "clause-summary-p-1771218814238": {
-      "correct": 5,
-      "total": 10,
+      "correct": 6,
+      "total": 11,
       "recent": [
         0,
         0,
-        0,
+        1,
         1,
         1
       ],
-      "page": "【復習】穴埋め式問題 (1題)",
-      "text": "条文全体: 【復習】穴埋め式問題 (1題)",
-      "srsLevel": 2,
-      "nextReview": "2026-02-25T15:00:00.000Z",
+      "page": "返還命令等（法10 条の4）",
+      "text": "条文全体: 返還命令等（法10 条の4）",
+      "srsLevel": 3,
+      "nextReview": "2026-03-01T15:00:00.000Z",
       "history": [
         {
           "date": "2026-02-17T04:32:16.862Z",
@@ -13043,6 +13123,11 @@
           "date": "2026-02-24T00:47:57.192Z",
           "isCorrect": true,
           "level": 1
+        },
+        {
+          "date": "2026-02-26T02:16:34.982Z",
+          "isCorrect": true,
+          "level": 2
         }
       ]
     },
@@ -13309,19 +13394,19 @@
       "nextReview": null
     },
     "clause-summary-p-1771220413276": {
-      "correct": 5,
-      "total": 6,
+      "correct": 7,
+      "total": 8,
       "recent": [
         1,
-        1,
-        1,
         0,
+        1,
+        1,
         1
       ],
       "page": "基本手当の受給資格（法13 条）等",
       "text": "条文全体: 基本手当の受給資格（法13 条）等",
-      "srsLevel": 2,
-      "nextReview": "2026-02-25T15:00:00.000Z",
+      "srsLevel": 4,
+      "nextReview": "2026-03-04T15:00:00.000Z",
       "history": [
         {
           "date": "2026-02-17T04:32:16.862Z",
@@ -13347,6 +13432,16 @@
           "date": "2026-02-24T01:05:27.794Z",
           "isCorrect": true,
           "level": 1
+        },
+        {
+          "date": "2026-02-26T02:27:45.749Z",
+          "isCorrect": true,
+          "level": 2
+        },
+        {
+          "date": "2026-02-26T02:28:15.919Z",
+          "isCorrect": true,
+          "level": 3
         }
       ]
     },
@@ -15098,19 +15193,19 @@
       ]
     },
     "q-1771290912687": {
-      "correct": 7,
-      "total": 8,
+      "correct": 8,
+      "total": 9,
       "recent": [
         1,
         1,
-        1,
         0,
+        1,
         1
       ],
       "page": "労働基準法の適用除外",
       "text": "国家公務員　国営事業の職員",
-      "srsLevel": 2,
-      "nextReview": "2026-02-25T15:00:00.000Z",
+      "srsLevel": 3,
+      "nextReview": "2026-03-01T15:00:00.000Z",
       "history": [
         {
           "date": "2026-02-17T02:52:48.348Z",
@@ -15136,6 +15231,11 @@
           "date": "2026-02-24T02:06:59.486Z",
           "isCorrect": true,
           "level": 1
+        },
+        {
+          "date": "2026-02-26T02:13:53.389Z",
+          "isCorrect": true,
+          "level": 2
         }
       ]
     },
@@ -15757,10 +15857,10 @@
       ]
     },
     "q-17713012482991": {
-      "correct": 5,
-      "total": 7,
+      "correct": 6,
+      "total": 8,
       "recent": [
-        0,
+        1,
         1,
         1,
         1,
@@ -15768,7 +15868,7 @@
       ],
       "page": "解雇制限の解除、解雇予告の例外",
       "text": "療養開始後3 年を経過し、\n使用者が平均賃金の1,200 日分の打切補償を支払う場合",
-      "srsLevel": 4,
+      "srsLevel": 5,
       "history": [
         {
           "date": "2026-02-17T04:15:48.822Z",
@@ -15804,9 +15904,14 @@
           "date": "2026-02-19T02:34:58.595Z",
           "isCorrect": true,
           "level": 3
+        },
+        {
+          "date": "2026-02-26T02:13:53.389Z",
+          "isCorrect": true,
+          "level": 4
         }
       ],
-      "nextReview": "2026-02-25T15:00:00.000Z"
+      "nextReview": "2026-03-11T15:00:00.000Z"
     },
     "q-17713012482992": {
       "correct": 5,
@@ -16089,18 +16194,18 @@
       "nextReview": "2026-03-02T15:00:00.000Z"
     },
     "q-1771303268601": {
-      "correct": 4,
-      "total": 5,
+      "correct": 5,
+      "total": 7,
       "recent": [
         1,
-        1,
+        0,
         1,
         0,
         1
       ],
       "page": "賃金いろいろまとめ",
       "text": "臨時に支払われた賃金",
-      "srsLevel": 2,
+      "srsLevel": 1,
       "history": [
         {
           "date": "2026-02-17T04:59:48.420Z",
@@ -16126,9 +16231,19 @@
           "date": "2026-02-24T02:15:10.133Z",
           "isCorrect": true,
           "level": 1
+        },
+        {
+          "date": "2026-02-26T02:15:22.870Z",
+          "isCorrect": false,
+          "level": 2
+        },
+        {
+          "date": "2026-02-26T02:15:44.487Z",
+          "isCorrect": true,
+          "level": 0
         }
       ],
-      "nextReview": "2026-02-25T15:00:00.000Z"
+      "nextReview": "2026-02-26T15:00:00.000Z"
     },
     "q-1771303283790": {
       "correct": 5,
@@ -16431,18 +16546,18 @@
       "nextReview": "2026-03-02T15:00:00.000Z"
     },
     "q-1771303957137": {
-      "correct": 4,
-      "total": 5,
+      "correct": 5,
+      "total": 6,
       "recent": [
         1,
         1,
-        1,
         0,
+        1,
         1
       ],
       "page": "賃金いろいろまとめ",
       "text": "家族手当",
-      "srsLevel": 2,
+      "srsLevel": 3,
       "history": [
         {
           "date": "2026-02-17T04:59:48.420Z",
@@ -16468,9 +16583,14 @@
           "date": "2026-02-24T01:44:58.426Z",
           "isCorrect": true,
           "level": 1
+        },
+        {
+          "date": "2026-02-26T02:13:53.389Z",
+          "isCorrect": true,
+          "level": 2
         }
       ],
-      "nextReview": "2026-02-25T15:00:00.000Z"
+      "nextReview": "2026-03-01T15:00:00.000Z"
     },
     "q-1771303974177": {
       "correct": 5,
@@ -19122,18 +19242,18 @@
       "nextReview": null
     },
     "clause-summary-p-1771376981132": {
-      "correct": 4,
-      "total": 6,
+      "correct": 5,
+      "total": 7,
       "recent": [
-        0,
         1,
         0,
+        1,
         1,
         1
       ],
-      "page": "【復習】穴埋め式問題 (1題)",
-      "text": "条文全体: 【復習】穴埋め式問題 (1題)",
-      "srsLevel": 2,
+      "page": "労働基準法１箇月単位の変形労働時間制",
+      "text": "条文全体: 労働基準法１箇月単位の変形労働時間制",
+      "srsLevel": 3,
       "history": [
         {
           "date": "2026-02-18T01:13:26.131Z",
@@ -19164,9 +19284,14 @@
           "date": "2026-02-24T01:51:18.482Z",
           "isCorrect": true,
           "level": 1
+        },
+        {
+          "date": "2026-02-26T02:22:24.829Z",
+          "isCorrect": true,
+          "level": 2
         }
       ],
-      "nextReview": "2026-02-25T15:00:00.000Z"
+      "nextReview": "2026-03-01T15:00:00.000Z"
     },
     "clause-p-1771377376448-0": {
       "correct": 4,
@@ -19719,18 +19844,18 @@
       "nextReview": null
     },
     "clause-summary-p-1771388740499": {
-      "correct": 4,
-      "total": 5,
+      "correct": 5,
+      "total": 6,
       "recent": [
         1,
-        1,
         0,
+        1,
         1,
         1
       ],
       "page": "三六協定",
       "text": "条文全体: 三六協定",
-      "srsLevel": 2,
+      "srsLevel": 3,
       "history": [
         {
           "date": "2026-02-18T04:30:53.333Z",
@@ -19756,9 +19881,14 @@
           "date": "2026-02-24T04:07:56.915Z",
           "isCorrect": true,
           "level": 1
+        },
+        {
+          "date": "2026-02-26T02:18:27.047Z",
+          "isCorrect": true,
+          "level": 2
         }
       ],
-      "nextReview": "2026-02-25T15:00:00.000Z"
+      "nextReview": "2026-03-01T15:00:00.000Z"
     },
     "clause-p-1771388740499-5": {
       "correct": 1,
@@ -22474,16 +22604,17 @@
       "nextReview": null
     },
     "clause-summary-p-1771547825242": {
-      "correct": 2,
-      "total": 2,
+      "correct": 3,
+      "total": 3,
       "recent": [
+        1,
         1,
         1
       ],
       "page": "労働契約法 総則（法1 条～法5 条）",
       "pageId": "p-1771547825242",
       "text": "条文全体: 労働契約法 総則（法1 条～法5 条）",
-      "srsLevel": 2,
+      "srsLevel": 3,
       "history": [
         {
           "date": "2026-02-20T00:52:54.655Z",
@@ -22494,9 +22625,14 @@
           "date": "2026-02-24T04:17:23.473Z",
           "isCorrect": true,
           "level": 1
+        },
+        {
+          "date": "2026-02-26T02:22:24.829Z",
+          "isCorrect": true,
+          "level": 2
         }
       ],
-      "nextReview": "2026-02-25T15:00:00.000Z"
+      "nextReview": "2026-03-01T15:00:00.000Z"
     },
     "clause-summary-p-1771548980129": {
       "correct": 2,
@@ -24157,18 +24293,19 @@
       "nextReview": "2026-02-25T15:00:00.000Z"
     },
     "clause-summary-p-1771917277755": {
-      "correct": 3,
-      "total": 4,
+      "correct": 4,
+      "total": 6,
       "recent": [
-        1,
         0,
         1,
+        1,
+        0,
         1
       ],
       "page": "社会保険労務士法　設立等・業務制限等",
       "pageId": "p-1771917277755",
       "text": "条文全体: 社会保険労務士法　設立等・業務制限等",
-      "srsLevel": 2,
+      "srsLevel": 1,
       "history": [
         {
           "date": "2026-02-24T13:26:12.452Z",
@@ -24189,9 +24326,19 @@
           "date": "2026-02-24T13:26:57.444Z",
           "isCorrect": true,
           "level": 1
+        },
+        {
+          "date": "2026-02-26T02:27:45.750Z",
+          "isCorrect": false,
+          "level": 2
+        },
+        {
+          "date": "2026-02-26T02:28:15.919Z",
+          "isCorrect": true,
+          "level": 0
         }
       ],
-      "nextReview": "2026-02-25T15:00:00.000Z"
+      "nextReview": "2026-02-26T15:00:00.000Z"
     },
     "clause-summary-p-1771916544517": {
       "correct": 5,
@@ -24938,99 +25085,141 @@
       "nextReview": null
     },
     "q-1771920130169": {
-      "correct": 1,
-      "total": 1,
+      "correct": 3,
+      "total": 3,
       "recent": [
+        1,
+        1,
         1
       ],
       "page": "厚生年金保険法　被保険者",
       "pageId": "p-1771920130169",
       "text": "法人の理事、監事、取締役、代表社員、無限責任社員など法人の代表者又は業務執行者であって、法人から労務の対償として報酬を受けている者",
-      "srsLevel": 1,
+      "srsLevel": 3,
       "history": [
         {
           "date": "2026-02-25T08:51:19.938Z",
           "isCorrect": true,
           "level": 0
+        },
+        {
+          "date": "2026-02-26T02:15:22.870Z",
+          "isCorrect": true,
+          "level": 1
+        },
+        {
+          "date": "2026-02-26T02:15:44.487Z",
+          "isCorrect": true,
+          "level": 2
         }
       ],
-      "nextReview": "2026-02-25T15:00:00.000Z"
+      "nextReview": "2026-03-01T15:00:00.000Z"
     },
     "q-1771920186667": {
-      "correct": 1,
-      "total": 1,
+      "correct": 3,
+      "total": 3,
       "recent": [
+        1,
+        1,
         1
       ],
       "page": "厚生年金保険法　被保険者",
       "pageId": "p-1771920130169",
       "text": "卒業後就職予定先の適用事業所で職業実習を受けている者",
-      "srsLevel": 1,
+      "srsLevel": 3,
       "history": [
         {
           "date": "2026-02-25T08:51:19.938Z",
           "isCorrect": true,
           "level": 0
+        },
+        {
+          "date": "2026-02-26T02:15:22.870Z",
+          "isCorrect": true,
+          "level": 1
+        },
+        {
+          "date": "2026-02-26T02:15:44.487Z",
+          "isCorrect": true,
+          "level": 2
         }
       ],
-      "nextReview": "2026-02-25T15:00:00.000Z"
+      "nextReview": "2026-03-01T15:00:00.000Z"
     },
     "q-1771920217836": {
-      "correct": 1,
-      "total": 1,
+      "correct": 2,
+      "total": 2,
       "recent": [
+        1,
         1
       ],
       "page": "厚生年金保険法　被保険者",
       "pageId": "p-1771920130169",
       "text": "社会保障協定により相手国法令の規定の適用を受ける者（相手国：ドイツ、イギリス、韓国、アメリカ等）",
-      "srsLevel": 1,
+      "srsLevel": 2,
       "history": [
         {
           "date": "2026-02-25T08:51:19.938Z",
           "isCorrect": true,
           "level": 0
+        },
+        {
+          "date": "2026-02-26T02:13:53.389Z",
+          "isCorrect": true,
+          "level": 1
         }
       ],
-      "nextReview": "2026-02-25T15:00:00.000Z"
+      "nextReview": "2026-02-27T15:00:00.000Z"
     },
     "q-1771920244076": {
-      "correct": 1,
-      "total": 1,
+      "correct": 2,
+      "total": 2,
       "recent": [
+        1,
         1
       ],
       "page": "厚生年金保険法　被保険者",
       "pageId": "p-1771920130169",
       "text": "健康保険・厚生年金保険の被保険者資格の取得基準については、1週間の所定労働時間及び1 か月間の所定労働日数が、同一の事業所に使用される通常の労働者の1週間の所定労働時間及び1 か月間の所定労働日数の4 分の3 以上（以下「4 分の3 基準」という）である者",
-      "srsLevel": 1,
+      "srsLevel": 2,
       "history": [
         {
           "date": "2026-02-25T08:51:19.938Z",
           "isCorrect": true,
           "level": 0
+        },
+        {
+          "date": "2026-02-26T02:13:53.389Z",
+          "isCorrect": true,
+          "level": 1
         }
       ],
-      "nextReview": "2026-02-25T15:00:00.000Z"
+      "nextReview": "2026-02-27T15:00:00.000Z"
     },
     "q-1771920315124": {
-      "correct": 1,
-      "total": 1,
+      "correct": 2,
+      "total": 2,
       "recent": [
+        1,
         1
       ],
       "page": "厚生年金保険法　被保険者",
       "pageId": "p-1771920130169",
       "text": "所定労働時間又は所定労働日数は4 分の3 基準を満たさないものの、事業主等に対する事情の聴取やタイムカード等の書類の確認を行った結果、残業等を除いた基本となる実際の労働時間又は労働日数が直近2 か月において4 分の3 基準を満たしている場合で、今後も同様の状態が続くことが見込まれるとき",
-      "srsLevel": 1,
+      "srsLevel": 2,
       "history": [
         {
           "date": "2026-02-25T08:51:19.938Z",
           "isCorrect": true,
           "level": 0
+        },
+        {
+          "date": "2026-02-26T02:13:53.389Z",
+          "isCorrect": true,
+          "level": 1
         }
       ],
-      "nextReview": "2026-02-25T15:00:00.000Z"
+      "nextReview": "2026-02-27T15:00:00.000Z"
     },
     "q-1771993314506": {
       "correct": 2,
@@ -25158,16 +25347,18 @@
       "nextReview": "2026-02-26T15:00:00.000Z"
     },
     "q-17719925810032": {
-      "correct": 1,
-      "total": 2,
+      "correct": 3,
+      "total": 4,
       "recent": [
         0,
+        1,
+        1,
         1
       ],
       "page": "雇用保険法　再就職手当と常用就職支度手当の支給要件",
       "pageId": "p-1771992581003",
       "text": "待期期間が経過した後職業に就いたこと",
-      "srsLevel": 1,
+      "srsLevel": 3,
       "history": [
         {
           "date": "2026-02-25T11:52:00.954Z",
@@ -25178,9 +25369,19 @@
           "date": "2026-02-25T11:52:20.989Z",
           "isCorrect": true,
           "level": 0
+        },
+        {
+          "date": "2026-02-26T02:15:22.870Z",
+          "isCorrect": true,
+          "level": 1
+        },
+        {
+          "date": "2026-02-26T02:15:44.487Z",
+          "isCorrect": true,
+          "level": 2
         }
       ],
-      "nextReview": "2026-02-25T15:00:00.000Z"
+      "nextReview": "2026-03-01T15:00:00.000Z"
     },
     "q-17719925810033": {
       "correct": 2,
@@ -25523,23 +25724,35 @@
       "nextReview": "2026-02-25T15:00:00.000Z"
     },
     "clause-summary-p-1771987342245": {
-      "correct": 1,
-      "total": 1,
+      "correct": 3,
+      "total": 3,
       "recent": [
+        1,
+        1,
         1
       ],
       "page": "雇用保険法　常用就職支度手当の支給要件",
       "pageId": "p-1771987342245",
       "text": "条文全体: 雇用保険法　常用就職支度手当の支給要件",
-      "srsLevel": 1,
+      "srsLevel": 3,
       "history": [
         {
           "date": "2026-02-25T12:19:50.448Z",
           "isCorrect": true,
           "level": 0
+        },
+        {
+          "date": "2026-02-26T02:27:45.750Z",
+          "isCorrect": true,
+          "level": 1
+        },
+        {
+          "date": "2026-02-26T02:28:15.919Z",
+          "isCorrect": true,
+          "level": 2
         }
       ],
-      "nextReview": "2026-02-25T15:00:00.000Z"
+      "nextReview": "2026-03-01T15:00:00.000Z"
     },
     "clause-summary-p-1771998662218": {
       "correct": 1,
@@ -26051,6 +26264,78 @@
   },
   "history": [
     {
+      "timestamp": "2026/2/26 11:28:15",
+      "isoDate": "2026-02-26T02:28:15.919Z",
+      "page": "【復習】穴埋め式問題 (3題)",
+      "pageId": "auto-due-review-clause",
+      "score": "39 / 39",
+      "accuracy": 100
+    },
+    {
+      "timestamp": "2026/2/26 11:27:45",
+      "isoDate": "2026-02-26T02:27:45.750Z",
+      "page": "【復習】穴埋め式問題 (3題)",
+      "pageId": "auto-due-review-clause",
+      "score": "37 / 39",
+      "accuracy": 95
+    },
+    {
+      "timestamp": "2026/2/26 11:22:24",
+      "isoDate": "2026-02-26T02:22:24.829Z",
+      "page": "【復習】穴埋め式問題 (3題)",
+      "pageId": "auto-due-review-clause",
+      "score": "35 / 35",
+      "accuracy": 100
+    },
+    {
+      "timestamp": "2026/2/26 11:18:27",
+      "isoDate": "2026-02-26T02:18:27.047Z",
+      "page": "【復習】穴埋め式問題 (1題)",
+      "pageId": "auto-due-review-clause",
+      "score": "7 / 7",
+      "accuracy": 100
+    },
+    {
+      "timestamp": "2026/2/26 11:17:30",
+      "isoDate": "2026-02-26T02:17:30.527Z",
+      "page": "雇用保険　雇用保険事業（法3 条）",
+      "pageId": "p-1770969147488",
+      "score": "4 / 4",
+      "accuracy": 100
+    },
+    {
+      "timestamp": "2026/2/26 11:16:34",
+      "isoDate": "2026-02-26T02:16:34.983Z",
+      "page": "【復習】穴埋め式問題 (1題)",
+      "pageId": "auto-due-review-clause",
+      "score": "6 / 6",
+      "accuracy": 100
+    },
+    {
+      "timestamp": "2026/2/26 11:15:44",
+      "isoDate": "2026-02-26T02:15:44.487Z",
+      "page": "【復習】選択式 特訓 (9題)",
+      "pageId": "auto-due-review",
+      "score": "9 / 9",
+      "accuracy": 100
+    },
+    {
+      "timestamp": "2026/2/26 11:15:22",
+      "isoDate": "2026-02-26T02:15:22.870Z",
+      "page": "【復習】選択式 特訓 (9題)",
+      "pageId": "auto-due-review",
+      "score": "8 / 9",
+      "accuracy": 89
+    },
+    {
+      "timestamp": "2026/2/26 11:13:53",
+      "isoDate": "2026-02-26T02:13:53.389Z",
+      "page": "【復習】選択式 特訓 (10題)",
+      "pageId": "auto-due-review",
+      "score": "10 / 10",
+      "accuracy": 100
+    },
+    {
       "timestamp": "2026/2/26 11:12:32",
       "isoDate": "2026-02-26T02:12:32.931Z",
       "page": "国民年金　死亡一時金",
@@ -26377,79 +26662,7 @@
       "pageId": "p-1771304541813",
       "score": "4 / 4",
       "accuracy": 100
-    },
-    {
-      "timestamp": "2026/2/25 10:37:28",
-      "isoDate": "2026-02-25T01:37:28.116Z",
-      "page": "【復習】穴埋め式問題 (3題)",
-      "pageId": "auto-due-review-clause",
-      "score": "29 / 29",
-      "accuracy": 100
-    },
-    {
-      "timestamp": "2026/2/25 10:34:32",
-      "isoDate": "2026-02-25T01:34:32.584Z",
-      "page": "【復習】穴埋め式問題 (3題)",
-      "pageId": "auto-due-review-clause",
-      "score": "31 / 31",
-      "accuracy": 100
-    },
-    {
-      "timestamp": "2026/2/25 10:30:49",
-      "isoDate": "2026-02-25T01:30:49.520Z",
-      "page": "【復習】穴埋め式問題 (3題)",
-      "pageId": "auto-due-review-clause",
-      "score": "44 / 44",
-      "accuracy": 100
-    },
-    {
-      "timestamp": "2026/2/25 10:26:47",
-      "isoDate": "2026-02-25T01:26:47.813Z",
-      "page": "広域延長給付（法25 条）と全国延長給付（法27 条）",
-      "pageId": "p-1771461488084",
-      "score": "13 / 13",
-      "accuracy": 100
-    },
-    {
-      "timestamp": "2026/2/25 10:25:35",
-      "isoDate": "2026-02-25T01:25:35.525Z",
-      "page": "労働基準法　フレックスタイム制　清算期間中の上限時間",
-      "pageId": "p-1771377957629",
-      "score": "5 / 5",
-      "accuracy": 100
-    },
-    {
-      "timestamp": "2026/2/25 10:24:15",
-      "isoDate": "2026-02-25T01:24:15.029Z",
-      "page": "【復習】穴埋め式問題 (3題)",
-      "pageId": "auto-due-review-clause",
-      "score": "21 / 21",
-      "accuracy": 100
-    },
-    {
-      "timestamp": "2026/2/25 10:22:33",
-      "isoDate": "2026-02-25T01:22:33.905Z",
-      "page": "【復習】穴埋め式問題 (3題)",
-      "pageId": "auto-due-review-clause",
-      "score": "26 / 26",
-      "accuracy": 100
-    },
-    {
-      "timestamp": "2026/2/25 10:14:47",
-      "isoDate": "2026-02-25T01:14:47.754Z",
-      "page": "【復習】穴埋め式問題 (1題)",
-      "pageId": "auto-due-review-clause",
-      "score": "22 / 22",
-      "accuracy": 100
-    },
-    {
-      "timestamp": "2026/2/25 10:12:53",
-      "isoDate": "2026-02-25T01:12:53.591Z",
-      "page": "【復習】穴埋め式問題 (1題)",
-      "pageId": "auto-due-review-clause",
-      "score": "12 / 12",
-      "accuracy": 100
     }
   ],
-  "lastModified": 1772071964881
+  "lastModified": 1772072926268
 }
