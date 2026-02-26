@@ -2426,6 +2426,7 @@ tr {
         padding: 0.8rem 1rem;
     }
 }
+
 /* Global Sidebar Toggle Styles */
 .menu-toggle-global {
     position: fixed;
@@ -2478,7 +2479,8 @@ tr {
 
 /* Adjust main content when toggle exists */
 .main-content {
-    padding-top: 4.5rem !important; /* Make room for the floating toggle */
+    padding-top: 4.5rem !important;
+    /* Make room for the floating toggle */
 }
 
 /* Sidebar collapsed state for desktop */
@@ -2500,3 +2502,26 @@ tr {
     }
 }
 
+.clause-history-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.2rem;
+    background: rgba(76, 201, 240, 0.1);
+    border: 1px solid rgba(76, 201, 240, 0.3);
+    border-radius: 12px;
+    color: var(--accent);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    margin-bottom: 2rem;
+    width: fit-content;
+}
+
+.clause-history-btn:hover {
+    background: rgba(76, 201, 240, 0.2);
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(76, 201, 240, 0.2);
+}

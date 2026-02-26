@@ -1175,6 +1175,16 @@ class QuizApp {
         const container = document.createElement('div');
         container.className = 'clause-container';
 
+        // Add history graph button if stats exist
+        const summaryKey = `clause-summary-${set.id}`;
+        if (this.questionStats[summaryKey] && !this.isEditMode) {
+            const historyBtn = document.createElement('button');
+            historyBtn.className = 'clause-history-btn';
+            historyBtn.innerHTML = '📈 正答率の推移を確認';
+            historyBtn.onclick = () => this.showSRSDetail(summaryKey);
+            container.appendChild(historyBtn);
+        }
+
         const clauseText = document.createElement('div');
         clauseText.className = 'clause-text';
 
