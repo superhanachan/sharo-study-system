@@ -285,6 +285,7 @@ class QuizApp {
         this.tableControls = document.querySelector('.table-controls');
         this.insertTableBtn = document.getElementById('insert-table-btn');
         this.clearPoolBtn = document.getElementById('clear-pool-btn');
+        this.selectAllPoolBtn = document.getElementById('select-all-pool-btn');
         this.globalKeywordBank = document.getElementById('global-keyword-bank');
 
         // GitHub Sync UI
@@ -302,6 +303,9 @@ class QuizApp {
         if (this.tabStats) this.tabStats.addEventListener('click', () => this.switchView('stats'));
         if (this.clearPoolBtn) {
             this.clearPoolBtn.addEventListener('click', () => this.clearAllPoolSelections());
+        }
+        if (this.selectAllPoolBtn) {
+            this.selectAllPoolBtn.addEventListener('click', () => this.selectAllPoolSelections());
         }
         if (this.editModeToggle) {
             this.editModeToggle.addEventListener('change', (e) => {
@@ -2469,6 +2473,15 @@ class QuizApp {
         if (!confirm('特訓対象のチェックをすべて外しますか？')) return;
         this.quizData.forEach(item => {
             item.isInPool = false;
+        });
+        this.saveData();
+        this.renderTOC();
+    }
+
+    selectAllPoolSelections() {
+        if (!confirm('すべての問題を特訓対象に含めますか？')) return;
+        this.quizData.forEach(item => {
+            item.isInPool = true;
         });
         this.saveData();
         this.renderTOC();

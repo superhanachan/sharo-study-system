@@ -1990,22 +1990,38 @@ tr {
     border-bottom: 1px solid var(--glass-border);
 }
 
-.clear-all-btn {
-    background: transparent;
-    border: 1px solid rgba(76, 201, 240, 0.5);
-    color: var(--accent);
-    padding: 0.4rem 0.8rem;
-    border-radius: 6px;
-    font-size: 0.8rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    width: 100%;
+.pool-batch-actions {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid var(--glass-border);
 }
 
-.clear-all-btn:hover {
+.batch-action-btn {
+    background: transparent;
+    border: 1px solid rgba(76, 201, 240, 0.4);
+    color: var(--accent);
+    padding: 0.4rem 0.2rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex: 1;
+    white-space: nowrap;
+}
+
+.batch-action-btn:hover {
     background: rgba(76, 201, 240, 0.1);
     border-color: var(--accent);
     box-shadow: 0 0 10px rgba(76, 201, 240, 0.2);
+}
+
+.batch-action-btn.clear-all {
+    opacity: 0.7;
+}
+
+.batch-action-btn.clear-all:hover {
+    opacity: 1;
 }
 
 .sidebar-quick-actions {
