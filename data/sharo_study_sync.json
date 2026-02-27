@@ -14731,19 +14731,19 @@
       "nextReview": null
     },
     "clause-summary-p-1771227906649": {
-      "correct": 7,
-      "total": 9,
+      "correct": 9,
+      "total": 11,
       "recent": [
-        0,
-        0,
+        1,
+        1,
         1,
         1,
         1
       ],
       "page": "雇用保険　被保険者期間の算定",
       "text": "条文全体: 雇用保険　被保険者期間の算定",
-      "srsLevel": 3,
-      "nextReview": "2026-02-27T15:00:00.000Z",
+      "srsLevel": 5,
+      "nextReview": "2026-03-13T15:00:00.000Z",
       "history": [
         {
           "date": "2026-02-17T04:32:16.862Z",
@@ -14779,6 +14779,16 @@
           "date": "2026-02-24T01:13:24.642Z",
           "isCorrect": true,
           "level": 2
+        },
+        {
+          "date": "2026-02-27T23:42:26.578Z",
+          "isCorrect": true,
+          "level": 3
+        },
+        {
+          "date": "2026-02-27T23:42:41.144Z",
+          "isCorrect": true,
+          "level": 4
         }
       ]
     },
@@ -15017,19 +15027,19 @@
       "nextReview": null
     },
     "clause-summary-p-1771229555830": {
-      "correct": 6,
-      "total": 11,
+      "correct": 8,
+      "total": 13,
       "recent": [
-        0,
-        0,
+        1,
+        1,
         1,
         1,
         1
       ],
       "page": "基本手当の日額",
       "text": "条文全体: 基本手当の日額",
-      "srsLevel": 3,
-      "nextReview": "2026-02-27T15:00:00.000Z",
+      "srsLevel": 5,
+      "nextReview": "2026-03-13T15:00:00.000Z",
       "history": [
         {
           "date": "2026-02-17T04:32:16.862Z",
@@ -15080,6 +15090,16 @@
           "date": "2026-02-24T01:05:27.794Z",
           "isCorrect": true,
           "level": 2
+        },
+        {
+          "date": "2026-02-27T23:42:26.578Z",
+          "isCorrect": true,
+          "level": 3
+        },
+        {
+          "date": "2026-02-27T23:42:41.144Z",
+          "isCorrect": true,
+          "level": 4
         }
       ]
     },
@@ -22172,10 +22192,11 @@
       "nextReview": null
     },
     "clause-summary-p-1771400829040": {
-      "correct": 3,
-      "total": 4,
+      "correct": 4,
+      "total": 5,
       "recent": [
         0,
+        1,
         1,
         1,
         1
@@ -22183,7 +22204,7 @@
       "page": "訓練延長給付（法24条）",
       "pageId": "p-1771400829040",
       "text": "条文全体: 訓練延長給付（法24条）",
-      "srsLevel": 3,
+      "srsLevel": 4,
       "history": [
         {
           "date": "2026-02-18T07:51:54.769Z",
@@ -22204,9 +22225,14 @@
           "date": "2026-02-24T01:08:36.886Z",
           "isCorrect": true,
           "level": 2
+        },
+        {
+          "date": "2026-02-27T23:50:32.576Z",
+          "isCorrect": true,
+          "level": 3
         }
       ],
-      "nextReview": "2026-02-27T15:00:00.000Z"
+      "nextReview": "2026-03-06T15:00:00.000Z"
     },
     "clause-p-1771401522990-0": {
       "correct": 2,
@@ -22571,10 +22597,11 @@
       "nextReview": null
     },
     "clause-summary-p-1771462669260": {
-      "correct": 3,
-      "total": 4,
+      "correct": 4,
+      "total": 5,
       "recent": [
         0,
+        1,
         1,
         1,
         1
@@ -22582,7 +22609,7 @@
       "page": "地域延長給付",
       "pageId": "p-1771462669260",
       "text": "条文全体: 地域延長給付",
-      "srsLevel": 3,
+      "srsLevel": 4,
       "history": [
         {
           "date": "2026-02-19T01:04:41.799Z",
@@ -22603,9 +22630,14 @@
           "date": "2026-02-24T01:16:59.275Z",
           "isCorrect": true,
           "level": 2
+        },
+        {
+          "date": "2026-02-27T23:50:32.576Z",
+          "isCorrect": true,
+          "level": 3
         }
       ],
-      "nextReview": "2026-02-27T15:00:00.000Z"
+      "nextReview": "2026-03-06T15:00:00.000Z"
     },
     "clause-summary-p-1771464255208": {
       "correct": 4,
@@ -23082,11 +23114,11 @@
       "nextReview": null
     },
     "clause-summary-p-1771476858401": {
-      "correct": 4,
-      "total": 9,
+      "correct": 5,
+      "total": 10,
       "recent": [
         0,
-        0,
+        1,
         1,
         1,
         1
@@ -23094,7 +23126,7 @@
       "page": "特例給付その他（法53 条～法56 条の2）",
       "pageId": "p-1771476858401",
       "text": "条文全体: 特例給付その他（法53 条～法56 条の2）",
-      "srsLevel": 3,
+      "srsLevel": 4,
       "history": [
         {
           "date": "2026-02-19T05:05:27.437Z",
@@ -23140,9 +23172,14 @@
           "date": "2026-02-24T01:19:48.720Z",
           "isCorrect": true,
           "level": 2
+        },
+        {
+          "date": "2026-02-27T23:46:13.096Z",
+          "isCorrect": true,
+          "level": 3
         }
       ],
-      "nextReview": "2026-02-27T15:00:00.000Z"
+      "nextReview": "2026-03-06T15:00:00.000Z"
     },
     "clause-p-1771479342594-0": {
       "correct": 4,
@@ -23438,9 +23475,10 @@
       "nextReview": "2026-03-06T15:00:00.000Z"
     },
     "clause-summary-p-1771484252807": {
-      "correct": 3,
-      "total": 3,
+      "correct": 4,
+      "total": 4,
       "recent": [
+        1,
         1,
         1,
         1
@@ -23448,7 +23486,7 @@
       "page": "70 歳到達者の外来療養に係るもの（令41 条5 項）",
       "pageId": "p-1771484252807",
       "text": "条文全体: 70 歳到達者の外来療養に係るもの（令41 条5 項）",
-      "srsLevel": 3,
+      "srsLevel": 4,
       "history": [
         {
           "date": "2026-02-19T07:04:29.768Z",
@@ -23464,9 +23502,14 @@
           "date": "2026-02-24T04:17:23.473Z",
           "isCorrect": true,
           "level": 2
+        },
+        {
+          "date": "2026-02-27T23:48:02.622Z",
+          "isCorrect": true,
+          "level": 3
         }
       ],
-      "nextReview": "2026-02-27T15:00:00.000Z"
+      "nextReview": "2026-03-06T15:00:00.000Z"
     },
     "clause-summary-p-1771484808349": {
       "correct": 3,
@@ -26380,16 +26423,17 @@
       "nextReview": null
     },
     "clause-summary-p-1771985018096": {
-      "correct": 2,
-      "total": 2,
+      "correct": 3,
+      "total": 3,
       "recent": [
+        1,
         1,
         1
       ],
       "page": "雇用保険法　就職促進給付の内容",
       "pageId": "p-1771985018096",
       "text": "条文全体: 雇用保険法　就職促進給付の内容",
-      "srsLevel": 2,
+      "srsLevel": 3,
       "history": [
         {
           "date": "2026-02-25T02:14:09.370Z",
@@ -26400,9 +26444,14 @@
           "date": "2026-02-26T04:03:14.995Z",
           "isCorrect": true,
           "level": 1
+        },
+        {
+          "date": "2026-02-27T23:46:13.097Z",
+          "isCorrect": true,
+          "level": 2
         }
       ],
-      "nextReview": "2026-02-27T15:00:00.000Z"
+      "nextReview": "2026-03-03T15:00:00.000Z"
     },
     "clause-p-1771464255208-0": {
       "correct": 1,
@@ -27190,16 +27239,17 @@
       "nextReview": "2026-03-02T15:00:00.000Z"
     },
     "clause-summary-p-1771996840410": {
-      "correct": 2,
-      "total": 2,
+      "correct": 3,
+      "total": 3,
       "recent": [
+        1,
         1,
         1
       ],
       "page": "労働施策総合推進法 外国人の雇用管理の改善等（法7 条）",
       "pageId": "p-1771996840410",
       "text": "条文全体: 労働施策総合推進法 外国人の雇用管理の改善等（法7 条）",
-      "srsLevel": 2,
+      "srsLevel": 3,
       "history": [
         {
           "date": "2026-02-25T11:55:49.957Z",
@@ -27210,9 +27260,14 @@
           "date": "2026-02-26T02:30:53.072Z",
           "isCorrect": true,
           "level": 1
+        },
+        {
+          "date": "2026-02-27T23:48:02.622Z",
+          "isCorrect": true,
+          "level": 2
         }
       ],
-      "nextReview": "2026-02-27T15:00:00.000Z"
+      "nextReview": "2026-03-03T15:00:00.000Z"
     },
     "clause-summary-p-1771998368129": {
       "correct": 4,
@@ -27547,16 +27602,17 @@
       "nextReview": "2026-02-28T15:00:00.000Z"
     },
     "clause-summary-p-1772001992748": {
-      "correct": 2,
-      "total": 2,
+      "correct": 3,
+      "total": 3,
       "recent": [
+        1,
         1,
         1
       ],
       "page": "職業安定法　労働者供給事業",
       "pageId": "p-1772001992748",
       "text": "条文全体: 職業安定法　労働者供給事業",
-      "srsLevel": 2,
+      "srsLevel": 3,
       "history": [
         {
           "date": "2026-02-25T12:19:50.448Z",
@@ -27567,9 +27623,14 @@
           "date": "2026-02-26T06:51:08.783Z",
           "isCorrect": true,
           "level": 1
+        },
+        {
+          "date": "2026-02-27T23:48:02.622Z",
+          "isCorrect": true,
+          "level": 2
         }
       ],
-      "nextReview": "2026-02-27T15:00:00.000Z"
+      "nextReview": "2026-03-03T15:00:00.000Z"
     },
     "clause-summary-p-1771987342245": {
       "correct": 3,
@@ -28007,17 +28068,18 @@
       "nextReview": "2026-02-27T15:00:00.000Z"
     },
     "clause-summary-p-1772000025885": {
-      "correct": 2,
-      "total": 3,
+      "correct": 3,
+      "total": 4,
       "recent": [
         0,
+        1,
         1,
         1
       ],
       "page": "職業安定法　無料の職業紹介事業",
       "pageId": "p-1772000025885",
       "text": "条文全体: 職業安定法　無料の職業紹介事業",
-      "srsLevel": 2,
+      "srsLevel": 3,
       "history": [
         {
           "date": "2026-02-25T12:29:50.468Z",
@@ -28033,9 +28095,14 @@
           "date": "2026-02-26T06:43:29.968Z",
           "isCorrect": true,
           "level": 1
+        },
+        {
+          "date": "2026-02-27T23:50:32.576Z",
+          "isCorrect": true,
+          "level": 2
         }
       ],
-      "nextReview": "2026-02-27T15:00:00.000Z"
+      "nextReview": "2026-03-03T15:00:00.000Z"
     },
     "clause-summary-p-1772006191797": {
       "correct": 3,
@@ -28094,16 +28161,17 @@
       "nextReview": "2026-02-27T15:00:00.000Z"
     },
     "clause-summary-p-1771997640182": {
-      "correct": 2,
-      "total": 2,
+      "correct": 3,
+      "total": 3,
       "recent": [
+        1,
         1,
         1
       ],
       "page": "職業安定法 目的等",
       "pageId": "p-1771997640182",
       "text": "条文全体: 職業安定法 目的等",
-      "srsLevel": 2,
+      "srsLevel": 3,
       "history": [
         {
           "date": "2026-02-25T12:34:16.292Z",
@@ -28114,9 +28182,14 @@
           "date": "2026-02-26T04:03:14.995Z",
           "isCorrect": true,
           "level": 1
+        },
+        {
+          "date": "2026-02-27T23:46:13.097Z",
+          "isCorrect": true,
+          "level": 2
         }
       ],
-      "nextReview": "2026-02-27T15:00:00.000Z"
+      "nextReview": "2026-03-03T15:00:00.000Z"
     },
     "clause-summary-p-1771998930284": {
       "correct": 3,
@@ -28594,9 +28667,11 @@
       "nextReview": "2026-02-28T15:00:00.000Z"
     },
     "clause-summary-p-1772089291960": {
-      "correct": 2,
-      "total": 3,
+      "correct": 3,
+      "total": 5,
       "recent": [
+        1,
+        0,
         1,
         0,
         1
@@ -28620,9 +28695,19 @@
           "date": "2026-02-27T01:21:55.191Z",
           "isCorrect": true,
           "level": 0
+        },
+        {
+          "date": "2026-02-27T23:42:26.578Z",
+          "isCorrect": false,
+          "level": 1
+        },
+        {
+          "date": "2026-02-27T23:42:41.144Z",
+          "isCorrect": true,
+          "level": 0
         }
       ],
-      "nextReview": "2026-02-27T15:00:00.000Z"
+      "nextReview": "2026-02-28T15:00:00.000Z"
     },
     "clause-summary-p-1772091159070": {
       "correct": 2,
@@ -29210,6 +29295,46 @@
   },
   "history": [
     {
+      "timestamp": "2026/2/28 8:50:32",
+      "isoDate": "2026-02-27T23:50:32.577Z",
+      "page": "【復習】穴埋め式問題 (3題)",
+      "pageId": "auto-due-review-clause",
+      "score": "29 / 29",
+      "accuracy": 100
+    },
+    {
+      "timestamp": "2026/2/28 8:48:02",
+      "isoDate": "2026-02-27T23:48:02.623Z",
+      "page": "【復習】穴埋め式問題 (3題)",
+      "pageId": "auto-due-review-clause",
+      "score": "17 / 17",
+      "accuracy": 100
+    },
+    {
+      "timestamp": "2026/2/28 8:46:13",
+      "isoDate": "2026-02-27T23:46:13.097Z",
+      "page": "【復習】穴埋め式問題 (3題)",
+      "pageId": "auto-due-review-clause",
+      "score": "36 / 36",
+      "accuracy": 100
+    },
+    {
+      "timestamp": "2026/2/28 8:42:41",
+      "isoDate": "2026-02-27T23:42:41.145Z",
+      "page": "【復習】穴埋め式問題 (3題)",
+      "pageId": "auto-due-review-clause",
+      "score": "23 / 23",
+      "accuracy": 100
+    },
+    {
+      "timestamp": "2026/2/28 8:42:26",
+      "isoDate": "2026-02-27T23:42:26.579Z",
+      "page": "【復習】穴埋め式問題 (3題)",
+      "pageId": "auto-due-review-clause",
+      "score": "21 / 23",
+      "accuracy": 91
+    },
+    {
       "timestamp": "2026/2/28 8:39:45",
       "isoDate": "2026-02-27T23:39:45.138Z",
       "page": "【復習】穴埋め式問題 (3題)",
@@ -29568,47 +29693,7 @@
       "pageId": "auto-due-review-clause",
       "score": "24 / 24",
       "accuracy": 100
-    },
-    {
-      "timestamp": "2026/2/27 10:21:55",
-      "isoDate": "2026-02-27T01:21:55.191Z",
-      "page": "【復習】穴埋め式問題 (3題)",
-      "pageId": "auto-due-review-clause",
-      "score": "31 / 31",
-      "accuracy": 100
-    },
-    {
-      "timestamp": "2026/2/27 10:21:37",
-      "isoDate": "2026-02-27T01:21:37.614Z",
-      "page": "【復習】穴埋め式問題 (3題)",
-      "pageId": "auto-due-review-clause",
-      "score": "29 / 33",
-      "accuracy": 88
-    },
-    {
-      "timestamp": "2026/2/27 10:18:29",
-      "isoDate": "2026-02-27T01:18:29.001Z",
-      "page": "【復習】穴埋め式問題 (3題)",
-      "pageId": "auto-due-review-clause",
-      "score": "34 / 34",
-      "accuracy": 100
-    },
-    {
-      "timestamp": "2026/2/27 10:14:16",
-      "isoDate": "2026-02-27T01:14:16.445Z",
-      "page": "【復習】選択式 特訓 (5題)",
-      "pageId": "auto-due-review",
-      "score": "5 / 5",
-      "accuracy": 100
-    },
-    {
-      "timestamp": "2026/2/27 10:12:56",
-      "isoDate": "2026-02-27T01:12:56.157Z",
-      "page": "【復習】選択式 特訓 (10題)",
-      "pageId": "auto-due-review",
-      "score": "10 / 10",
-      "accuracy": 100
     }
   ],
-  "lastModified": 1772235619466
+  "lastModified": 1772236253490
 }
