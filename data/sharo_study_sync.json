@@ -13244,19 +13244,19 @@
       "nextReview": null
     },
     "clause-summary-p-1771209159307": {
-      "correct": 7,
-      "total": 9,
+      "correct": 8,
+      "total": 10,
       "recent": [
         0,
-        0,
+        1,
         1,
         1,
         1
       ],
       "page": "雇用保険法　被保険者　適用除外",
       "text": "条文全体: 雇用保険法　被保険者　適用除外",
-      "srsLevel": 3,
-      "nextReview": "2026-02-27T15:00:00.000Z",
+      "srsLevel": 4,
+      "nextReview": "2026-03-06T15:00:00.000Z",
       "history": [
         {
           "date": "2026-02-17T04:32:16.862Z",
@@ -13292,6 +13292,11 @@
           "date": "2026-02-24T01:13:24.642Z",
           "isCorrect": true,
           "level": 2
+        },
+        {
+          "date": "2026-02-27T23:39:45.138Z",
+          "isCorrect": true,
+          "level": 3
         }
       ]
     },
@@ -27210,19 +27215,19 @@
       "nextReview": "2026-02-27T15:00:00.000Z"
     },
     "clause-summary-p-1771998368129": {
-      "correct": 3,
-      "total": 5,
+      "correct": 4,
+      "total": 6,
       "recent": [
-        0,
         1,
         0,
+        1,
         1,
         1
       ],
       "page": "職業安定法 求人等に関する情報の的確な表示（法5 条の4）",
       "pageId": "p-1771998368129",
       "text": "条文全体: 職業安定法 求人等に関する情報の的確な表示（法5 条の4）",
-      "srsLevel": 2,
+      "srsLevel": 3,
       "history": [
         {
           "date": "2026-02-25T11:55:49.957Z",
@@ -27248,9 +27253,14 @@
           "date": "2026-02-26T06:51:08.783Z",
           "isCorrect": true,
           "level": 1
+        },
+        {
+          "date": "2026-02-27T23:39:45.137Z",
+          "isCorrect": true,
+          "level": 2
         }
       ],
-      "nextReview": "2026-02-27T15:00:00.000Z"
+      "nextReview": "2026-03-03T15:00:00.000Z"
     },
     "clause-summary-p-1771997074148": {
       "correct": 3,
@@ -28140,17 +28150,18 @@
       "nextReview": "2026-03-02T15:00:00.000Z"
     },
     "clause-summary-p-1771998088709": {
-      "correct": 2,
-      "total": 3,
+      "correct": 3,
+      "total": 4,
       "recent": [
         0,
+        1,
         1,
         1
       ],
       "page": "職業安定法 職業安定機関と特定地方公共団体等の協力等",
       "pageId": "p-1771998088709",
       "text": "条文全体: 職業安定法 職業安定機関と特定地方公共団体等の協力等",
-      "srsLevel": 2,
+      "srsLevel": 3,
       "history": [
         {
           "date": "2026-02-25T12:44:01.338Z",
@@ -28166,9 +28177,14 @@
           "date": "2026-02-26T06:54:09.598Z",
           "isCorrect": true,
           "level": 1
+        },
+        {
+          "date": "2026-02-27T23:39:45.138Z",
+          "isCorrect": true,
+          "level": 2
         }
       ],
-      "nextReview": "2026-02-27T15:00:00.000Z"
+      "nextReview": "2026-03-03T15:00:00.000Z"
     },
     "clause-summary-p-1772001579673": {
       "correct": 5,
@@ -29194,6 +29210,14 @@
   },
   "history": [
     {
+      "timestamp": "2026/2/28 8:39:45",
+      "isoDate": "2026-02-27T23:39:45.138Z",
+      "page": "【復習】穴埋め式問題 (3題)",
+      "pageId": "auto-due-review-clause",
+      "score": "22 / 22",
+      "accuracy": 100
+    },
+    {
       "timestamp": "2026/2/28 8:37:02",
       "isoDate": "2026-02-27T23:37:02.593Z",
       "page": "【復習】穴埋め式問題 (3題)",
@@ -29584,15 +29608,7 @@
       "pageId": "auto-due-review",
       "score": "10 / 10",
       "accuracy": 100
-    },
-    {
-      "timestamp": "2026/2/27 10:11:00",
-      "isoDate": "2026-02-27T01:11:00.382Z",
-      "page": "【復習】選択式 特訓 (10題)",
-      "pageId": "auto-due-review",
-      "score": "10 / 10",
-      "accuracy": 100
     }
   ],
-  "lastModified": 1772235458082
+  "lastModified": 1772235619466
 }
