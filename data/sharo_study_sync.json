@@ -27937,23 +27937,29 @@
       "nextReview": "2026-02-27T15:00:00.000Z"
     },
     "clause-summary-p-1772091159070": {
-      "correct": 1,
-      "total": 1,
+      "correct": 2,
+      "total": 2,
       "recent": [
+        1,
         1
       ],
       "page": "国民健康保険法　都道府県等の被保険者の届出等",
       "pageId": "p-1772091159070",
       "text": "条文全体: 国民健康保険法　都道府県等の被保険者の届出等",
-      "srsLevel": 1,
+      "srsLevel": 2,
       "history": [
         {
           "date": "2026-02-26T07:52:32.952Z",
           "isCorrect": true,
           "level": 0
+        },
+        {
+          "date": "2026-02-27T02:58:56.930Z",
+          "isCorrect": true,
+          "level": 1
         }
       ],
-      "nextReview": "2026-02-26T15:00:00.000Z"
+      "nextReview": "2026-02-28T15:00:00.000Z"
     },
     "clause-summary-p-1772090033581": {
       "correct": 1,
@@ -28816,6 +28822,14 @@
   },
   "history": [
     {
+      "timestamp": "2026/2/27 11:58:56",
+      "isoDate": "2026-02-27T02:58:56.930Z",
+      "page": "【復習】穴埋め式問題 (1題)",
+      "pageId": "auto-due-review-clause",
+      "score": "14 / 14",
+      "accuracy": 100
+    },
+    {
       "timestamp": "2026/2/27 11:56:17",
       "isoDate": "2026-02-27T02:56:17.204Z",
       "page": "【復習】穴埋め式問題 (1題)",
@@ -29206,15 +29220,7 @@
       "pageId": "auto-due-review-clause",
       "score": "6 / 6",
       "accuracy": 100
-    },
-    {
-      "timestamp": "2026/2/26 11:15:44",
-      "isoDate": "2026-02-26T02:15:44.487Z",
-      "page": "【復習】選択式 特訓 (9題)",
-      "pageId": "auto-due-review",
-      "score": "9 / 9",
-      "accuracy": 100
     }
   ],
-  "lastModified": 1772161009902
+  "lastModified": 1772161150734
 }
