@@ -1700,7 +1700,7 @@ tr {
     font-size: 0.9rem;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1024px) {
     .sidebar {
         transform: translateX(-100%);
     }
@@ -1834,7 +1834,7 @@ tr {
 }
 
 /* For mobile/small screens when sidebar is hidden/toggleable */
-@media (max-width: 900px) {
+@media (max-width: 1024px) {
     .keyword-bank {
         left: 1rem;
         right: 1rem;
