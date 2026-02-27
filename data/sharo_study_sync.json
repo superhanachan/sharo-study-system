@@ -26746,16 +26746,18 @@
       "nextReview": "2026-03-02T15:00:00.000Z"
     },
     "clause-summary-p-1771994558160": {
-      "correct": 2,
-      "total": 2,
+      "correct": 3,
+      "total": 4,
       "recent": [
         1,
+        1,
+        0,
         1
       ],
       "page": "雇用保険法　移転費等の支給申請",
       "pageId": "p-1771994558160",
       "text": "条文全体: 雇用保険法　移転費等の支給申請",
-      "srsLevel": 2,
+      "srsLevel": 1,
       "history": [
         {
           "date": "2026-02-25T12:02:03.095Z",
@@ -26766,9 +26768,19 @@
           "date": "2026-02-25T12:02:25.621Z",
           "isCorrect": true,
           "level": 1
+        },
+        {
+          "date": "2026-02-27T04:32:06.176Z",
+          "isCorrect": false,
+          "level": 2
+        },
+        {
+          "date": "2026-02-27T04:32:20.259Z",
+          "isCorrect": true,
+          "level": 0
         }
       ],
-      "nextReview": "2026-02-26T15:00:00.000Z"
+      "nextReview": "2026-02-27T15:00:00.000Z"
     },
     "clause-summary-p-1771983927946": {
       "correct": 3,
@@ -27922,23 +27934,29 @@
       "nextReview": null
     },
     "clause-summary-p-1772002366392": {
-      "correct": 1,
-      "total": 1,
+      "correct": 2,
+      "total": 2,
       "recent": [
+        1,
         1
       ],
       "page": "特定適用事業所の取扱いを受けようとする場合（第5 項）",
       "pageId": "p-1772002366392",
       "text": "条文全体: 特定適用事業所の取扱いを受けようとする場合（第5 項）",
-      "srsLevel": 1,
+      "srsLevel": 2,
       "history": [
         {
           "date": "2026-02-26T03:54:10.631Z",
           "isCorrect": true,
           "level": 0
+        },
+        {
+          "date": "2026-02-27T04:34:28.643Z",
+          "isCorrect": true,
+          "level": 1
         }
       ],
-      "nextReview": "2026-02-26T15:00:00.000Z"
+      "nextReview": "2026-02-28T15:00:00.000Z"
     },
     "clause-summary-p-1772089291960": {
       "correct": 2,
@@ -28545,6 +28563,30 @@
   },
   "history": [
     {
+      "timestamp": "2026/2/27 13:34:28",
+      "isoDate": "2026-02-27T04:34:28.643Z",
+      "page": "【復習】穴埋め式問題 (1題)",
+      "pageId": "auto-due-review-clause",
+      "score": "13 / 13",
+      "accuracy": 100
+    },
+    {
+      "timestamp": "2026/2/27 13:32:20",
+      "isoDate": "2026-02-27T04:32:20.259Z",
+      "page": "【復習】穴埋め式問題 (1題)",
+      "pageId": "auto-due-review-clause",
+      "score": "7 / 7",
+      "accuracy": 100
+    },
+    {
+      "timestamp": "2026/2/27 13:32:06",
+      "isoDate": "2026-02-27T04:32:06.176Z",
+      "page": "【復習】穴埋め式問題 (1題)",
+      "pageId": "auto-due-review-clause",
+      "score": "6 / 7",
+      "accuracy": 86
+    },
+    {
       "timestamp": "2026/2/27 13:04:23",
       "isoDate": "2026-02-27T04:04:23.167Z",
       "page": "【復習】穴埋め式問題 (1題)",
@@ -28919,31 +28961,7 @@
       "pageId": "auto-due-review-clause",
       "score": "37 / 39",
       "accuracy": 95
-    },
-    {
-      "timestamp": "2026/2/26 11:22:24",
-      "isoDate": "2026-02-26T02:22:24.829Z",
-      "page": "【復習】穴埋め式問題 (3題)",
-      "pageId": "auto-due-review-clause",
-      "score": "35 / 35",
-      "accuracy": 100
-    },
-    {
-      "timestamp": "2026/2/26 11:18:27",
-      "isoDate": "2026-02-26T02:18:27.047Z",
-      "page": "【復習】穴埋め式問題 (1題)",
-      "pageId": "auto-due-review-clause",
-      "score": "7 / 7",
-      "accuracy": 100
-    },
-    {
-      "timestamp": "2026/2/26 11:17:30",
-      "isoDate": "2026-02-26T02:17:30.527Z",
-      "page": "雇用保険　雇用保険事業（法3 条）",
-      "pageId": "p-1770969147488",
-      "score": "4 / 4",
-      "accuracy": 100
     }
   ],
-  "lastModified": 1772166673477
+  "lastModified": 1772166893867
 }
