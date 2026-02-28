@@ -30250,7 +30250,7 @@
           "level": 1
         }
       ],
-      "nextReview": "2026-03-01T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772089291960-1": {
       "correct": 2,
@@ -30275,7 +30275,7 @@
           "level": 1
         }
       ],
-      "nextReview": "2026-03-01T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772089291960-2": {
       "correct": 2,
@@ -30300,7 +30300,7 @@
           "level": 1
         }
       ],
-      "nextReview": "2026-03-01T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772089291960-3": {
       "correct": 1,
@@ -30325,7 +30325,7 @@
           "level": 0
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772089291960-4": {
       "correct": 1,
@@ -30350,7 +30350,7 @@
           "level": 0
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772089291960-5": {
       "correct": 2,
@@ -30375,7 +30375,7 @@
           "level": 1
         }
       ],
-      "nextReview": "2026-03-01T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772089291960-6": {
       "correct": 2,
@@ -30400,7 +30400,7 @@
           "level": 1
         }
       ],
-      "nextReview": "2026-03-01T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772089291960-7": {
       "correct": 2,
@@ -30425,7 +30425,7 @@
           "level": 1
         }
       ],
-      "nextReview": "2026-03-01T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772089291960-8": {
       "correct": 2,
@@ -30450,7 +30450,7 @@
           "level": 1
         }
       ],
-      "nextReview": "2026-03-01T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772089291960-9": {
       "correct": 2,
@@ -30475,7 +30475,7 @@
           "level": 1
         }
       ],
-      "nextReview": "2026-03-01T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772089291960-10": {
       "correct": 2,
@@ -30500,7 +30500,7 @@
           "level": 1
         }
       ],
-      "nextReview": "2026-03-01T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772090033581-0": {
       "correct": 1,
@@ -30519,7 +30519,7 @@
           "level": 0
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772090033581-1": {
       "correct": 1,
@@ -30538,7 +30538,7 @@
           "level": 0
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772090033581-2": {
       "correct": 1,
@@ -30557,7 +30557,7 @@
           "level": 0
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772090033581-3": {
       "correct": 1,
@@ -30576,7 +30576,7 @@
           "level": 0
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772090033581-4": {
       "correct": 1,
@@ -30595,7 +30595,7 @@
           "level": 0
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772090033581-5": {
       "correct": 1,
@@ -30614,7 +30614,7 @@
           "level": 0
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772091159070-0": {
       "correct": 1,
@@ -30633,7 +30633,7 @@
           "level": 0
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772091159070-1": {
       "correct": 1,
@@ -30652,7 +30652,7 @@
           "level": 0
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772091159070-2": {
       "correct": 1,
@@ -30671,7 +30671,7 @@
           "level": 0
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772091159070-3": {
       "correct": 1,
@@ -30690,7 +30690,7 @@
           "level": 0
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772091159070-4": {
       "correct": 1,
@@ -30709,7 +30709,7 @@
           "level": 0
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772091159070-5": {
       "correct": 1,
@@ -30728,7 +30728,7 @@
           "level": 0
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772091159070-6": {
       "correct": 1,
@@ -30747,7 +30747,7 @@
           "level": 0
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772091159070-7": {
       "correct": 1,
@@ -30766,7 +30766,7 @@
           "level": 0
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772091159070-8": {
       "correct": 1,
@@ -30785,7 +30785,7 @@
           "level": 0
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772091159070-9": {
       "correct": 1,
@@ -30804,7 +30804,7 @@
           "level": 0
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772091159070-10": {
       "correct": 1,
@@ -30823,7 +30823,7 @@
           "level": 0
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772091159070-11": {
       "correct": 1,
@@ -30842,7 +30842,7 @@
           "level": 0
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772091159070-12": {
       "correct": 1,
@@ -30861,26 +30861,7 @@
           "level": 0
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
-    },
-    "clause-p-1772091159070-13": {
-      "correct": 1,
-      "total": 1,
-      "recent": [
-        1
-      ],
-      "page": "国民健康保険法　都道府県等の被保険者の届出等",
-      "pageId": "p-1772091159070",
-      "text": "穴埋め: 転入届・転居届・転出届・世帯変更届等",
-      "srsLevel": 1,
-      "history": [
-        {
-          "date": "2026-02-28T01:57:44.689Z",
-          "isCorrect": true,
-          "level": 0
-        }
-      ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772091713893-0": {
       "correct": 1,
@@ -30899,7 +30880,7 @@
           "level": 0
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772091713893-1": {
       "correct": 1,
@@ -30918,7 +30899,7 @@
           "level": 0
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772091713893-2": {
       "correct": 1,
@@ -30937,7 +30918,7 @@
           "level": 0
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772091713893-3": {
       "correct": 1,
@@ -30956,7 +30937,7 @@
           "level": 0
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772091713893-4": {
       "correct": 1,
@@ -30975,7 +30956,7 @@
           "level": 0
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772091713893-5": {
       "correct": 1,
@@ -30994,7 +30975,7 @@
           "level": 0
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772091713893-6": {
       "correct": 1,
@@ -31013,7 +30994,7 @@
           "level": 0
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772091713893-7": {
       "correct": 1,
@@ -31032,7 +31013,7 @@
           "level": 0
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772091713893-8": {
       "correct": 1,
@@ -31051,7 +31032,7 @@
           "level": 0
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772091713893-9": {
       "correct": 1,
@@ -31070,7 +31051,7 @@
           "level": 0
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772091713893-10": {
       "correct": 1,
@@ -31089,7 +31070,7 @@
           "level": 0
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772091713893-11": {
       "correct": 1,
@@ -31108,7 +31089,7 @@
           "level": 0
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772091713893-12": {
       "correct": 1,
@@ -31127,7 +31108,7 @@
           "level": 0
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772156560673-0": {
       "correct": 1,
@@ -31146,7 +31127,7 @@
           "level": 0
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772156560673-1": {
       "correct": 1,
@@ -31165,7 +31146,7 @@
           "level": 0
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772156560673-2": {
       "correct": 1,
@@ -31184,7 +31165,7 @@
           "level": 0
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772156560673-3": {
       "correct": 1,
@@ -31203,7 +31184,7 @@
           "level": 0
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772156560673-4": {
       "correct": 1,
@@ -31222,7 +31203,7 @@
           "level": 0
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772156560673-5": {
       "correct": 1,
@@ -31241,7 +31222,7 @@
           "level": 0
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772156784472-0": {
       "correct": 2,
@@ -31266,7 +31247,7 @@
           "level": 1
         }
       ],
-      "nextReview": "2026-03-01T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772156784472-1": {
       "correct": 2,
@@ -31291,7 +31272,7 @@
           "level": 1
         }
       ],
-      "nextReview": "2026-03-01T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772156784472-2": {
       "correct": 2,
@@ -31316,7 +31297,7 @@
           "level": 1
         }
       ],
-      "nextReview": "2026-03-01T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772156784472-3": {
       "correct": 2,
@@ -31341,7 +31322,7 @@
           "level": 1
         }
       ],
-      "nextReview": "2026-03-01T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772156784472-4": {
       "correct": 2,
@@ -31366,7 +31347,7 @@
           "level": 1
         }
       ],
-      "nextReview": "2026-03-01T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772156784472-5": {
       "correct": 2,
@@ -31391,7 +31372,7 @@
           "level": 1
         }
       ],
-      "nextReview": "2026-03-01T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772156784472-6": {
       "correct": 2,
@@ -31416,7 +31397,7 @@
           "level": 1
         }
       ],
-      "nextReview": "2026-03-01T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772156784472-7": {
       "correct": 2,
@@ -31441,7 +31422,7 @@
           "level": 1
         }
       ],
-      "nextReview": "2026-03-01T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772156784472-8": {
       "correct": 2,
@@ -31466,7 +31447,7 @@
           "level": 1
         }
       ],
-      "nextReview": "2026-03-01T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772156784472-9": {
       "correct": 2,
@@ -31491,7 +31472,7 @@
           "level": 1
         }
       ],
-      "nextReview": "2026-03-01T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772156784472-10": {
       "correct": 2,
@@ -31516,7 +31497,7 @@
           "level": 1
         }
       ],
-      "nextReview": "2026-03-01T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772156784472-11": {
       "correct": 2,
@@ -31541,7 +31522,7 @@
           "level": 1
         }
       ],
-      "nextReview": "2026-03-01T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772156784472-12": {
       "correct": 2,
@@ -31566,7 +31547,7 @@
           "level": 1
         }
       ],
-      "nextReview": "2026-03-01T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772156784472-13": {
       "correct": 1,
@@ -31591,7 +31572,7 @@
           "level": 0
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772156784472-14": {
       "correct": 2,
@@ -31616,7 +31597,7 @@
           "level": 1
         }
       ],
-      "nextReview": "2026-03-01T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772156784472-15": {
       "correct": 1,
@@ -31641,7 +31622,7 @@
           "level": 0
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772156784472-16": {
       "correct": 2,
@@ -31666,7 +31647,7 @@
           "level": 1
         }
       ],
-      "nextReview": "2026-03-01T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772156784472-17": {
       "correct": 2,
@@ -31691,7 +31672,7 @@
           "level": 1
         }
       ],
-      "nextReview": "2026-03-01T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772156784472-18": {
       "correct": 2,
@@ -31716,7 +31697,7 @@
           "level": 1
         }
       ],
-      "nextReview": "2026-03-01T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772156784472-19": {
       "correct": 2,
@@ -31741,7 +31722,7 @@
           "level": 1
         }
       ],
-      "nextReview": "2026-03-01T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772156784472-20": {
       "correct": 2,
@@ -31766,57 +31747,7 @@
           "level": 1
         }
       ],
-      "nextReview": "2026-03-01T15:00:00.000Z"
-    },
-    "clause-p-1772156784472-21": {
-      "correct": 1,
-      "total": 2,
-      "recent": [
-        0,
-        1
-      ],
-      "page": "国民健康保険法　国民健康保険組合の設立",
-      "pageId": "p-1772156784472",
-      "text": "穴埋め: 市町村長の意見",
-      "srsLevel": 1,
-      "history": [
-        {
-          "date": "2026-02-28T02:04:18.974Z",
-          "isCorrect": false,
-          "level": 0
-        },
-        {
-          "date": "2026-02-28T02:04:44.890Z",
-          "isCorrect": true,
-          "level": 0
-        }
-      ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
-    },
-    "clause-p-1772156784472-22": {
-      "correct": 2,
-      "total": 2,
-      "recent": [
-        1,
-        1
-      ],
-      "page": "国民健康保険法　国民健康保険組合の設立",
-      "pageId": "p-1772156784472",
-      "text": "穴埋め: 設立の認可",
-      "srsLevel": 2,
-      "history": [
-        {
-          "date": "2026-02-28T02:04:18.974Z",
-          "isCorrect": true,
-          "level": 0
-        },
-        {
-          "date": "2026-02-28T02:04:44.890Z",
-          "isCorrect": true,
-          "level": 1
-        }
-      ],
-      "nextReview": "2026-03-01T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772157364459-0": {
       "correct": 1,
@@ -31835,7 +31766,7 @@
           "level": 0
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772157364459-1": {
       "correct": 1,
@@ -31854,7 +31785,7 @@
           "level": 0
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772157364459-2": {
       "correct": 1,
@@ -31873,7 +31804,7 @@
           "level": 0
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772157364459-3": {
       "correct": 1,
@@ -31892,7 +31823,7 @@
           "level": 0
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772157364459-4": {
       "correct": 1,
@@ -31911,7 +31842,7 @@
           "level": 0
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772157364459-5": {
       "correct": 1,
@@ -31930,7 +31861,7 @@
           "level": 0
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772157364459-6": {
       "correct": 1,
@@ -31949,7 +31880,7 @@
           "level": 0
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-summary-p-1772157364459": {
       "correct": 1,
@@ -31987,7 +31918,7 @@
           "level": 0
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772158815503-1": {
       "correct": 1,
@@ -32006,7 +31937,7 @@
           "level": 0
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772158815503-2": {
       "correct": 1,
@@ -32025,7 +31956,7 @@
           "level": 0
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772158815503-3": {
       "correct": 1,
@@ -32044,7 +31975,7 @@
           "level": 0
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772158815503-4": {
       "correct": 1,
@@ -32063,7 +31994,7 @@
           "level": 0
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772158815503-5": {
       "correct": 1,
@@ -32082,7 +32013,7 @@
           "level": 0
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-0": {
       "correct": 4,
@@ -32119,7 +32050,7 @@
           "level": 3
         }
       ],
-      "nextReview": "2026-03-06T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-1": {
       "correct": 4,
@@ -32156,7 +32087,7 @@
           "level": 3
         }
       ],
-      "nextReview": "2026-03-06T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-2": {
       "correct": 4,
@@ -32193,7 +32124,7 @@
           "level": 3
         }
       ],
-      "nextReview": "2026-03-06T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-3": {
       "correct": 4,
@@ -32230,7 +32161,7 @@
           "level": 3
         }
       ],
-      "nextReview": "2026-03-06T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-4": {
       "correct": 4,
@@ -32267,7 +32198,7 @@
           "level": 3
         }
       ],
-      "nextReview": "2026-03-06T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-5": {
       "correct": 4,
@@ -32304,7 +32235,7 @@
           "level": 3
         }
       ],
-      "nextReview": "2026-03-06T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-6": {
       "correct": 4,
@@ -32341,7 +32272,7 @@
           "level": 3
         }
       ],
-      "nextReview": "2026-03-06T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-7": {
       "correct": 4,
@@ -32378,7 +32309,7 @@
           "level": 3
         }
       ],
-      "nextReview": "2026-03-06T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-8": {
       "correct": 3,
@@ -32415,7 +32346,7 @@
           "level": 2
         }
       ],
-      "nextReview": "2026-03-03T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-9": {
       "correct": 4,
@@ -32452,7 +32383,7 @@
           "level": 3
         }
       ],
-      "nextReview": "2026-03-06T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-10": {
       "correct": 4,
@@ -32489,7 +32420,7 @@
           "level": 3
         }
       ],
-      "nextReview": "2026-03-06T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-11": {
       "correct": 4,
@@ -32526,7 +32457,7 @@
           "level": 3
         }
       ],
-      "nextReview": "2026-03-06T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-12": {
       "correct": 4,
@@ -32563,7 +32494,7 @@
           "level": 3
         }
       ],
-      "nextReview": "2026-03-06T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-13": {
       "correct": 3,
@@ -32600,7 +32531,7 @@
           "level": 2
         }
       ],
-      "nextReview": "2026-03-03T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-14": {
       "correct": 4,
@@ -32637,7 +32568,7 @@
           "level": 3
         }
       ],
-      "nextReview": "2026-03-06T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-15": {
       "correct": 4,
@@ -32674,7 +32605,7 @@
           "level": 3
         }
       ],
-      "nextReview": "2026-03-06T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-16": {
       "correct": 4,
@@ -32711,7 +32642,7 @@
           "level": 3
         }
       ],
-      "nextReview": "2026-03-06T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-17": {
       "correct": 4,
@@ -32748,7 +32679,7 @@
           "level": 3
         }
       ],
-      "nextReview": "2026-03-06T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-18": {
       "correct": 4,
@@ -32785,7 +32716,7 @@
           "level": 3
         }
       ],
-      "nextReview": "2026-03-06T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-19": {
       "correct": 4,
@@ -32822,7 +32753,7 @@
           "level": 3
         }
       ],
-      "nextReview": "2026-03-06T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-20": {
       "correct": 4,
@@ -32859,7 +32790,7 @@
           "level": 3
         }
       ],
-      "nextReview": "2026-03-06T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-21": {
       "correct": 4,
@@ -32896,7 +32827,7 @@
           "level": 3
         }
       ],
-      "nextReview": "2026-03-06T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-22": {
       "correct": 4,
@@ -32933,7 +32864,7 @@
           "level": 3
         }
       ],
-      "nextReview": "2026-03-06T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-23": {
       "correct": 4,
@@ -32970,7 +32901,7 @@
           "level": 3
         }
       ],
-      "nextReview": "2026-03-06T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-24": {
       "correct": 1,
@@ -33007,7 +32938,7 @@
           "level": 0
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-25": {
       "correct": 2,
@@ -33038,7 +32969,7 @@
           "level": 1
         }
       ],
-      "nextReview": "2026-03-01T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-26": {
       "correct": 4,
@@ -33075,7 +33006,7 @@
           "level": 3
         }
       ],
-      "nextReview": "2026-03-06T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-27": {
       "correct": 4,
@@ -33112,7 +33043,7 @@
           "level": 3
         }
       ],
-      "nextReview": "2026-03-06T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-28": {
       "correct": 1,
@@ -33137,7 +33068,7 @@
           "level": 0
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-29": {
       "correct": 4,
@@ -33174,7 +33105,7 @@
           "level": 3
         }
       ],
-      "nextReview": "2026-03-06T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-30": {
       "correct": 4,
@@ -33211,7 +33142,7 @@
           "level": 3
         }
       ],
-      "nextReview": "2026-03-06T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-31": {
       "correct": 4,
@@ -33248,7 +33179,7 @@
           "level": 3
         }
       ],
-      "nextReview": "2026-03-06T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-32": {
       "correct": 4,
@@ -33285,7 +33216,7 @@
           "level": 3
         }
       ],
-      "nextReview": "2026-03-06T15:00:00.000Z"
+      "nextReview": null
     }
   },
   "history": [
@@ -33690,5 +33621,5 @@
       "accuracy": 100
     }
   ],
-  "lastModified": 1772245145330
+  "lastModified": 1772245908805
 }
