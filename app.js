@@ -3242,8 +3242,13 @@ class QuizApp {
             this.updateGitHubStatus(`同期完了 (${new Date().toLocaleTimeString()})`);
             alert('GitHubへの同期が完了しました。');
         } catch (error) {
-            console.error('GitHub Sync Error details:', error);
-            alert('同期に失敗しました: ' + error.message + '\n\n※トークンの有効期限や権限（repo）、またはリポジトリ名が正しいかご確認ください。');
+            console.error('GitHub Sync Error Details:', {
+                message: error.message,
+                stack: error.stack,
+                config_path: config.path,
+                config_repo: config.repo
+            });
+            alert('同期に失敗しました: ' + error.message + '\n\n※1MBを超える巨大なファイルやGitHubの権限、リポジトリ名の設定が正しいかご確認ください。');
             this.updateGitHubStatus('同期失敗');
         } finally {
             if (this.ghSyncNowBtn) {
@@ -3259,24 +3264,37 @@ class QuizApp {
 
     async fetchFromGitHub(config) {
         const url = `https://api.github.com/repos/${config.repo}/contents/${config.path}`;
-        const response = await fetch(url, {
-            headers: { 'Authorization': config.token.startsWith('ghp_') ? `token ${config.token}` : `Bearer ${config.token}` }
+        const headers = {
+            'Authorization': config.token.startsWith('ghp_') ? `token ${config.token}` : `Bearer ${config.token}`
+        };
+
+        // 1. Get SHA via HEAD request (bypasses 1MB body limit)
+        const headResponse = await fetch(url, { method: 'HEAD', headers });
+        if (headResponse.status === 404) return null;
+        if (!headResponse.ok) throw new Error(`Metadata check failed: ${headResponse.status}`);
+
+        // GitHub ETag for blobs/contents is the SHA
+        const etag = headResponse.headers.get('ETag');
+        this._ghFileSha = etag ? etag.replace(/"/g, '') : null;
+
+        // 2. Fetch content via Raw media type (handles up to 100MB)
+        const rawResponse = await fetch(url, {
+            headers: { ...headers, 'Accept': 'application/vnd.github.v3.raw' }
         });
 
-        if (response.status === 404) return null; // File doesn't exist yet
-        if (!response.ok) {
-            let errorMsg = `Fetch failed: ${response.status}`;
-            try {
-                const errData = await response.json();
-                if (errData.message) errorMsg += ` (${errData.message})`;
-            } catch (e) { }
-            throw new Error(errorMsg);
+        if (!rawResponse.ok) {
+            throw new Error(`Content fetch failed: ${rawResponse.status}`);
         }
 
-        const data = await response.json();
-        const content = this.utf8_to_b64_decode(data.content);
-        this._ghFileSha = data.sha; // Store SHA for update
-        return JSON.parse(content);
+        const content = await rawResponse.text();
+        if (!content) return null;
+
+        try {
+            return JSON.parse(content);
+        } catch (e) {
+            console.error('JSON Parse Error. Raw content start:', content.substring(0, 100));
+            throw new Error('リモートのJSONファイルが壊れているか、空です。');
+        }
     }
 
     async pushToGitHub(config, data) {
@@ -3285,12 +3303,13 @@ class QuizApp {
 
         // Need current SHA to update existing file
         if (!this._ghFileSha) {
-            const check = await fetch(url, {
-                headers: { 'Authorization': `token ${config.token}` }
+            const headResponse = await fetch(url, {
+                method: 'HEAD',
+                headers: { 'Authorization': config.token.startsWith('ghp_') ? `token ${config.token}` : `Bearer ${config.token}` }
             });
-            if (check.ok) {
-                const checkData = await check.json();
-                this._ghFileSha = checkData.sha;
+            if (headResponse.ok) {
+                const etag = headResponse.headers.get('ETag');
+                this._ghFileSha = etag ? etag.replace(/"/g, '') : null;
             }
         }
 
