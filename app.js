@@ -1221,6 +1221,10 @@ class QuizApp {
         const container = document.createElement('div');
         container.className = 'clause-container';
 
+        // Add action buttons
+        const actionHeader = document.createElement('div');
+        actionHeader.className = 'clause-action-header';
+
         // Add history graph button if stats exist
         const summaryKey = `clause-summary-${set.id}`;
         if (this.questionStats[summaryKey] && !this.isEditMode) {
@@ -1228,7 +1232,24 @@ class QuizApp {
             historyBtn.className = 'clause-history-btn';
             historyBtn.innerHTML = '📈 正答率の推移を確認';
             historyBtn.onclick = () => this.showSRSDetail(summaryKey);
-            container.appendChild(historyBtn);
+            actionHeader.appendChild(historyBtn);
+        }
+
+        // Add "Show/Hide Answers" button for study aid
+        if (!this.isChecked && !this.isEditMode) {
+            const peekBtn = document.createElement('button');
+            peekBtn.className = 'clause-peek-btn';
+            peekBtn.innerHTML = '👁️ 答えを表示する';
+            peekBtn.onclick = () => {
+                const isRevealed = container.classList.toggle('answers-revealed');
+                peekBtn.innerHTML = isRevealed ? '👁️ 答えを隠す' : '👁️ 答えを表示する';
+                peekBtn.classList.toggle('active', isRevealed);
+            };
+            actionHeader.appendChild(peekBtn);
+        }
+
+        if (actionHeader.children.length > 0) {
+            container.appendChild(actionHeader);
         }
 
         const clauseText = document.createElement('div');
@@ -1289,6 +1310,7 @@ class QuizApp {
                 blank.id = `blank-${currentIdx}`;
 
                 const savedAnswer = this.userAnswers[`${set.id}-${currentIdx}`];
+                blank.dataset.answer = kwInfo.text; // Store correct answer for peek
                 if (savedAnswer) {
                     blank.textContent = savedAnswer;
                     blank.classList.add('filled');
