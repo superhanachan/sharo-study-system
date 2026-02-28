@@ -29690,42 +29690,54 @@
       "nextReview": "2026-03-03T15:00:00.000Z"
     },
     "clause-summary-p-1772165511486": {
-      "correct": 1,
-      "total": 1,
+      "correct": 2,
+      "total": 2,
       "recent": [
+        1,
         1
       ],
       "page": "国民健康保険法　保険給付の全部又は一部の支払の一時差し止め",
       "pageId": "p-1772165511486",
       "text": "条文全体: 国民健康保険法　保険給付の全部又は一部の支払の一時差し止め",
-      "srsLevel": 1,
+      "srsLevel": 2,
       "history": [
         {
           "date": "2026-02-28T00:50:06.878Z",
           "isCorrect": true,
           "level": 0
+        },
+        {
+          "date": "2026-02-28T02:43:08.321Z",
+          "isCorrect": true,
+          "level": 1
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": "2026-03-01T15:00:00.000Z"
     },
     "clause-summary-p-1772160564330": {
-      "correct": 1,
-      "total": 1,
+      "correct": 2,
+      "total": 2,
       "recent": [
+        1,
         1
       ],
       "page": "国民健康保険法　厚生労働大臣又は都道府県知事の指導（法41 条）",
       "pageId": "p-1772160564330",
       "text": "条文全体: 国民健康保険法　厚生労働大臣又は都道府県知事の指導（法41 条）",
-      "srsLevel": 1,
+      "srsLevel": 2,
       "history": [
         {
           "date": "2026-02-28T00:50:06.879Z",
           "isCorrect": true,
           "level": 0
+        },
+        {
+          "date": "2026-02-28T02:40:37.041Z",
+          "isCorrect": true,
+          "level": 1
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": "2026-03-01T15:00:00.000Z"
     },
     "clause-summary-p-1772179212934": {
       "correct": 1,
@@ -32061,7 +32073,7 @@
           "level": 4
         }
       ],
-      "nextReview": "2026-03-13T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-1": {
       "correct": 5,
@@ -32104,7 +32116,7 @@
           "level": 4
         }
       ],
-      "nextReview": "2026-03-13T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-2": {
       "correct": 5,
@@ -32147,7 +32159,7 @@
           "level": 4
         }
       ],
-      "nextReview": "2026-03-13T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-3": {
       "correct": 5,
@@ -32190,7 +32202,7 @@
           "level": 4
         }
       ],
-      "nextReview": "2026-03-13T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-4": {
       "correct": 5,
@@ -32233,7 +32245,7 @@
           "level": 4
         }
       ],
-      "nextReview": "2026-03-13T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-5": {
       "correct": 5,
@@ -32276,7 +32288,7 @@
           "level": 4
         }
       ],
-      "nextReview": "2026-03-13T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-6": {
       "correct": 5,
@@ -32319,7 +32331,7 @@
           "level": 4
         }
       ],
-      "nextReview": "2026-03-13T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-7": {
       "correct": 5,
@@ -32362,7 +32374,7 @@
           "level": 4
         }
       ],
-      "nextReview": "2026-03-13T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-8": {
       "correct": 4,
@@ -32405,7 +32417,7 @@
           "level": 3
         }
       ],
-      "nextReview": "2026-03-06T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-9": {
       "correct": 5,
@@ -32448,7 +32460,7 @@
           "level": 4
         }
       ],
-      "nextReview": "2026-03-13T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-10": {
       "correct": 5,
@@ -32491,7 +32503,7 @@
           "level": 4
         }
       ],
-      "nextReview": "2026-03-13T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-11": {
       "correct": 5,
@@ -32534,7 +32546,7 @@
           "level": 4
         }
       ],
-      "nextReview": "2026-03-13T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-12": {
       "correct": 5,
@@ -32577,7 +32589,7 @@
           "level": 4
         }
       ],
-      "nextReview": "2026-03-13T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-13": {
       "correct": 4,
@@ -32620,7 +32632,7 @@
           "level": 3
         }
       ],
-      "nextReview": "2026-03-06T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-14": {
       "correct": 5,
@@ -32663,7 +32675,7 @@
           "level": 4
         }
       ],
-      "nextReview": "2026-03-13T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-15": {
       "correct": 5,
@@ -32706,7 +32718,7 @@
           "level": 4
         }
       ],
-      "nextReview": "2026-03-13T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-16": {
       "correct": 5,
@@ -32749,7 +32761,7 @@
           "level": 4
         }
       ],
-      "nextReview": "2026-03-13T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-17": {
       "correct": 5,
@@ -32792,7 +32804,7 @@
           "level": 4
         }
       ],
-      "nextReview": "2026-03-13T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-18": {
       "correct": 5,
@@ -32835,7 +32847,7 @@
           "level": 4
         }
       ],
-      "nextReview": "2026-03-13T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-19": {
       "correct": 5,
@@ -32878,7 +32890,7 @@
           "level": 4
         }
       ],
-      "nextReview": "2026-03-13T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-20": {
       "correct": 5,
@@ -32921,7 +32933,7 @@
           "level": 4
         }
       ],
-      "nextReview": "2026-03-13T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-21": {
       "correct": 5,
@@ -32964,7 +32976,7 @@
           "level": 4
         }
       ],
-      "nextReview": "2026-03-13T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-22": {
       "correct": 5,
@@ -33007,7 +33019,7 @@
           "level": 4
         }
       ],
-      "nextReview": "2026-03-13T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-23": {
       "correct": 5,
@@ -33050,7 +33062,7 @@
           "level": 4
         }
       ],
-      "nextReview": "2026-03-13T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-24": {
       "correct": 2,
@@ -33093,7 +33105,7 @@
           "level": 1
         }
       ],
-      "nextReview": "2026-03-01T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-25": {
       "correct": 3,
@@ -33130,7 +33142,7 @@
           "level": 2
         }
       ],
-      "nextReview": "2026-03-03T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-26": {
       "correct": 5,
@@ -33173,7 +33185,7 @@
           "level": 4
         }
       ],
-      "nextReview": "2026-03-13T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-27": {
       "correct": 5,
@@ -33216,7 +33228,7 @@
           "level": 4
         }
       ],
-      "nextReview": "2026-03-13T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-28": {
       "correct": 2,
@@ -33247,7 +33259,7 @@
           "level": 1
         }
       ],
-      "nextReview": "2026-03-01T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-29": {
       "correct": 5,
@@ -33290,7 +33302,7 @@
           "level": 4
         }
       ],
-      "nextReview": "2026-03-13T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-30": {
       "correct": 5,
@@ -33333,7 +33345,7 @@
           "level": 4
         }
       ],
-      "nextReview": "2026-03-13T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-31": {
       "correct": 5,
@@ -33376,7 +33388,7 @@
           "level": 4
         }
       ],
-      "nextReview": "2026-03-13T15:00:00.000Z"
+      "nextReview": null
     },
     "clause-p-1772159052409-32": {
       "correct": 5,
@@ -33419,29 +33431,406 @@
           "level": 4
         }
       ],
-      "nextReview": "2026-03-13T15:00:00.000Z"
+      "nextReview": null
     },
-    "clause-p-1772159052409-33": {
+    "clause-p-1772160564330-0": {
       "correct": 1,
       "total": 1,
       "recent": [
         1
       ],
-      "page": "国民健康保険法　特別療養費",
-      "pageId": "p-1772159052409",
-      "text": "穴埋め: 当該被保険者に限る",
+      "page": "国民健康保険法　厚生労働大臣又は都道府県知事の指導（法41 条）",
+      "pageId": "p-1772160564330",
+      "text": "穴埋め: 療養の給付",
       "srsLevel": 1,
       "history": [
         {
-          "date": "2026-02-28T02:38:27.328Z",
+          "date": "2026-02-28T02:40:37.041Z",
           "isCorrect": true,
           "level": 0
         }
       ],
-      "nextReview": "2026-02-28T15:00:00.000Z"
+      "nextReview": null
+    },
+    "clause-p-1772160564330-1": {
+      "correct": 1,
+      "total": 1,
+      "recent": [
+        1
+      ],
+      "page": "国民健康保険法　厚生労働大臣又は都道府県知事の指導（法41 条）",
+      "pageId": "p-1772160564330",
+      "text": "穴埋め: 診療",
+      "srsLevel": 1,
+      "history": [
+        {
+          "date": "2026-02-28T02:40:37.041Z",
+          "isCorrect": true,
+          "level": 0
+        }
+      ],
+      "nextReview": null
+    },
+    "clause-p-1772160564330-2": {
+      "correct": 1,
+      "total": 1,
+      "recent": [
+        1
+      ],
+      "page": "国民健康保険法　厚生労働大臣又は都道府県知事の指導（法41 条）",
+      "pageId": "p-1772160564330",
+      "text": "穴埋め: 厚生労働大臣又は都道府県知事",
+      "srsLevel": 1,
+      "history": [
+        {
+          "date": "2026-02-28T02:40:37.041Z",
+          "isCorrect": true,
+          "level": 0
+        }
+      ],
+      "nextReview": null
+    },
+    "clause-p-1772160564330-3": {
+      "correct": 1,
+      "total": 1,
+      "recent": [
+        1
+      ],
+      "page": "国民健康保険法　厚生労働大臣又は都道府県知事の指導（法41 条）",
+      "pageId": "p-1772160564330",
+      "text": "穴埋め: 指導",
+      "srsLevel": 1,
+      "history": [
+        {
+          "date": "2026-02-28T02:40:37.041Z",
+          "isCorrect": true,
+          "level": 0
+        }
+      ],
+      "nextReview": null
+    },
+    "clause-p-1772160564330-4": {
+      "correct": 1,
+      "total": 1,
+      "recent": [
+        1
+      ],
+      "page": "国民健康保険法　厚生労働大臣又は都道府県知事の指導（法41 条）",
+      "pageId": "p-1772160564330",
+      "text": "穴埋め: 厚生労働大臣又は都道府県知事",
+      "srsLevel": 1,
+      "history": [
+        {
+          "date": "2026-02-28T02:40:37.041Z",
+          "isCorrect": true,
+          "level": 0
+        }
+      ],
+      "nextReview": null
+    },
+    "clause-p-1772160564330-5": {
+      "correct": 1,
+      "total": 1,
+      "recent": [
+        1
+      ],
+      "page": "国民健康保険法　厚生労働大臣又は都道府県知事の指導（法41 条）",
+      "pageId": "p-1772160564330",
+      "text": "穴埋め: 指導",
+      "srsLevel": 1,
+      "history": [
+        {
+          "date": "2026-02-28T02:40:37.041Z",
+          "isCorrect": true,
+          "level": 0
+        }
+      ],
+      "nextReview": null
+    },
+    "clause-p-1772160564330-6": {
+      "correct": 1,
+      "total": 1,
+      "recent": [
+        1
+      ],
+      "page": "国民健康保険法　厚生労働大臣又は都道府県知事の指導（法41 条）",
+      "pageId": "p-1772160564330",
+      "text": "穴埋め: 学識経験者",
+      "srsLevel": 1,
+      "history": [
+        {
+          "date": "2026-02-28T02:40:37.041Z",
+          "isCorrect": true,
+          "level": 0
+        }
+      ],
+      "nextReview": null
+    },
+    "clause-p-1772165511486-0": {
+      "correct": 1,
+      "total": 1,
+      "recent": [
+        1
+      ],
+      "page": "国民健康保険法　保険給付の全部又は一部の支払の一時差し止め",
+      "pageId": "p-1772165511486",
+      "text": "穴埋め: 市町村及び組合",
+      "srsLevel": 1,
+      "history": [
+        {
+          "date": "2026-02-28T02:43:08.320Z",
+          "isCorrect": true,
+          "level": 0
+        }
+      ],
+      "nextReview": null
+    },
+    "clause-p-1772165511486-1": {
+      "correct": 1,
+      "total": 1,
+      "recent": [
+        1
+      ],
+      "page": "国民健康保険法　保険給付の全部又は一部の支払の一時差し止め",
+      "pageId": "p-1772165511486",
+      "text": "穴埋め: 1",
+      "srsLevel": 1,
+      "history": [
+        {
+          "date": "2026-02-28T02:43:08.321Z",
+          "isCorrect": true,
+          "level": 0
+        }
+      ],
+      "nextReview": null
+    },
+    "clause-p-1772165511486-2": {
+      "correct": 1,
+      "total": 1,
+      "recent": [
+        1
+      ],
+      "page": "国民健康保険法　保険給付の全部又は一部の支払の一時差し止め",
+      "pageId": "p-1772165511486",
+      "text": "穴埋め: 6",
+      "srsLevel": 1,
+      "history": [
+        {
+          "date": "2026-02-28T02:43:08.321Z",
+          "isCorrect": true,
+          "level": 0
+        }
+      ],
+      "nextReview": null
+    },
+    "clause-p-1772165511486-3": {
+      "correct": 1,
+      "total": 1,
+      "recent": [
+        1
+      ],
+      "page": "国民健康保険法　保険給付の全部又は一部の支払の一時差し止め",
+      "pageId": "p-1772165511486",
+      "text": "穴埋め: 市町村又は組合",
+      "srsLevel": 1,
+      "history": [
+        {
+          "date": "2026-02-28T02:43:08.321Z",
+          "isCorrect": true,
+          "level": 0
+        }
+      ],
+      "nextReview": null
+    },
+    "clause-p-1772165511486-4": {
+      "correct": 1,
+      "total": 1,
+      "recent": [
+        1
+      ],
+      "page": "国民健康保険法　保険給付の全部又は一部の支払の一時差し止め",
+      "pageId": "p-1772165511486",
+      "text": "穴埋め: 保険料納付の勧奨等を行ってもなお当該保険料を納付しない",
+      "srsLevel": 1,
+      "history": [
+        {
+          "date": "2026-02-28T02:43:08.321Z",
+          "isCorrect": true,
+          "level": 0
+        }
+      ],
+      "nextReview": null
+    },
+    "clause-p-1772165511486-5": {
+      "correct": 1,
+      "total": 1,
+      "recent": [
+        1
+      ],
+      "page": "国民健康保険法　保険給付の全部又は一部の支払の一時差し止め",
+      "pageId": "p-1772165511486",
+      "text": "穴埋め: 保険給付",
+      "srsLevel": 1,
+      "history": [
+        {
+          "date": "2026-02-28T02:43:08.321Z",
+          "isCorrect": true,
+          "level": 0
+        }
+      ],
+      "nextReview": null
+    },
+    "clause-p-1772165511486-6": {
+      "correct": 1,
+      "total": 1,
+      "recent": [
+        1
+      ],
+      "page": "国民健康保険法　保険給付の全部又は一部の支払の一時差し止め",
+      "pageId": "p-1772165511486",
+      "text": "穴埋め: 全部又は一部",
+      "srsLevel": 1,
+      "history": [
+        {
+          "date": "2026-02-28T02:43:08.321Z",
+          "isCorrect": true,
+          "level": 0
+        }
+      ],
+      "nextReview": null
+    },
+    "clause-p-1772165511486-7": {
+      "correct": 1,
+      "total": 1,
+      "recent": [
+        1
+      ],
+      "page": "国民健康保険法　保険給付の全部又は一部の支払の一時差し止め",
+      "pageId": "p-1772165511486",
+      "text": "穴埋め: 一時差し止めるものとする",
+      "srsLevel": 1,
+      "history": [
+        {
+          "date": "2026-02-28T02:43:08.321Z",
+          "isCorrect": true,
+          "level": 0
+        }
+      ],
+      "nextReview": null
+    },
+    "clause-p-1772165511486-8": {
+      "correct": 1,
+      "total": 1,
+      "recent": [
+        1
+      ],
+      "page": "国民健康保険法　保険給付の全部又は一部の支払の一時差し止め",
+      "pageId": "p-1772165511486",
+      "text": "穴埋め: 市町村及び組合",
+      "srsLevel": 1,
+      "history": [
+        {
+          "date": "2026-02-28T02:43:08.321Z",
+          "isCorrect": true,
+          "level": 0
+        }
+      ],
+      "nextReview": null
+    },
+    "clause-p-1772165511486-9": {
+      "correct": 1,
+      "total": 1,
+      "recent": [
+        1
+      ],
+      "page": "国民健康保険法　保険給付の全部又は一部の支払の一時差し止め",
+      "pageId": "p-1772165511486",
+      "text": "穴埋め: 1",
+      "srsLevel": 1,
+      "history": [
+        {
+          "date": "2026-02-28T02:43:08.321Z",
+          "isCorrect": true,
+          "level": 0
+        }
+      ],
+      "nextReview": null
+    },
+    "clause-p-1772165511486-10": {
+      "correct": 1,
+      "total": 1,
+      "recent": [
+        1
+      ],
+      "page": "国民健康保険法　保険給付の全部又は一部の支払の一時差し止め",
+      "pageId": "p-1772165511486",
+      "text": "穴埋め: 6",
+      "srsLevel": 1,
+      "history": [
+        {
+          "date": "2026-02-28T02:43:08.321Z",
+          "isCorrect": true,
+          "level": 0
+        }
+      ],
+      "nextReview": null
+    },
+    "clause-p-1772165511486-11": {
+      "correct": 1,
+      "total": 1,
+      "recent": [
+        1
+      ],
+      "page": "国民健康保険法　保険給付の全部又は一部の支払の一時差し止め",
+      "pageId": "p-1772165511486",
+      "text": "穴埋め: 経過しない場合",
+      "srsLevel": 1,
+      "history": [
+        {
+          "date": "2026-02-28T02:43:08.321Z",
+          "isCorrect": true,
+          "level": 0
+        }
+      ],
+      "nextReview": null
+    },
+    "clause-p-1772165511486-12": {
+      "correct": 1,
+      "total": 1,
+      "recent": [
+        1
+      ],
+      "page": "国民健康保険法　保険給付の全部又は一部の支払の一時差し止め",
+      "pageId": "p-1772165511486",
+      "text": "穴埋め: 一時差し止めることができる",
+      "srsLevel": 1,
+      "history": [
+        {
+          "date": "2026-02-28T02:43:08.321Z",
+          "isCorrect": true,
+          "level": 0
+        }
+      ],
+      "nextReview": null
     }
   },
   "history": [
+    {
+      "timestamp": "2026/2/28 11:43:08",
+      "isoDate": "2026-02-28T02:43:08.321Z",
+      "page": "国民健康保険法　保険給付の全部又は一部の支払の一時差し止め",
+      "pageId": "p-1772165511486",
+      "score": "17 / 17",
+      "accuracy": 100
+    },
+    {
+      "timestamp": "2026/2/28 11:40:37",
+      "isoDate": "2026-02-28T02:40:37.042Z",
+      "page": "国民健康保険法　厚生労働大臣又は都道府県知事の指導（法41 条）",
+      "pageId": "p-1772160564330",
+      "score": "7 / 7",
+      "accuracy": 100
+    },
     {
       "timestamp": "2026/2/28 11:38:27",
       "isoDate": "2026-02-28T02:38:27.330Z",
@@ -33825,23 +34214,7 @@
       "pageId": "auto-due-review-clause",
       "score": "26 / 26",
       "accuracy": 100
-    },
-    {
-      "timestamp": "2026/2/28 8:27:55",
-      "isoDate": "2026-02-27T23:27:55.625Z",
-      "page": "【復習】選択式 特訓 (8題)",
-      "pageId": "auto-due-review",
-      "score": "8 / 8",
-      "accuracy": 100
-    },
-    {
-      "timestamp": "2026/2/28 8:27:00",
-      "isoDate": "2026-02-27T23:27:00.077Z",
-      "page": "国民年金　死亡一時金",
-      "pageId": "p-1770950684268",
-      "score": "7 / 7",
-      "accuracy": 100
     }
   ],
-  "lastModified": 1772246399026
+  "lastModified": 1772247132084
 }
