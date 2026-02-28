@@ -29747,19 +29747,19 @@
       "nextReview": "2026-02-28T15:00:00.000Z"
     },
     "clause-summary-p-1772159052409": {
-      "correct": 1,
-      "total": 7,
+      "correct": 2,
+      "total": 8,
       "recent": [
-        1,
         0,
         0,
         0,
-        0
+        0,
+        1
       ],
       "page": "国民健康保険法　特別療養費",
       "pageId": "p-1772159052409",
       "text": "条文全体: 国民健康保険法　特別療養費",
-      "srsLevel": 0,
+      "srsLevel": 1,
       "history": [
         {
           "date": "2026-02-28T01:00:38.228Z",
@@ -29795,9 +29795,14 @@
           "date": "2026-02-28T02:17:29.976Z",
           "isCorrect": false,
           "level": 0
+        },
+        {
+          "date": "2026-02-28T02:38:27.328Z",
+          "isCorrect": true,
+          "level": 0
         }
       ],
-      "nextReview": "2026-02-27T15:00:00.000Z"
+      "nextReview": "2026-02-28T15:00:00.000Z"
     },
     "clause-summary-p-1772156784472": {
       "correct": 4,
@@ -32016,9 +32021,10 @@
       "nextReview": null
     },
     "clause-p-1772159052409-0": {
-      "correct": 4,
-      "total": 4,
+      "correct": 5,
+      "total": 5,
       "recent": [
+        1,
         1,
         1,
         1,
@@ -32027,7 +32033,7 @@
       "page": "国民健康保険法　特別療養費",
       "pageId": "p-1772159052409",
       "text": "穴埋め: 市町村及び組合",
-      "srsLevel": 4,
+      "srsLevel": 5,
       "history": [
         {
           "date": "2026-02-28T02:14:46.293Z",
@@ -32048,14 +32054,20 @@
           "date": "2026-02-28T02:17:29.976Z",
           "isCorrect": true,
           "level": 3
+        },
+        {
+          "date": "2026-02-28T02:38:27.327Z",
+          "isCorrect": true,
+          "level": 4
         }
       ],
-      "nextReview": null
+      "nextReview": "2026-03-13T15:00:00.000Z"
     },
     "clause-p-1772159052409-1": {
-      "correct": 4,
-      "total": 4,
+      "correct": 5,
+      "total": 5,
       "recent": [
+        1,
         1,
         1,
         1,
@@ -32064,7 +32076,7 @@
       "page": "国民健康保険法　特別療養費",
       "pageId": "p-1772159052409",
       "text": "穴埋め: 滞納",
-      "srsLevel": 4,
+      "srsLevel": 5,
       "history": [
         {
           "date": "2026-02-28T02:14:46.293Z",
@@ -32085,14 +32097,20 @@
           "date": "2026-02-28T02:17:29.976Z",
           "isCorrect": true,
           "level": 3
+        },
+        {
+          "date": "2026-02-28T02:38:27.327Z",
+          "isCorrect": true,
+          "level": 4
         }
       ],
-      "nextReview": null
+      "nextReview": "2026-03-13T15:00:00.000Z"
     },
     "clause-p-1772159052409-2": {
-      "correct": 4,
-      "total": 4,
+      "correct": 5,
+      "total": 5,
       "recent": [
+        1,
         1,
         1,
         1,
@@ -32101,7 +32119,7 @@
       "page": "国民健康保険法　特別療養費",
       "pageId": "p-1772159052409",
       "text": "穴埋め: 保険料滞納世帯主等",
-      "srsLevel": 4,
+      "srsLevel": 5,
       "history": [
         {
           "date": "2026-02-28T02:14:46.293Z",
@@ -32122,14 +32140,20 @@
           "date": "2026-02-28T02:17:29.976Z",
           "isCorrect": true,
           "level": 3
+        },
+        {
+          "date": "2026-02-28T02:38:27.327Z",
+          "isCorrect": true,
+          "level": 4
         }
       ],
-      "nextReview": null
+      "nextReview": "2026-03-13T15:00:00.000Z"
     },
     "clause-p-1772159052409-3": {
-      "correct": 4,
-      "total": 4,
+      "correct": 5,
+      "total": 5,
       "recent": [
+        1,
         1,
         1,
         1,
@@ -32138,7 +32162,7 @@
       "page": "国民健康保険法　特別療養費",
       "pageId": "p-1772159052409",
       "text": "穴埋め: 保険料の納期限から厚生労働省令で定める期間が経過するまでの間",
-      "srsLevel": 4,
+      "srsLevel": 5,
       "history": [
         {
           "date": "2026-02-28T02:14:46.293Z",
@@ -32159,14 +32183,20 @@
           "date": "2026-02-28T02:17:29.976Z",
           "isCorrect": true,
           "level": 3
+        },
+        {
+          "date": "2026-02-28T02:38:27.327Z",
+          "isCorrect": true,
+          "level": 4
         }
       ],
-      "nextReview": null
+      "nextReview": "2026-03-13T15:00:00.000Z"
     },
     "clause-p-1772159052409-4": {
-      "correct": 4,
-      "total": 4,
+      "correct": 5,
+      "total": 5,
       "recent": [
+        1,
         1,
         1,
         1,
@@ -32175,7 +32205,7 @@
       "page": "国民健康保険法　特別療養費",
       "pageId": "p-1772159052409",
       "text": "穴埋め: 市町村又は組合が当該保険料の納付の勧奨及び当該保険料の納付に係る相談の機会の確保",
-      "srsLevel": 4,
+      "srsLevel": 5,
       "history": [
         {
           "date": "2026-02-28T02:14:46.293Z",
@@ -32196,14 +32226,20 @@
           "date": "2026-02-28T02:17:29.976Z",
           "isCorrect": true,
           "level": 3
+        },
+        {
+          "date": "2026-02-28T02:38:27.327Z",
+          "isCorrect": true,
+          "level": 4
         }
       ],
-      "nextReview": null
+      "nextReview": "2026-03-13T15:00:00.000Z"
     },
     "clause-p-1772159052409-5": {
-      "correct": 4,
-      "total": 4,
+      "correct": 5,
+      "total": 5,
       "recent": [
+        1,
         1,
         1,
         1,
@@ -32212,7 +32248,7 @@
       "page": "国民健康保険法　特別療養費",
       "pageId": "p-1772159052409",
       "text": "穴埋め: 保険料の納付に資する取組",
-      "srsLevel": 4,
+      "srsLevel": 5,
       "history": [
         {
           "date": "2026-02-28T02:14:46.293Z",
@@ -32233,14 +32269,20 @@
           "date": "2026-02-28T02:17:29.976Z",
           "isCorrect": true,
           "level": 3
+        },
+        {
+          "date": "2026-02-28T02:38:27.327Z",
+          "isCorrect": true,
+          "level": 4
         }
       ],
-      "nextReview": null
+      "nextReview": "2026-03-13T15:00:00.000Z"
     },
     "clause-p-1772159052409-6": {
-      "correct": 4,
-      "total": 4,
+      "correct": 5,
+      "total": 5,
       "recent": [
+        1,
         1,
         1,
         1,
@@ -32249,7 +32291,7 @@
       "page": "国民健康保険法　特別療養費",
       "pageId": "p-1772159052409",
       "text": "穴埋め: 保険料納付の勧奨等",
-      "srsLevel": 4,
+      "srsLevel": 5,
       "history": [
         {
           "date": "2026-02-28T02:14:46.293Z",
@@ -32270,14 +32312,20 @@
           "date": "2026-02-28T02:17:29.976Z",
           "isCorrect": true,
           "level": 3
+        },
+        {
+          "date": "2026-02-28T02:38:27.327Z",
+          "isCorrect": true,
+          "level": 4
         }
       ],
-      "nextReview": null
+      "nextReview": "2026-03-13T15:00:00.000Z"
     },
     "clause-p-1772159052409-7": {
-      "correct": 4,
-      "total": 4,
+      "correct": 5,
+      "total": 5,
       "recent": [
+        1,
         1,
         1,
         1,
@@ -32286,7 +32334,7 @@
       "page": "国民健康保険法　特別療養費",
       "pageId": "p-1772159052409",
       "text": "穴埋め: 当該世帯に属する被保険者*4 が保険医療機関等から療養を受けたとき、又は指定訪問看護事業者から指定訪問看護を受けた",
-      "srsLevel": 4,
+      "srsLevel": 5,
       "history": [
         {
           "date": "2026-02-28T02:14:46.293Z",
@@ -32307,15 +32355,21 @@
           "date": "2026-02-28T02:17:29.976Z",
           "isCorrect": true,
           "level": 3
+        },
+        {
+          "date": "2026-02-28T02:38:27.327Z",
+          "isCorrect": true,
+          "level": 4
         }
       ],
-      "nextReview": null
+      "nextReview": "2026-03-13T15:00:00.000Z"
     },
     "clause-p-1772159052409-8": {
-      "correct": 3,
-      "total": 4,
+      "correct": 4,
+      "total": 5,
       "recent": [
         0,
+        1,
         1,
         1,
         1
@@ -32323,7 +32377,7 @@
       "page": "国民健康保険法　特別療養費",
       "pageId": "p-1772159052409",
       "text": "穴埋め: 療養の給付等",
-      "srsLevel": 3,
+      "srsLevel": 4,
       "history": [
         {
           "date": "2026-02-28T02:14:46.293Z",
@@ -32344,14 +32398,20 @@
           "date": "2026-02-28T02:17:29.976Z",
           "isCorrect": true,
           "level": 2
+        },
+        {
+          "date": "2026-02-28T02:38:27.327Z",
+          "isCorrect": true,
+          "level": 3
         }
       ],
-      "nextReview": null
+      "nextReview": "2026-03-06T15:00:00.000Z"
     },
     "clause-p-1772159052409-9": {
-      "correct": 4,
-      "total": 4,
+      "correct": 5,
+      "total": 5,
       "recent": [
+        1,
         1,
         1,
         1,
@@ -32360,7 +32420,7 @@
       "page": "国民健康保険法　特別療養費",
       "pageId": "p-1772159052409",
       "text": "穴埋め: 代えて",
-      "srsLevel": 4,
+      "srsLevel": 5,
       "history": [
         {
           "date": "2026-02-28T02:14:46.293Z",
@@ -32381,14 +32441,20 @@
           "date": "2026-02-28T02:17:29.976Z",
           "isCorrect": true,
           "level": 3
+        },
+        {
+          "date": "2026-02-28T02:38:27.327Z",
+          "isCorrect": true,
+          "level": 4
         }
       ],
-      "nextReview": null
+      "nextReview": "2026-03-13T15:00:00.000Z"
     },
     "clause-p-1772159052409-10": {
-      "correct": 4,
-      "total": 4,
+      "correct": 5,
+      "total": 5,
       "recent": [
+        1,
         1,
         1,
         1,
@@ -32397,7 +32463,7 @@
       "page": "国民健康保険法　特別療養費",
       "pageId": "p-1772159052409",
       "text": "穴埋め: 保険料滞納世帯主等",
-      "srsLevel": 4,
+      "srsLevel": 5,
       "history": [
         {
           "date": "2026-02-28T02:14:46.294Z",
@@ -32418,14 +32484,20 @@
           "date": "2026-02-28T02:17:29.976Z",
           "isCorrect": true,
           "level": 3
+        },
+        {
+          "date": "2026-02-28T02:38:27.327Z",
+          "isCorrect": true,
+          "level": 4
         }
       ],
-      "nextReview": null
+      "nextReview": "2026-03-13T15:00:00.000Z"
     },
     "clause-p-1772159052409-11": {
-      "correct": 4,
-      "total": 4,
+      "correct": 5,
+      "total": 5,
       "recent": [
+        1,
         1,
         1,
         1,
@@ -32434,7 +32506,7 @@
       "page": "国民健康保険法　特別療養費",
       "pageId": "p-1772159052409",
       "text": "穴埋め: 特別療養費",
-      "srsLevel": 4,
+      "srsLevel": 5,
       "history": [
         {
           "date": "2026-02-28T02:14:46.294Z",
@@ -32455,14 +32527,20 @@
           "date": "2026-02-28T02:17:29.976Z",
           "isCorrect": true,
           "level": 3
+        },
+        {
+          "date": "2026-02-28T02:38:27.327Z",
+          "isCorrect": true,
+          "level": 4
         }
       ],
-      "nextReview": null
+      "nextReview": "2026-03-13T15:00:00.000Z"
     },
     "clause-p-1772159052409-12": {
-      "correct": 4,
-      "total": 4,
+      "correct": 5,
+      "total": 5,
       "recent": [
+        1,
         1,
         1,
         1,
@@ -32471,7 +32549,7 @@
       "page": "国民健康保険法　特別療養費",
       "pageId": "p-1772159052409",
       "text": "穴埋め: 市町村及び組合",
-      "srsLevel": 4,
+      "srsLevel": 5,
       "history": [
         {
           "date": "2026-02-28T02:14:46.294Z",
@@ -32492,15 +32570,21 @@
           "date": "2026-02-28T02:17:29.976Z",
           "isCorrect": true,
           "level": 3
+        },
+        {
+          "date": "2026-02-28T02:38:27.327Z",
+          "isCorrect": true,
+          "level": 4
         }
       ],
-      "nextReview": null
+      "nextReview": "2026-03-13T15:00:00.000Z"
     },
     "clause-p-1772159052409-13": {
-      "correct": 3,
-      "total": 4,
+      "correct": 4,
+      "total": 5,
       "recent": [
         0,
+        1,
         1,
         1,
         1
@@ -32508,7 +32592,7 @@
       "page": "国民健康保険法　特別療養費",
       "pageId": "p-1772159052409",
       "text": "穴埋め: 療養の給付等",
-      "srsLevel": 3,
+      "srsLevel": 4,
       "history": [
         {
           "date": "2026-02-28T02:14:46.294Z",
@@ -32529,14 +32613,20 @@
           "date": "2026-02-28T02:17:29.976Z",
           "isCorrect": true,
           "level": 2
+        },
+        {
+          "date": "2026-02-28T02:38:27.327Z",
+          "isCorrect": true,
+          "level": 3
         }
       ],
-      "nextReview": null
+      "nextReview": "2026-03-06T15:00:00.000Z"
     },
     "clause-p-1772159052409-14": {
-      "correct": 4,
-      "total": 4,
+      "correct": 5,
+      "total": 5,
       "recent": [
+        1,
         1,
         1,
         1,
@@ -32545,7 +32635,7 @@
       "page": "国民健康保険法　特別療養費",
       "pageId": "p-1772159052409",
       "text": "穴埋め: 代えて",
-      "srsLevel": 4,
+      "srsLevel": 5,
       "history": [
         {
           "date": "2026-02-28T02:14:46.294Z",
@@ -32566,14 +32656,20 @@
           "date": "2026-02-28T02:17:29.976Z",
           "isCorrect": true,
           "level": 3
+        },
+        {
+          "date": "2026-02-28T02:38:27.327Z",
+          "isCorrect": true,
+          "level": 4
         }
       ],
-      "nextReview": null
+      "nextReview": "2026-03-13T15:00:00.000Z"
     },
     "clause-p-1772159052409-15": {
-      "correct": 4,
-      "total": 4,
+      "correct": 5,
+      "total": 5,
       "recent": [
+        1,
         1,
         1,
         1,
@@ -32582,7 +32678,7 @@
       "page": "国民健康保険法　特別療養費",
       "pageId": "p-1772159052409",
       "text": "穴埋め: 特別療養費",
-      "srsLevel": 4,
+      "srsLevel": 5,
       "history": [
         {
           "date": "2026-02-28T02:14:46.294Z",
@@ -32603,14 +32699,20 @@
           "date": "2026-02-28T02:17:29.976Z",
           "isCorrect": true,
           "level": 3
+        },
+        {
+          "date": "2026-02-28T02:38:27.327Z",
+          "isCorrect": true,
+          "level": 4
         }
       ],
-      "nextReview": null
+      "nextReview": "2026-03-13T15:00:00.000Z"
     },
     "clause-p-1772159052409-16": {
-      "correct": 4,
-      "total": 4,
+      "correct": 5,
+      "total": 5,
       "recent": [
+        1,
         1,
         1,
         1,
@@ -32619,7 +32721,7 @@
       "page": "国民健康保険法　特別療養費",
       "pageId": "p-1772159052409",
       "text": "穴埋め: 市町村及び組合",
-      "srsLevel": 4,
+      "srsLevel": 5,
       "history": [
         {
           "date": "2026-02-28T02:14:46.294Z",
@@ -32640,14 +32742,20 @@
           "date": "2026-02-28T02:17:29.976Z",
           "isCorrect": true,
           "level": 3
+        },
+        {
+          "date": "2026-02-28T02:38:27.327Z",
+          "isCorrect": true,
+          "level": 4
         }
       ],
-      "nextReview": null
+      "nextReview": "2026-03-13T15:00:00.000Z"
     },
     "clause-p-1772159052409-17": {
-      "correct": 4,
-      "total": 4,
+      "correct": 5,
+      "total": 5,
       "recent": [
+        1,
         1,
         1,
         1,
@@ -32656,7 +32764,7 @@
       "page": "国民健康保険法　特別療養費",
       "pageId": "p-1772159052409",
       "text": "穴埋め: 特別療養費",
-      "srsLevel": 4,
+      "srsLevel": 5,
       "history": [
         {
           "date": "2026-02-28T02:14:46.294Z",
@@ -32677,14 +32785,20 @@
           "date": "2026-02-28T02:17:29.976Z",
           "isCorrect": true,
           "level": 3
+        },
+        {
+          "date": "2026-02-28T02:38:27.327Z",
+          "isCorrect": true,
+          "level": 4
         }
       ],
-      "nextReview": null
+      "nextReview": "2026-03-13T15:00:00.000Z"
     },
     "clause-p-1772159052409-18": {
-      "correct": 4,
-      "total": 4,
+      "correct": 5,
+      "total": 5,
       "recent": [
+        1,
         1,
         1,
         1,
@@ -32693,7 +32807,7 @@
       "page": "国民健康保険法　特別療養費",
       "pageId": "p-1772159052409",
       "text": "穴埋め: あらかじめ",
-      "srsLevel": 4,
+      "srsLevel": 5,
       "history": [
         {
           "date": "2026-02-28T02:14:46.294Z",
@@ -32714,14 +32828,20 @@
           "date": "2026-02-28T02:17:29.976Z",
           "isCorrect": true,
           "level": 3
+        },
+        {
+          "date": "2026-02-28T02:38:27.327Z",
+          "isCorrect": true,
+          "level": 4
         }
       ],
-      "nextReview": null
+      "nextReview": "2026-03-13T15:00:00.000Z"
     },
     "clause-p-1772159052409-19": {
-      "correct": 4,
-      "total": 4,
+      "correct": 5,
+      "total": 5,
       "recent": [
+        1,
         1,
         1,
         1,
@@ -32730,7 +32850,7 @@
       "page": "国民健康保険法　特別療養費",
       "pageId": "p-1772159052409",
       "text": "穴埋め: 保険料滞納世帯主等",
-      "srsLevel": 4,
+      "srsLevel": 5,
       "history": [
         {
           "date": "2026-02-28T02:14:46.294Z",
@@ -32751,14 +32871,20 @@
           "date": "2026-02-28T02:17:29.976Z",
           "isCorrect": true,
           "level": 3
+        },
+        {
+          "date": "2026-02-28T02:38:27.327Z",
+          "isCorrect": true,
+          "level": 4
         }
       ],
-      "nextReview": null
+      "nextReview": "2026-03-13T15:00:00.000Z"
     },
     "clause-p-1772159052409-20": {
-      "correct": 4,
-      "total": 4,
+      "correct": 5,
+      "total": 5,
       "recent": [
+        1,
         1,
         1,
         1,
@@ -32767,7 +32893,7 @@
       "page": "国民健康保険法　特別療養費",
       "pageId": "p-1772159052409",
       "text": "穴埋め: 特別療養費を支給する旨を通知",
-      "srsLevel": 4,
+      "srsLevel": 5,
       "history": [
         {
           "date": "2026-02-28T02:14:46.294Z",
@@ -32788,14 +32914,20 @@
           "date": "2026-02-28T02:17:29.976Z",
           "isCorrect": true,
           "level": 3
+        },
+        {
+          "date": "2026-02-28T02:38:27.327Z",
+          "isCorrect": true,
+          "level": 4
         }
       ],
-      "nextReview": null
+      "nextReview": "2026-03-13T15:00:00.000Z"
     },
     "clause-p-1772159052409-21": {
-      "correct": 4,
-      "total": 4,
+      "correct": 5,
+      "total": 5,
       "recent": [
+        1,
         1,
         1,
         1,
@@ -32804,7 +32936,7 @@
       "page": "国民健康保険法　特別療養費",
       "pageId": "p-1772159052409",
       "text": "穴埋め: 市町村及び組合",
-      "srsLevel": 4,
+      "srsLevel": 5,
       "history": [
         {
           "date": "2026-02-28T02:14:46.294Z",
@@ -32825,14 +32957,20 @@
           "date": "2026-02-28T02:17:29.976Z",
           "isCorrect": true,
           "level": 3
+        },
+        {
+          "date": "2026-02-28T02:38:27.327Z",
+          "isCorrect": true,
+          "level": 4
         }
       ],
-      "nextReview": null
+      "nextReview": "2026-03-13T15:00:00.000Z"
     },
     "clause-p-1772159052409-22": {
-      "correct": 4,
-      "total": 4,
+      "correct": 5,
+      "total": 5,
       "recent": [
+        1,
         1,
         1,
         1,
@@ -32841,7 +32979,7 @@
       "page": "国民健康保険法　特別療養費",
       "pageId": "p-1772159052409",
       "text": "穴埋め: 完納",
-      "srsLevel": 4,
+      "srsLevel": 5,
       "history": [
         {
           "date": "2026-02-28T02:14:46.294Z",
@@ -32862,14 +33000,20 @@
           "date": "2026-02-28T02:17:29.976Z",
           "isCorrect": true,
           "level": 3
+        },
+        {
+          "date": "2026-02-28T02:38:27.327Z",
+          "isCorrect": true,
+          "level": 4
         }
       ],
-      "nextReview": null
+      "nextReview": "2026-03-13T15:00:00.000Z"
     },
     "clause-p-1772159052409-23": {
-      "correct": 4,
-      "total": 4,
+      "correct": 5,
+      "total": 5,
       "recent": [
+        1,
         1,
         1,
         1,
@@ -32878,7 +33022,7 @@
       "page": "国民健康保険法　特別療養費",
       "pageId": "p-1772159052409",
       "text": "穴埋め: 原爆一般疾病医療費の支給等を受けることができる者",
-      "srsLevel": 4,
+      "srsLevel": 5,
       "history": [
         {
           "date": "2026-02-28T02:14:46.294Z",
@@ -32899,23 +33043,29 @@
           "date": "2026-02-28T02:17:29.976Z",
           "isCorrect": true,
           "level": 3
+        },
+        {
+          "date": "2026-02-28T02:38:27.327Z",
+          "isCorrect": true,
+          "level": 4
         }
       ],
-      "nextReview": null
+      "nextReview": "2026-03-13T15:00:00.000Z"
     },
     "clause-p-1772159052409-24": {
-      "correct": 1,
-      "total": 4,
+      "correct": 2,
+      "total": 5,
       "recent": [
         0,
         0,
         0,
+        1,
         1
       ],
       "page": "国民健康保険法　特別療養費",
       "pageId": "p-1772159052409",
       "text": "穴埋め: 療養の給付",
-      "srsLevel": 1,
+      "srsLevel": 2,
       "history": [
         {
           "date": "2026-02-28T02:14:46.294Z",
@@ -32936,11 +33086,139 @@
           "date": "2026-02-28T02:17:29.976Z",
           "isCorrect": true,
           "level": 0
+        },
+        {
+          "date": "2026-02-28T02:38:27.327Z",
+          "isCorrect": true,
+          "level": 1
         }
       ],
-      "nextReview": null
+      "nextReview": "2026-03-01T15:00:00.000Z"
     },
     "clause-p-1772159052409-25": {
+      "correct": 3,
+      "total": 4,
+      "recent": [
+        0,
+        1,
+        1,
+        1
+      ],
+      "page": "国民健康保険法　特別療養費",
+      "pageId": "p-1772159052409",
+      "text": "穴埋め: 入院時食事療養費等",
+      "srsLevel": 3,
+      "history": [
+        {
+          "date": "2026-02-28T02:14:46.294Z",
+          "isCorrect": false,
+          "level": 0
+        },
+        {
+          "date": "2026-02-28T02:17:14.424Z",
+          "isCorrect": true,
+          "level": 0
+        },
+        {
+          "date": "2026-02-28T02:17:29.976Z",
+          "isCorrect": true,
+          "level": 1
+        },
+        {
+          "date": "2026-02-28T02:38:27.327Z",
+          "isCorrect": true,
+          "level": 2
+        }
+      ],
+      "nextReview": "2026-03-03T15:00:00.000Z"
+    },
+    "clause-p-1772159052409-26": {
+      "correct": 5,
+      "total": 5,
+      "recent": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "page": "国民健康保険法　特別療養費",
+      "pageId": "p-1772159052409",
+      "text": "穴埋め: 市町村及び組合",
+      "srsLevel": 5,
+      "history": [
+        {
+          "date": "2026-02-28T02:14:46.294Z",
+          "isCorrect": true,
+          "level": 0
+        },
+        {
+          "date": "2026-02-28T02:16:38.362Z",
+          "isCorrect": true,
+          "level": 1
+        },
+        {
+          "date": "2026-02-28T02:17:14.424Z",
+          "isCorrect": true,
+          "level": 2
+        },
+        {
+          "date": "2026-02-28T02:17:29.976Z",
+          "isCorrect": true,
+          "level": 3
+        },
+        {
+          "date": "2026-02-28T02:38:27.327Z",
+          "isCorrect": true,
+          "level": 4
+        }
+      ],
+      "nextReview": "2026-03-13T15:00:00.000Z"
+    },
+    "clause-p-1772159052409-27": {
+      "correct": 5,
+      "total": 5,
+      "recent": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "page": "国民健康保険法　特別療養費",
+      "pageId": "p-1772159052409",
+      "text": "穴埋め: あらかじめ",
+      "srsLevel": 5,
+      "history": [
+        {
+          "date": "2026-02-28T02:14:46.294Z",
+          "isCorrect": true,
+          "level": 0
+        },
+        {
+          "date": "2026-02-28T02:16:38.362Z",
+          "isCorrect": true,
+          "level": 1
+        },
+        {
+          "date": "2026-02-28T02:17:14.424Z",
+          "isCorrect": true,
+          "level": 2
+        },
+        {
+          "date": "2026-02-28T02:17:29.976Z",
+          "isCorrect": true,
+          "level": 3
+        },
+        {
+          "date": "2026-02-28T02:38:27.327Z",
+          "isCorrect": true,
+          "level": 4
+        }
+      ],
+      "nextReview": "2026-03-13T15:00:00.000Z"
+    },
+    "clause-p-1772159052409-28": {
       "correct": 2,
       "total": 3,
       "recent": [
@@ -32950,7 +33228,7 @@
       ],
       "page": "国民健康保険法　特別療養費",
       "pageId": "p-1772159052409",
-      "text": "穴埋め: 入院時食事療養費等",
+      "text": "穴埋め: 療養の給付等を行う旨を通知する",
       "srsLevel": 2,
       "history": [
         {
@@ -32959,121 +33237,23 @@
           "level": 0
         },
         {
-          "date": "2026-02-28T02:17:14.424Z",
+          "date": "2026-02-28T02:17:29.976Z",
           "isCorrect": true,
           "level": 0
         },
         {
-          "date": "2026-02-28T02:17:29.976Z",
+          "date": "2026-02-28T02:38:27.327Z",
           "isCorrect": true,
           "level": 1
         }
       ],
-      "nextReview": null
-    },
-    "clause-p-1772159052409-26": {
-      "correct": 4,
-      "total": 4,
-      "recent": [
-        1,
-        1,
-        1,
-        1
-      ],
-      "page": "国民健康保険法　特別療養費",
-      "pageId": "p-1772159052409",
-      "text": "穴埋め: 市町村及び組合",
-      "srsLevel": 4,
-      "history": [
-        {
-          "date": "2026-02-28T02:14:46.294Z",
-          "isCorrect": true,
-          "level": 0
-        },
-        {
-          "date": "2026-02-28T02:16:38.362Z",
-          "isCorrect": true,
-          "level": 1
-        },
-        {
-          "date": "2026-02-28T02:17:14.424Z",
-          "isCorrect": true,
-          "level": 2
-        },
-        {
-          "date": "2026-02-28T02:17:29.976Z",
-          "isCorrect": true,
-          "level": 3
-        }
-      ],
-      "nextReview": null
-    },
-    "clause-p-1772159052409-27": {
-      "correct": 4,
-      "total": 4,
-      "recent": [
-        1,
-        1,
-        1,
-        1
-      ],
-      "page": "国民健康保険法　特別療養費",
-      "pageId": "p-1772159052409",
-      "text": "穴埋め: あらかじめ",
-      "srsLevel": 4,
-      "history": [
-        {
-          "date": "2026-02-28T02:14:46.294Z",
-          "isCorrect": true,
-          "level": 0
-        },
-        {
-          "date": "2026-02-28T02:16:38.362Z",
-          "isCorrect": true,
-          "level": 1
-        },
-        {
-          "date": "2026-02-28T02:17:14.424Z",
-          "isCorrect": true,
-          "level": 2
-        },
-        {
-          "date": "2026-02-28T02:17:29.976Z",
-          "isCorrect": true,
-          "level": 3
-        }
-      ],
-      "nextReview": null
-    },
-    "clause-p-1772159052409-28": {
-      "correct": 1,
-      "total": 2,
-      "recent": [
-        0,
-        1
-      ],
-      "page": "国民健康保険法　特別療養費",
-      "pageId": "p-1772159052409",
-      "text": "穴埋め: 療養の給付等を行う旨を通知する",
-      "srsLevel": 1,
-      "history": [
-        {
-          "date": "2026-02-28T02:14:46.294Z",
-          "isCorrect": false,
-          "level": 0
-        },
-        {
-          "date": "2026-02-28T02:17:29.976Z",
-          "isCorrect": true,
-          "level": 0
-        }
-      ],
-      "nextReview": null
+      "nextReview": "2026-03-01T15:00:00.000Z"
     },
     "clause-p-1772159052409-29": {
-      "correct": 4,
-      "total": 4,
+      "correct": 5,
+      "total": 5,
       "recent": [
+        1,
         1,
         1,
         1,
@@ -33082,7 +33262,7 @@
       "page": "国民健康保険法　特別療養費",
       "pageId": "p-1772159052409",
       "text": "穴埋め: 原爆一般疾病医療費の支給等",
-      "srsLevel": 4,
+      "srsLevel": 5,
       "history": [
         {
           "date": "2026-02-28T02:14:46.294Z",
@@ -33103,14 +33283,20 @@
           "date": "2026-02-28T02:17:29.976Z",
           "isCorrect": true,
           "level": 3
+        },
+        {
+          "date": "2026-02-28T02:38:27.327Z",
+          "isCorrect": true,
+          "level": 4
         }
       ],
-      "nextReview": null
+      "nextReview": "2026-03-13T15:00:00.000Z"
     },
     "clause-p-1772159052409-30": {
-      "correct": 4,
-      "total": 4,
+      "correct": 5,
+      "total": 5,
       "recent": [
+        1,
         1,
         1,
         1,
@@ -33119,7 +33305,7 @@
       "page": "国民健康保険法　特別療養費",
       "pageId": "p-1772159052409",
       "text": "穴埋め: 1",
-      "srsLevel": 4,
+      "srsLevel": 5,
       "history": [
         {
           "date": "2026-02-28T02:14:46.294Z",
@@ -33140,14 +33326,20 @@
           "date": "2026-02-28T02:17:29.976Z",
           "isCorrect": true,
           "level": 3
+        },
+        {
+          "date": "2026-02-28T02:38:27.328Z",
+          "isCorrect": true,
+          "level": 4
         }
       ],
-      "nextReview": null
+      "nextReview": "2026-03-13T15:00:00.000Z"
     },
     "clause-p-1772159052409-31": {
-      "correct": 4,
-      "total": 4,
+      "correct": 5,
+      "total": 5,
       "recent": [
+        1,
         1,
         1,
         1,
@@ -33156,7 +33348,7 @@
       "page": "国民健康保険法　特別療養費",
       "pageId": "p-1772159052409",
       "text": "穴埋め: 原爆一般疾病医療費の支給等",
-      "srsLevel": 4,
+      "srsLevel": 5,
       "history": [
         {
           "date": "2026-02-28T02:14:46.294Z",
@@ -33177,14 +33369,20 @@
           "date": "2026-02-28T02:17:29.976Z",
           "isCorrect": true,
           "level": 3
+        },
+        {
+          "date": "2026-02-28T02:38:27.328Z",
+          "isCorrect": true,
+          "level": 4
         }
       ],
-      "nextReview": null
+      "nextReview": "2026-03-13T15:00:00.000Z"
     },
     "clause-p-1772159052409-32": {
-      "correct": 4,
-      "total": 4,
+      "correct": 5,
+      "total": 5,
       "recent": [
+        1,
         1,
         1,
         1,
@@ -33193,7 +33391,7 @@
       "page": "国民健康保険法　特別療養費",
       "pageId": "p-1772159052409",
       "text": "穴埋め: 18 歳に達する日以後の最初の3 月31 日までの間にある者",
-      "srsLevel": 4,
+      "srsLevel": 5,
       "history": [
         {
           "date": "2026-02-28T02:14:46.294Z",
@@ -33214,12 +33412,44 @@
           "date": "2026-02-28T02:17:29.976Z",
           "isCorrect": true,
           "level": 3
+        },
+        {
+          "date": "2026-02-28T02:38:27.328Z",
+          "isCorrect": true,
+          "level": 4
         }
       ],
-      "nextReview": null
+      "nextReview": "2026-03-13T15:00:00.000Z"
+    },
+    "clause-p-1772159052409-33": {
+      "correct": 1,
+      "total": 1,
+      "recent": [
+        1
+      ],
+      "page": "国民健康保険法　特別療養費",
+      "pageId": "p-1772159052409",
+      "text": "穴埋め: 当該被保険者に限る",
+      "srsLevel": 1,
+      "history": [
+        {
+          "date": "2026-02-28T02:38:27.328Z",
+          "isCorrect": true,
+          "level": 0
+        }
+      ],
+      "nextReview": "2026-02-28T15:00:00.000Z"
     }
   },
   "history": [
+    {
+      "timestamp": "2026/2/28 11:38:27",
+      "isoDate": "2026-02-28T02:38:27.330Z",
+      "page": "国民健康保険法　特別療養費",
+      "pageId": "p-1772159052409",
+      "score": "34 / 34",
+      "accuracy": 100
+    },
     {
       "timestamp": "2026/2/28 11:17:29",
       "isoDate": "2026-02-28T02:17:29.977Z",
@@ -33611,15 +33841,7 @@
       "pageId": "p-1770950684268",
       "score": "7 / 7",
       "accuracy": 100
-    },
-    {
-      "timestamp": "2026/2/28 8:26:41",
-      "isoDate": "2026-02-27T23:26:41.659Z",
-      "page": "厚生年金保険法　遺族厚生年金　遺族範囲",
-      "pageId": "survivor-rank-1",
-      "score": "6 / 6",
-      "accuracy": 100
     }
   ],
-  "lastModified": 1772245908805
+  "lastModified": 1772246399026
 }
