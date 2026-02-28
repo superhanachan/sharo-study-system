@@ -58,6 +58,7 @@ class QuizApp {
         this.chartMode = 'accuracy';
         this.statsChart = null;
         this.questionObserver = null;
+        this.isBankMinimized = false; // Persistent state for the session
         this.dailyGoal = 50;
 
         this.migrateData();
@@ -3094,6 +3095,30 @@ class QuizApp {
         this.globalKeywordBank.innerHTML = '';
         this.globalKeywordBank.classList.remove('hidden');
         this.globalKeywordBank.classList.add('active-bank');
+        this.globalKeywordBank.classList.toggle('minimized', this.isBankMinimized);
+
+        // Add Header for minimization
+        const bankHeader = document.createElement('div');
+        bankHeader.className = 'keyword-bank-header';
+
+        const titleSpan = document.createElement('span');
+        titleSpan.className = 'bank-title';
+        titleSpan.textContent = this.isBankMinimized ? '選択肢バンク (最小化中)' : '選択肢バンク';
+
+        const toggleBtn = document.createElement('button');
+        toggleBtn.className = 'bank-toggle-btn';
+        toggleBtn.textContent = this.isBankMinimized ? '▲ 展開する' : '▼ 最小化する';
+        toggleBtn.onclick = (e) => {
+            e.stopPropagation();
+            this.isBankMinimized = !this.isBankMinimized;
+            this.updateGlobalKeywordBank(row);
+        };
+
+        bankHeader.appendChild(titleSpan);
+        bankHeader.appendChild(toggleBtn);
+        this.globalKeywordBank.appendChild(bankHeader);
+
+        if (this.isBankMinimized) return;
 
         this.shuffledCache[cacheKey].forEach(word => {
             const req = requiredCounts[word] || 0;
