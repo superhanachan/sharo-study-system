@@ -227,6 +227,7 @@ class QuizApp {
         this.checkAnswersBtn = document.getElementById('check-answers-btn');
         this.resetWrongBtn = document.getElementById('reset-wrong-btn');
         this.resetAllBtn = document.getElementById('reset-all-btn');
+        this.peekAnswersBtn = document.getElementById('peek-answers-btn');
 
         this.homeBtn = document.getElementById('home-btn');
         this.homeDashboard = document.getElementById('home-dashboard');
@@ -319,6 +320,13 @@ class QuizApp {
         if (this.checkAnswersBtn) this.checkAnswersBtn.addEventListener('click', () => this.batchCheckAnswers());
         if (this.resetWrongBtn) this.resetWrongBtn.addEventListener('click', () => this.resetWrongAnswers());
         if (this.resetAllBtn) this.resetAllBtn.addEventListener('click', () => this.resetQuiz());
+        if (this.peekAnswersBtn) {
+            this.peekAnswersBtn.addEventListener('click', () => {
+                const isRevealed = this.quizView.classList.toggle('answers-revealed');
+                this.peekAnswersBtn.innerHTML = isRevealed ? '👁️ 答えを隠す' : '👁️ 答えを表示する';
+                this.peekAnswersBtn.classList.toggle('active', isRevealed);
+            });
+        }
         if (this.addFolderBtn) this.addFolderBtn.addEventListener('click', () => this.addNewFolder());
         if (this.addPageBtn) this.addPageBtn.addEventListener('click', () => this.addNewPage());
         if (this.addClauseBtn) this.addClauseBtn.addEventListener('click', () => this.addNewClausePage());
@@ -782,6 +790,11 @@ class QuizApp {
     resetQuiz() {
         this.userAnswers = {};
         this.isChecked = false;
+        if (this.peekAnswersBtn) {
+            this.peekAnswersBtn.innerHTML = '👁️ 答えを表示する';
+            this.peekAnswersBtn.classList.remove('active');
+        }
+        if (this.quizView) this.quizView.classList.remove('answers-revealed');
         this.shuffledCache = {};
         this.selectedKeyword = null; // Reset selected keyword
         this.scoreDisplay.textContent = "正解数: 0 / 0";
@@ -1221,10 +1234,6 @@ class QuizApp {
         const container = document.createElement('div');
         container.className = 'clause-container';
 
-        // Add action buttons
-        const actionHeader = document.createElement('div');
-        actionHeader.className = 'clause-action-header';
-
         // Add history graph button if stats exist
         const summaryKey = `clause-summary-${set.id}`;
         if (this.questionStats[summaryKey] && !this.isEditMode) {
@@ -1232,24 +1241,7 @@ class QuizApp {
             historyBtn.className = 'clause-history-btn';
             historyBtn.innerHTML = '📈 正答率の推移を確認';
             historyBtn.onclick = () => this.showSRSDetail(summaryKey);
-            actionHeader.appendChild(historyBtn);
-        }
-
-        // Add "Show/Hide Answers" button for study aid
-        if (!this.isChecked && !this.isEditMode) {
-            const peekBtn = document.createElement('button');
-            peekBtn.className = 'clause-peek-btn';
-            peekBtn.innerHTML = '👁️ 答えを表示する';
-            peekBtn.onclick = () => {
-                const isRevealed = container.classList.toggle('answers-revealed');
-                peekBtn.innerHTML = isRevealed ? '👁️ 答えを隠す' : '👁️ 答えを表示する';
-                peekBtn.classList.toggle('active', isRevealed);
-            };
-            actionHeader.appendChild(peekBtn);
-        }
-
-        if (actionHeader.children.length > 0) {
-            container.appendChild(actionHeader);
+            container.appendChild(historyBtn);
         }
 
         const clauseText = document.createElement('div');
@@ -1367,7 +1359,10 @@ class QuizApp {
                         blank.appendChild(reveal);
                     }
                 }
-                placeholder.replaceWith(blank);
+                const peek = document.createElement('span');
+                peek.className = 'peek-answer';
+                peek.textContent = `(${kwInfo.text})`;
+                placeholder.replaceWith(blank, peek);
             } else {
                 // Input type
                 const input = document.createElement('input');
@@ -1377,6 +1372,10 @@ class QuizApp {
 
                 const savedAnswer = this.userAnswers[`${set.id}-${currentIdx}`] || '';
                 input.value = savedAnswer;
+
+                const peek = document.createElement('span');
+                peek.className = 'peek-answer';
+                peek.textContent = `(${kwInfo.text})`;
 
                 if (!this.isChecked) {
                     input.oninput = () => {
@@ -1393,7 +1392,7 @@ class QuizApp {
                         placeholder.parentNode.insertBefore(tip, placeholder.nextSibling);
                     }
                 }
-                placeholder.replaceWith(input);
+                placeholder.replaceWith(input, peek);
             }
         }
 
@@ -2138,7 +2137,10 @@ class QuizApp {
                                 blank.appendChild(reveal);
                             }
                         }
-                        placeholder.replaceWith(blank);
+                        const peek = document.createElement('span');
+                        peek.className = 'peek-answer';
+                        peek.textContent = `(${kwInfo.text})`;
+                        placeholder.replaceWith(blank, peek);
                     } else {
                         // Input type
                         const input = document.createElement('input');
@@ -2146,6 +2148,10 @@ class QuizApp {
                         input.className = 'clause-input-blank mini';
                         const savedAnswer = this.userAnswers[`${q.id}-${currentBlankIdx}`] || '';
                         input.value = savedAnswer;
+
+                        const peek = document.createElement('span');
+                        peek.className = 'peek-answer';
+                        peek.textContent = `(${kwInfo.text})`;
 
                         if (!this.isChecked) {
                             input.oninput = () => {
@@ -2162,7 +2168,7 @@ class QuizApp {
                                 placeholder.parentNode.insertBefore(tip, placeholder.nextSibling);
                             }
                         }
-                        placeholder.replaceWith(input);
+                        placeholder.replaceWith(input, peek);
                     }
                 }
                 wrapper.appendChild(cText);
