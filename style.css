@@ -1240,7 +1240,7 @@ th:hover {
 }
 
 th::after {
-    content: '↕';
+    content: 'ↁE;
     position: absolute;
     right: 0.5rem;
     opacity: 0.3;
@@ -1249,13 +1249,13 @@ th::after {
 }
 
 th.sort-asc::after {
-    content: '↑';
+    content: 'ↁE;
     opacity: 1;
     color: var(--accent);
 }
 
 th.sort-desc::after {
-    content: '↓';
+    content: 'ↁE;
     opacity: 1;
     color: var(--accent);
 }
@@ -1325,7 +1325,7 @@ td:last-child {
     font-weight: 700;
 }
 
-/* 間違えた時の派手な表示 */
+/* 間違えた時�E派手な表示 */
 .row-wrong {
     background: rgba(247, 37, 133, 0.08) !important;
     animation: shake 0.5s cubic-bezier(.36, .07, .19, .97) both;
@@ -1337,7 +1337,7 @@ td:last-child {
     border-bottom: 1px solid rgba(247, 37, 133, 0.3) !important;
 }
 
-/* 間違えた行の中の「本来の正解」をより目立たせる */
+/* 間違えた行�E中の「本来の正解」をより目立たせる */
 .row-wrong .choice-cell.correct {
     background: var(--success) !important;
     color: var(--bg-dark) !important;
@@ -1348,7 +1348,7 @@ td:last-child {
     border: none !important;
 }
 
-/* 間違えた行の中の「正解」マーク（多重選択用など） */
+/* 間違えた行�E中の「正解」�Eーク�E�多重選択用など�E�E*/
 .row-wrong .choice-cell.correct::after {
     content: '正解';
     position: absolute;
@@ -2588,9 +2588,73 @@ tr {
     width: fit-content;
 }
 
+.clause-action-header {
+    display: flex;
+    gap: 0.8rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.clause-history-btn, .clause-peek-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.2rem;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    border: 1px solid;
+}
+
+.clause-history-btn {
+    background: rgba(76, 201, 240, 0.1);
+    border-color: rgba(76, 201, 240, 0.3);
+    color: var(--accent);
+}
+
 .clause-history-btn:hover {
     background: rgba(76, 201, 240, 0.2);
     border-color: var(--accent);
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(76, 201, 240, 0.2);
+}
+
+.clause-peek-btn {
+    background: rgba(181, 101, 241, 0.1);
+    border-color: rgba(181, 101, 241, 0.3);
+    color: #b565f1;
+}
+
+.clause-peek-btn:hover, .clause-peek-btn.active {
+    background: rgba(181, 101, 241, 0.2);
+    border-color: #b565f1;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(181, 101, 241, 0.2);
+}
+
+/* Peek Revelation Logic */
+.clause-container.answers-revealed .clause-blank::after {
+    content: " (答え: " attr(data-answer) ")";
+    position: absolute;
+    bottom: -1.2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.75rem;
+    color: #b565f1;
+    background: rgba(26, 28, 39, 0.9);
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    white-space: nowrap;
+    z-index: 10;
+    pointer-events: none;
+    border: 1px solid rgba(181, 101, 241, 0.4);
+    backdrop-filter: blur(4px);
+}
+
+.clause-container.answers-revealed .clause-blank {
+    position: relative;
+    border-style: solid;
+    border-color: #b565f1;
 }
