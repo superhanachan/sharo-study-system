@@ -2612,12 +2612,17 @@ tr {
     vertical-align: middle;
 }
 
-.answers-revealed .peek-answer {
-    display: inline;
+body.answers-revealed .peek-answer {
+    display: inline !important;
+    color: #f72585 !important;
+    /* Bright pink for max visibility */
+    background: rgba(255, 255, 255, 0.1);
+    padding: 0 4px;
+    border-radius: 4px;
 }
 
-.answers-revealed .clause-blank,
-.answers-revealed .clause-input-blank {
-    border-color: #b565f1 !important;
-    box-shadow: 0 0 8px rgba(181, 101, 241, 0.2);
+body.answers-revealed .clause-blank,
+body.answers-revealed .clause-input-blank {
+    border-color: #f72585 !important;
+    box-shadow: 0 0 12px rgba(247, 37, 133, 0.3);
 }

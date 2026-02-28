@@ -322,7 +322,7 @@ class QuizApp {
         if (this.resetAllBtn) this.resetAllBtn.addEventListener('click', () => this.resetQuiz());
         if (this.peekAnswersBtn) {
             this.peekAnswersBtn.addEventListener('click', () => {
-                const isRevealed = this.quizView.classList.toggle('answers-revealed');
+                const isRevealed = document.body.classList.toggle('answers-revealed');
                 this.peekAnswersBtn.innerHTML = isRevealed ? '👁️ 答えを隠す' : '👁️ 答えを表示する';
                 this.peekAnswersBtn.classList.toggle('active', isRevealed);
             });
@@ -788,13 +788,13 @@ class QuizApp {
     }
 
     resetQuiz() {
-        this.userAnswers = {};
         this.isChecked = false;
+        this.userAnswers = {};
+        document.body.classList.remove('answers-revealed');
         if (this.peekAnswersBtn) {
             this.peekAnswersBtn.innerHTML = '👁️ 答えを表示する';
             this.peekAnswersBtn.classList.remove('active');
         }
-        if (this.quizView) this.quizView.classList.remove('answers-revealed');
         this.shuffledCache = {};
         this.selectedKeyword = null; // Reset selected keyword
         this.scoreDisplay.textContent = "正解数: 0 / 0";
