@@ -492,6 +492,7 @@ class QuizApp {
 
     loadData() { const saved = localStorage.getItem('sharoQuizData'); return saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(DEFAULT_QUIZ_DATA)); }
     saveData() {
+        this.pruneData();
         const dataStr = JSON.stringify(this.quizData);
         localStorage.setItem('sharoQuizData', dataStr);
         // Internal Redundancy: Also save to a backup key
@@ -505,7 +506,36 @@ class QuizApp {
     loadHistory() { const saved = localStorage.getItem('sharoQuizHistory'); return saved ? JSON.parse(saved) : []; }
     saveHistory() { localStorage.setItem('sharoQuizHistory', JSON.stringify(this.history)); }
     loadQuestionStats() { const saved = localStorage.getItem('sharoQuestionStats'); return saved ? JSON.parse(saved) : {}; }
-    saveQuestionStats() { localStorage.setItem('sharoQuestionStats', JSON.stringify(this.questionStats)); }
+    saveQuestionStats() { this.pruneData(); localStorage.setItem('sharoQuestionStats', JSON.stringify(this.questionStats)); }
+
+    pruneData() {
+        if (!this.quizData) return;
+        const validIds = new Set();
+        const walk = (items) => {
+            items.forEach(item => {
+                if (item.type === 'clause') {
+                    validIds.add(`clause-summary-${item.id}`);
+                }
+                if (item.questions) {
+                    item.questions.forEach(q => validIds.add(q.id));
+                }
+                if (item.children) walk(item.children);
+            });
+        };
+        walk(this.quizData);
+
+        // Prune entries that aren't in current quiz data
+        Object.keys(this.questionStats).forEach(id => {
+            if (!validIds.has(id)) {
+                delete this.questionStats[id];
+            } else {
+                // Limit history to last 20 entries to save space
+                if (this.questionStats[id].history && Array.isArray(this.questionStats[id].history) && this.questionStats[id].history.length > 20) {
+                    this.questionStats[id].history = this.questionStats[id].history.slice(-20);
+                }
+            }
+        });
+    }
 
     updateSRS(stat, isCorrect) {
         if (!stat) return;
@@ -3298,8 +3328,9 @@ class QuizApp {
     }
 
     async pushToGitHub(config, data) {
+        this.pruneData();
         const url = `https://api.github.com/repos/${config.repo}/contents/${config.path}`;
-        const content = this.utf8_to_b64_encode(JSON.stringify(data, null, 2));
+        const content = this.utf8_to_b64_encode(JSON.stringify(data));
 
         // Need current SHA to update existing file
         if (!this._ghFileSha) {
