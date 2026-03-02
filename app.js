@@ -1380,10 +1380,11 @@ class QuizApp {
                 if (!this.isChecked) {
                     input.oninput = () => {
                         const val = input.value;
+                        const normVal = this.normalizeInput(val);
                         this.userAnswers[`${set.id}-${currentIdx}`] = val;
-                        // Auto-fill other input blanks with same correct answer
+                        // Auto-fill other input blanks with same correct answer (matching normalized text)
                         keywords.forEach((otherKw, j) => {
-                            if (otherKw.type === 'input' && otherKw.text === kwInfo.text) {
+                            if (otherKw.type === 'input' && this.normalizeInput(otherKw.text) === this.normalizeInput(kwInfo.text)) {
                                 this.userAnswers[`${set.id}-${j}`] = val;
                                 const otherInput = clauseText.querySelector(`#input-${j}`);
                                 if (otherInput && otherInput !== input) {
@@ -2169,9 +2170,9 @@ class QuizApp {
                             input.oninput = () => {
                                 const val = input.value;
                                 this.userAnswers[`${q.id}-${currentBlankIdx}`] = val;
-                                // Auto-fill other input blanks with same correct answer
+                                // Auto-fill other input blanks with same correct answer (matching normalized text)
                                 rowKeywords.forEach((otherKw, j) => {
-                                    if (otherKw.type === 'input' && otherKw.text === kwInfo.text) {
+                                    if (otherKw.type === 'input' && this.normalizeInput(otherKw.text) === this.normalizeInput(kwInfo.text)) {
                                         this.userAnswers[`${q.id}-${j}`] = val;
                                         const otherInput = cText.querySelector(`.clause-input-blank[data-blank-idx="${j}"]`);
                                         if (otherInput && otherInput !== input) {
