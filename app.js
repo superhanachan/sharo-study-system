@@ -1463,10 +1463,21 @@ class QuizApp {
             return new Date(s.nextReview) <= now;
         }).length;
 
+        // SRS Due Tomorrow calculation
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        tomorrow.setHours(23, 59, 59, 999);
+        const tomorrowCount = Object.entries(this.questionStats).filter(([key, s]) => {
+            if (!s.nextReview) return false;
+            if (key.startsWith('clause-') && !key.startsWith('clause-summary-')) return false;
+            return new Date(s.nextReview) <= tomorrow;
+        }).length;
+
         // Update UI
         const masteryEl = document.getElementById('mastery-percent');
         const heightEl = document.getElementById('climb-height');
         const dueCountEl = document.getElementById('srs-due-count');
+        const dueTomorrowEl = document.getElementById('srs-tomorrow-count');
         const hikerMarker = document.getElementById('hiker-marker');
         const fujiSvg = document.querySelector('.fuji-svg');
 
@@ -1476,6 +1487,9 @@ class QuizApp {
             dueCountEl.textContent = dueCount;
             const card = dueCountEl.closest('.main-stat-card');
             if (card) card.classList.toggle('due-active', dueCount > 0);
+        }
+        if (dueTomorrowEl) {
+            dueTomorrowEl.textContent = tomorrowCount;
         }
 
         if (hikerMarker) {
