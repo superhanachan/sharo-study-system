@@ -607,6 +607,9 @@ class QuizApp {
 
     shouldAutoFill(statKey) {
         if (!this.autoFillEnabled) return false;
+        // If threshold is 0, consider it learned immediately
+        if (this.autoFillThreshold <= 0) return true;
+
         const stat = this.questionStats[statKey];
         if (!stat) return false;
         if (!stat.recent || stat.recent.length < this.autoFillThreshold) return false;
@@ -2170,34 +2173,36 @@ class QuizApp {
                     const keyword = p1 || p2 || p3 || p4;
                     const type = (p1 || p2) ? 'drag' : 'input';
                     rowKeywords.push({ text: keyword, type: type });
-                    const safeId = q.id.replace(/[^a-zA-Z0-9]/g, '-');
-                    return `<span id="placeholder-${safeId}-${blankIdx++}"></span>`;
+                    return `<span class="blank-placeholder" data-idx="${blankIdx++}"></span>`;
                 });
                 cText.innerHTML = finalHtml;
 
-                for (let i = 0; i < blankIdx; i++) {
-                    const safeId = q.id.replace(/[^a-zA-Z0-9]/g, '-');
-                    const placeholder = cText.querySelector(`#placeholder-${safeId}-${i}`);
-                    if (!placeholder) continue;
-                    const kwInfo = rowKeywords[i];
-                    const currentBlankIdx = i;
+                const placeholders = cText.querySelectorAll('.blank-placeholder');
+                placeholders.forEach((placeholder) => {
+                    const currentBlankIdx = parseInt(placeholder.dataset.idx);
+                    const kwInfo = rowKeywords[currentBlankIdx];
+                    const statKey = `clause-${q.id}-${currentBlankIdx}`;
+
+                    const shouldFill = this.shouldAutoFill(statKey);
+                    const isAlreadyFilled = !!this.userAnswers[`${q.id}-${currentBlankIdx}`];
+
+                    if (shouldFill && !isAlreadyFilled && !this.isChecked) {
+                        this.userAnswers[`${q.id}-${currentBlankIdx}`] = kwInfo.text;
+                    }
+
+                    const savedAnswer = this.userAnswers[`${q.id}-${currentBlankIdx}`];
+                    const isAutoFilled = shouldFill && savedAnswer === kwInfo.text;
 
                     if (kwInfo.type === 'drag') {
-                        const blank = document.createElement('div'); blank.className = 'clause-blank';
-
-                        const statKey = `clause-${q.id}-${currentBlankIdx}`;
-                        const autoFilled = !this.isChecked && !this.userAnswers[`${q.id}-${currentBlankIdx}`] && this.shouldAutoFill(statKey);
-                        if (autoFilled) {
-                            this.userAnswers[`${q.id}-${currentBlankIdx}`] = kwInfo.text;
-                        }
-
-                        const savedAnswer = this.userAnswers[`${q.id}-${currentBlankIdx}`];
+                        const blank = document.createElement('div');
+                        blank.className = 'clause-blank';
                         if (savedAnswer) {
                             blank.textContent = savedAnswer;
                             blank.classList.add('filled');
-                            if (autoFilled) blank.classList.add('auto-filled');
+                            if (isAutoFilled) blank.classList.add('auto-filled');
+                        } else {
+                            blank.innerHTML = '&nbsp;&nbsp;&nbsp;&nbsp;';
                         }
-                        else { blank.innerHTML = '&nbsp;&nbsp;&nbsp;&nbsp;'; }
 
                         if (!this.isChecked) {
                             blank.ondragover = (e) => { e.preventDefault(); blank.classList.add('drag-over'); };
@@ -2261,12 +2266,7 @@ class QuizApp {
                         input.className = 'clause-input-blank mini';
                         input.dataset.blankIdx = currentBlankIdx;
 
-                        const statKey = `clause-${q.id}-${currentBlankIdx}`;
-                        const autoFilled = !this.isChecked && !this.userAnswers[`${q.id}-${currentBlankIdx}`] && this.shouldAutoFill(statKey);
-                        if (autoFilled) {
-                            this.userAnswers[`${q.id}-${currentBlankIdx}`] = kwInfo.text;
-                            input.classList.add('auto-filled');
-                        }
+                        if (isAutoFilled) input.classList.add('auto-filled');
 
                         const savedAnswer = this.userAnswers[`${q.id}-${currentBlankIdx}`] || '';
                         input.value = savedAnswer;
@@ -2304,7 +2304,7 @@ class QuizApp {
                         }
                         placeholder.replaceWith(input, peek);
                     }
-                }
+                });
                 wrapper.appendChild(cText);
                 tdQ.appendChild(wrapper);
 
