@@ -1005,13 +1005,30 @@ class QuizApp {
                     let rowAnsweredBlanks = 0;
                     keywordData.forEach((kwInfo, idx) => {
                         const val = this.userAnswers[`${q.id}-${idx}`];
-                        if (val) {
-                            rowAnsweredBlanks++;
-                            const isKwCorrect = kwInfo.type === 'drag'
-                                ? val === kwInfo.text
-                                : this.normalizeInput(val) === this.normalizeInput(kwInfo.text);
-                            if (isKwCorrect) rowCorrectBlanks++;
+                        if (!val && kwInfo.type === 'drag') return;
+                        rowAnsweredBlanks++;
+                        const isKwCorrect = kwInfo.type === 'drag'
+                            ? val === kwInfo.text
+                            : this.normalizeInput(val) === this.normalizeInput(kwInfo.text);
+                        if (isKwCorrect) rowCorrectBlanks++;
+
+                        // Detailed stat per blank (Added for auto-fill support in review mode)
+                        const bStatKey = `clause-${q.id}-${idx}`;
+                        if (!this.questionStats[bStatKey]) {
+                            this.questionStats[bStatKey] = {
+                                correct: 0, total: 0, recent: [],
+                                page: q.origPage || set.title, pageId: q.id,
+                                text: `穴埋め: ${kwInfo.text}`
+                            };
                         }
+                        const bStat = this.questionStats[bStatKey];
+                        bStat.total++;
+                        if (isKwCorrect) bStat.correct++;
+                        if (!bStat.recent) bStat.recent = [];
+                        bStat.recent.push(isKwCorrect ? 1 : 0);
+                        if (bStat.recent.length > 20) bStat.recent.shift();
+                        bStat.text = `穴埋め: ${kwInfo.text}`; bStat.page = q.origPage || set.title;
+                        this.updateSRS(bStat, isKwCorrect);
                     });
 
                     answeredCount += rowAnsweredBlanks;
