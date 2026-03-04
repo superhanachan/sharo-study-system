@@ -1789,6 +1789,17 @@ tr {
     color: var(--error);
 }
 
+.clause-blank.auto-filled {
+    opacity: 0.6;
+    border-bottom-style: dotted;
+    cursor: default;
+}
+
+.clause-input-blank.auto-filled {
+    opacity: 0.6;
+    border-style: dotted;
+}
+
 .reveal-correct {
     font-size: 0.85rem;
     color: var(--success);
