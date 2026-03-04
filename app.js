@@ -608,7 +608,7 @@ class QuizApp {
     shouldAutoFill(statKey) {
         if (!this.autoFillEnabled) return false;
         const stat = this.questionStats[statKey];
-        if (!stat || stat.srsLevel < 7) return false;
+        if (!stat) return false;
         if (!stat.recent || stat.recent.length < this.autoFillThreshold) return false;
 
         // Check if last N (threshold) are all correct
@@ -960,7 +960,7 @@ class QuizApp {
                 if (isCorrect) stat.correct++;
                 if (!stat.recent) stat.recent = [];
                 stat.recent.push(isCorrect ? 1 : 0);
-                if (stat.recent.length > 5) stat.recent.shift();
+                if (stat.recent.length > 20) stat.recent.shift();
                 stat.text = `穴埋め: ${kwInfo.text}`; stat.page = set.title;
                 this.updateSRS(stat, isCorrect);
             });
@@ -1047,7 +1047,7 @@ class QuizApp {
                 if (isCorrect) stat.correct++;
                 if (!stat.recent) stat.recent = [];
                 stat.recent.push(isCorrect ? 1 : 0);
-                if (stat.recent.length > 5) stat.recent.shift();
+                if (stat.recent.length > 20) stat.recent.shift();
                 stat.text = q.type === 'clause' ? `条文全体: ${q.origPage}` : q.text;
                 stat.page = q.origPage || set.title;
                 this.updateSRS(stat, isCorrect);
