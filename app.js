@@ -63,8 +63,11 @@ class QuizApp {
         this.dailyGoal = 50;
 
         // Auto-fill settings
-        this.autoFillEnabled = JSON.parse(localStorage.getItem('sharoAutoFillEnabled')) || false;
-        this.autoFillThreshold = parseInt(localStorage.getItem('sharoAutoFillThreshold')) || 5;
+        const storedEnabled = localStorage.getItem('sharoAutoFillEnabled');
+        this.autoFillEnabled = storedEnabled !== null ? JSON.parse(storedEnabled) : false;
+
+        const storedThreshold = localStorage.getItem('sharoAutoFillThreshold');
+        this.autoFillThreshold = storedThreshold !== null ? parseInt(storedThreshold) : 5;
 
         this.migrateData();
         this.cacheDOM();
