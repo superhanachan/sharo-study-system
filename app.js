@@ -2170,12 +2170,14 @@ class QuizApp {
                     const keyword = p1 || p2 || p3 || p4;
                     const type = (p1 || p2) ? 'drag' : 'input';
                     rowKeywords.push({ text: keyword, type: type });
-                    return `<span id="placeholder-${q.id}-${blankIdx++}"></span>`;
+                    const safeId = q.id.replace(/[^a-zA-Z0-9]/g, '-');
+                    return `<span id="placeholder-${safeId}-${blankIdx++}"></span>`;
                 });
                 cText.innerHTML = finalHtml;
 
                 for (let i = 0; i < blankIdx; i++) {
-                    const placeholder = cText.querySelector(`#placeholder-${q.id}-${i}`);
+                    const safeId = q.id.replace(/[^a-zA-Z0-9]/g, '-');
+                    const placeholder = cText.querySelector(`#placeholder-${safeId}-${i}`);
                     if (!placeholder) continue;
                     const kwInfo = rowKeywords[i];
                     const currentBlankIdx = i;
@@ -2268,6 +2270,7 @@ class QuizApp {
 
                         const savedAnswer = this.userAnswers[`${q.id}-${currentBlankIdx}`] || '';
                         input.value = savedAnswer;
+                        if (savedAnswer) input.classList.add('filled');
 
                         const peek = document.createElement('span');
                         peek.className = 'peek-answer';

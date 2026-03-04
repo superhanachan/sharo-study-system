@@ -1790,14 +1790,15 @@ tr {
 }
 
 .clause-blank.auto-filled {
-    opacity: 0.6;
-    border-bottom-style: dotted;
+    border-bottom: 2px dotted var(--accent) !important;
+    color: var(--accent) !important;
     cursor: default;
 }
 
 .clause-input-blank.auto-filled {
-    opacity: 0.6;
-    border-style: dotted;
+    border: 1px dotted var(--accent) !important;
+    color: var(--accent) !important;
+    background: rgba(76, 201, 240, 0.05) !important;
 }
 
 .reveal-correct {
