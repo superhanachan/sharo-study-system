@@ -236,7 +236,7 @@ class QuizApp {
         this.resetWrongBtn = document.getElementById('reset-wrong-btn');
         this.resetAllBtn = document.getElementById('reset-all-btn');
         this.peekAnswersBtn = document.getElementById('peek-answers-btn');
-        this.autoFillShortcutBtn = document.getElementById('auto-fill-shortcut-btn');
+        this.autoFillShortcutBtn = document.getElementById('auto-fill-shortcut-btn-sidebar');
 
         this.homeBtn = document.getElementById('home-btn');
         this.homeDashboard = document.getElementById('home-dashboard');
@@ -2900,8 +2900,17 @@ class QuizApp {
 
     updateAutoFillShortcutUI() {
         if (!this.autoFillShortcutBtn) return;
-        this.autoFillShortcutBtn.classList.toggle('active', this.autoFillEnabled);
-        this.autoFillShortcutBtn.innerHTML = this.autoFillEnabled ? '✨ 自動入力をOFFにする' : '✨ 自動入力';
+        const isActive = this.autoFillEnabled;
+        this.autoFillShortcutBtn.classList.toggle('active', isActive);
+        if (isActive) {
+            this.autoFillShortcutBtn.style.background = 'var(--accent)';
+            this.autoFillShortcutBtn.style.color = 'var(--bg-dark)';
+            this.autoFillShortcutBtn.innerHTML = '✨ 自動入力: ON';
+        } else {
+            this.autoFillShortcutBtn.style.background = 'rgba(76, 201, 240, 0.1)';
+            this.autoFillShortcutBtn.style.color = 'var(--accent)';
+            this.autoFillShortcutBtn.innerHTML = '✨ 自動入力: OFF';
+        }
     }
 
     clearData() {
