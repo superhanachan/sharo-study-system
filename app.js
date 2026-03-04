@@ -497,8 +497,9 @@ class QuizApp {
             };
         }
         if (this.autoFillThresholdInput) {
-            this.autoFillThresholdInput.oninput = () => {
-                this.autoFillThreshold = parseInt(this.autoFillThresholdInput.value) || 5;
+            this.autoFillThresholdInput.onchange = () => {
+                const val = parseInt(this.autoFillThresholdInput.value);
+                this.autoFillThreshold = !isNaN(val) ? val : 5;
                 localStorage.setItem('sharoAutoFillThreshold', this.autoFillThreshold);
             };
         }
