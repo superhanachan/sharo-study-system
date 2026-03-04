@@ -247,6 +247,10 @@ class QuizApp {
         this.startClauseOneReviewBtn = document.getElementById('start-clause-one-review-btn');
         this.startClauseReviewBtn = document.getElementById('start-clause-review-btn');
         this.startPageReviewBtn = document.getElementById('start-page-review-btn');
+        this.sidebarSrsDueCount = document.getElementById('sidebar-srs-due-count');
+        this.sidebarStartClauseOneReviewBtn = document.getElementById('sidebar-start-clause-one-review-btn');
+        this.sidebarStartClauseReviewBtn = document.getElementById('sidebar-start-clause-review-btn');
+        this.sidebarStartPageReviewBtn = document.getElementById('sidebar-start-page-review-btn');
 
         this.totalAccuracy = document.getElementById('total-accuracy');
         this.totalAnsweredDisplay = document.getElementById('total-answered');
@@ -470,11 +474,20 @@ class QuizApp {
         if (this.startClauseOneReviewBtn) {
             this.startClauseOneReviewBtn.addEventListener('click', () => this.generateDueReview('clause', 1));
         }
+        if (this.sidebarStartClauseOneReviewBtn) {
+            this.sidebarStartClauseOneReviewBtn.addEventListener('click', () => this.generateDueReview('clause', 1));
+        }
         if (this.startClauseReviewBtn) {
             this.startClauseReviewBtn.addEventListener('click', () => this.generateDueReview('clause', 3));
         }
+        if (this.sidebarStartClauseReviewBtn) {
+            this.sidebarStartClauseReviewBtn.addEventListener('click', () => this.generateDueReview('clause', 3));
+        }
         if (this.startPageReviewBtn) {
             this.startPageReviewBtn.addEventListener('click', () => this.generateDueReview('page', 10));
+        }
+        if (this.sidebarStartPageReviewBtn) {
+            this.sidebarStartPageReviewBtn.addEventListener('click', () => this.generateDueReview('page', 10));
         }
 
         // Data management events
@@ -1639,8 +1652,17 @@ class QuizApp {
         const hasPages = dueItems.some(i => i.type === 'page');
 
         if (this.startClauseOneReviewBtn) this.startClauseOneReviewBtn.classList.toggle('hidden', !hasClauses);
+        if (this.sidebarStartClauseOneReviewBtn) this.sidebarStartClauseOneReviewBtn.classList.toggle('hidden', !hasClauses);
         if (this.startClauseReviewBtn) this.startClauseReviewBtn.classList.toggle('hidden', !hasClauses);
+        if (this.sidebarStartClauseReviewBtn) this.sidebarStartClauseReviewBtn.classList.toggle('hidden', !hasClauses);
         if (this.startPageReviewBtn) this.startPageReviewBtn.classList.toggle('hidden', !hasPages);
+        if (this.sidebarStartPageReviewBtn) this.sidebarStartPageReviewBtn.classList.toggle('hidden', !hasPages);
+
+        if (this.sidebarSrsDueCount) {
+            this.sidebarSrsDueCount.textContent = dueCount;
+            const section = document.getElementById('sidebar-review-section');
+            if (section) section.classList.toggle('hidden', dueCount === 0);
+        }
     }
 
     getDueQuestions() {

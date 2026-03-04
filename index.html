@@ -42,6 +42,23 @@
                             全セレクト</button>
                         <button id="clear-pool-btn" class="batch-action-btn clear-all"><span>❌</span> 全解除</button>
                     </div>
+                    <div class="sidebar-review-section study-only" id="sidebar-review-section"
+                        style="padding: 1rem; background: rgba(255, 255, 255, 0.03); border-radius: 12px; margin-bottom: 1.5rem; border: 1px solid var(--glass-border); flex-direction: column;">
+                        <div
+                            style="font-size: 0.9rem; margin-bottom: 0.8rem; color: var(--accent); font-weight: bold; display: flex; align-items: center; justify-content: space-between;">
+                            <span>今日の復習チャンス</span>
+                            <span id="sidebar-srs-due-count"
+                                style="background: var(--error); color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.8rem;">0</span>
+                        </div>
+                        <div class="sidebar-quick-actions" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            <button id="sidebar-start-clause-one-review-btn"
+                                class="sidebar-gen-btn srs-clause hidden">穴埋め復習 (1題)</button>
+                            <button id="sidebar-start-clause-review-btn" class="sidebar-gen-btn srs-clause hidden">条文復習
+                                (3題)</button>
+                            <button id="sidebar-start-page-review-btn" class="sidebar-gen-btn srs-page hidden">選択式復習
+                                (10題)</button>
+                        </div>
+                    </div>
                     <div class="sidebar-quick-actions study-only">
                         <button id="auto-fill-shortcut-btn-sidebar" class="sidebar-gen-btn active-state"
                             style="margin-bottom: 1rem; border: 1px solid var(--accent); background: rgba(76, 201, 240, 0.1);">✨
