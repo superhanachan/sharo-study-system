@@ -439,6 +439,53 @@ h2,
     box-shadow: 0 0 10px rgba(67, 97, 238, 0.4);
 }
 
+/* Projection Section */
+.projection-section {
+    margin-top: 3rem;
+    margin-bottom: 2rem;
+    padding: 2rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 20px;
+    border: 1px solid var(--glass-border);
+    text-align: left;
+}
+
+.projection-section .chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.projection-section h3 {
+    font-size: 1.1rem;
+    color: var(--accent);
+    margin: 0;
+}
+
+.chart-legend {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+.projection-chart-container {
+    height: 300px;
+    position: relative;
+    width: 100%;
+}
+
+@media (max-width: 768px) {
+    .projection-chart-container {
+        height: 250px;
+    }
+
+    .projection-section {
+        padding: 1rem;
+    }
+}
+
+
 /* Sidebar */
 .sidebar {
     width: 320px;
