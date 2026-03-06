@@ -1573,23 +1573,35 @@ class QuizApp {
         // Map 0-100% to 0-3776m
         const heightMeters = Math.round(masteryPercent * 37.76);
 
-        // SRS Due Today calculation (Consolidated: only count summaries or independent questions)
-        const now = new Date();
+        // SRS Due Today (Everything including overdue)
+        const formatDateStr = (d) => {
+            return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+        };
+        const todayStr = formatDateStr(now);
+
+        const dueTodayTotal = Object.entries(this.questionStats).filter(([key, s]) => {
+            if (!s.nextReview) return false;
+            if (key.startsWith('clause-') && !key.startsWith('clause-summary-')) return false;
+            const reviewDate = new Date(s.nextReview);
+            return formatDateStr(reviewDate) <= todayStr;
+        }).length;
+
+        // Current Due NOW (for the active learning buttons)
         const dueCount = Object.entries(this.questionStats).filter(([key, s]) => {
             if (!s.nextReview) return false;
-            // Ignore individual blanks (clause-ID-index) to avoid overcounting
             if (key.startsWith('clause-') && !key.startsWith('clause-summary-')) return false;
             return new Date(s.nextReview) <= now;
         }).length;
 
-        // SRS Due Tomorrow calculation
-        const tomorrow = new Date();
+        // SRS Due Tomorrow calculation (Specific to that day, to match the bar)
+        const tomorrow = new Date(now);
         tomorrow.setDate(tomorrow.getDate() + 1);
-        tomorrow.setHours(23, 59, 59, 999);
-        const tomorrowCount = Object.entries(this.questionStats).filter(([key, s]) => {
+        const tomorrowStr = formatDateStr(tomorrow);
+
+        const tomorrowSpecificCount = Object.entries(this.questionStats).filter(([key, s]) => {
             if (!s.nextReview) return false;
             if (key.startsWith('clause-') && !key.startsWith('clause-summary-')) return false;
-            return new Date(s.nextReview) <= tomorrow;
+            return formatDateStr(new Date(s.nextReview)) === tomorrowStr;
         }).length;
 
         // Update UI
@@ -1603,12 +1615,12 @@ class QuizApp {
         if (masteryEl) masteryEl.textContent = `${masteryPercent}%`;
         if (heightEl) heightEl.textContent = `${heightMeters} m`;
         if (dueCountEl) {
-            dueCountEl.textContent = dueCount;
+            dueCountEl.textContent = dueTodayTotal; // Match the first bar
             const card = dueCountEl.closest('.main-stat-card');
             if (card) card.classList.toggle('due-active', dueCount > 0);
         }
         if (dueTomorrowEl) {
-            dueTomorrowEl.textContent = tomorrowCount;
+            dueTomorrowEl.textContent = tomorrowSpecificCount; // Match the second bar
         }
 
         if (hikerMarker) {
