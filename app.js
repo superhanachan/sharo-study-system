@@ -1324,8 +1324,40 @@ class QuizApp {
                 this.clauseDummiesEditor.value = (set.dummies || []).join(', ');
             }
 
-            this.clauseTextEditor.oninput = () => {
-                set.text = this.clauseTextEditor.value;
+            this.clauseTextEditor.oninput = (e) => {
+                let val = this.clauseTextEditor.value;
+                const start = this.clauseTextEditor.selectionStart;
+                const end = this.clauseTextEditor.selectionEnd;
+
+                // Find phrases in [[ ]]
+                const matches = val.match(/\[\[(.*?)\]\]/g);
+                if (matches) {
+                    let changed = false;
+                    const uniqueKeywords = [...new Set(matches.map(m => m.slice(2, -2)))].filter(k => k.length > 0);
+
+                    uniqueKeywords.forEach(keyword => {
+                        // Look for instances of keyword NOT surrounded by [[ ]]
+                        // Use negative lookbehind/lookahead if supported, or simpler regex approach
+                        const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                        // Match keyword only if not inside [[ ]]
+                        const regex = new RegExp(`(?<!\\[\\[)${escaped}(?!\\]\\])`, 'g');
+
+                        if (regex.test(val)) {
+                            // If the change happens before or at the cursor, we'll need to adjust cursor
+                            val = val.replace(regex, `[[${keyword}]]`);
+                            changed = true;
+                        }
+                    });
+
+                    if (changed) {
+                        this.clauseTextEditor.value = val;
+                        // Restore cursor - note: simplistic restoration, might jump if many replacements added before cursor
+                        // Better to not auto-replace if user is currently typing the [[ ]] themselves to avoid interference
+                        this.clauseTextEditor.setSelectionRange(start, end);
+                    }
+                }
+
+                set.text = val;
                 this.saveData();
                 this.renderClauseView(set);
             };
