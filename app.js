@@ -1686,110 +1686,120 @@ class QuizApp {
         const canvas = document.getElementById('srsProjectionChart');
         if (!canvas) return;
 
-        const now = new Date();
-        const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-        const endOfThreeMonths = new Date(now.getFullYear(), now.getMonth() + 3, 0);
-
-        // Prepare date labels and data map
-        const labels = [];
-        const dataMap = {};
-        const formatDateStr = (d) => {
-            return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-        };
-
-        const todayStr = formatDateStr(now);
-
-        let iter = new Date(startOfThisMonth);
-        while (iter <= endOfThreeMonths) {
-            const dateStr = formatDateStr(iter);
-            labels.push(dateStr);
-            dataMap[dateStr] = 0;
-            iter.setDate(iter.getDate() + 1);
+        if (typeof Chart === 'undefined') {
+            console.error("Chart.js is not loaded.");
+            canvas.style.display = 'none';
+            return;
         }
 
-        // Aggregate SRS data
-        Object.entries(this.questionStats).forEach(([key, s]) => {
-            if (!s.nextReview) return;
-            // Ignore individual blanks to avoid overcounting (same logic as dueCount)
-            if (key.startsWith('clause-') && !key.startsWith('clause-summary-')) return;
+        try {
+            const now = new Date();
+            const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+            const endOfThreeMonths = new Date(now.getFullYear(), now.getMonth() + 3, 0);
 
-            const reviewDate = new Date(s.nextReview);
-            const reviewDateStr = formatDateStr(reviewDate);
+            // Prepare date labels and data map
+            const labels = [];
+            const dataMap = {};
+            const formatDateStr = (d) => {
+                return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+            };
 
-            const reviewTime = reviewDate.setHours(0, 0, 0, 0);
-            const nowTime = new Date(now).setHours(0, 0, 0, 0);
+            const todayStr = formatDateStr(now);
 
-            if (reviewTime <= nowTime) {
-                // Past or today = Today
-                if (dataMap[todayStr] !== undefined) dataMap[todayStr]++;
-            } else if (dataMap[reviewDateStr] !== undefined) {
-                // Future within range
-                dataMap[reviewDateStr]++;
+            let iter = new Date(startOfThisMonth);
+            while (iter <= endOfThreeMonths) {
+                const dateStr = formatDateStr(iter);
+                labels.push(dateStr);
+                dataMap[dateStr] = 0;
+                iter.setDate(iter.getDate() + 1);
             }
-        });
 
-        const data = labels.map(label => dataMap[label]);
-        const formattedLabels = labels.map(label => {
-            const d = new Date(label);
-            return (d.getMonth() + 1) + '/' + d.getDate();
-        });
+            // Aggregate SRS data
+            Object.entries(this.questionStats).forEach(([key, s]) => {
+                if (!s.nextReview) return;
+                // Ignore individual blanks to avoid overcounting (same logic as dueCount)
+                if (key.startsWith('clause-') && !key.startsWith('clause-summary-')) return;
 
-        if (this.srsProjectionChart) {
-            this.srsProjectionChart.destroy();
-        }
+                const reviewDate = new Date(s.nextReview);
+                const reviewDateStr = formatDateStr(reviewDate);
 
-        const ctx = canvas.getContext('2d');
-        this.srsProjectionChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: formattedLabels,
-                datasets: [{
-                    label: '復習予定数',
-                    data: data,
-                    backgroundColor: labels.map(l => l === todayStr ? 'rgba(76, 201, 240, 0.8)' : 'rgba(76, 201, 240, 0.4)'),
-                    borderColor: 'var(--accent)',
-                    borderWidth: 1,
-                    borderRadius: 4,
-                    hoverBackgroundColor: 'var(--accent)'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        callbacks: {
-                            title: (items) => {
-                                const idx = items[0].dataIndex;
-                                return labels[idx].replace(/-/g, '/');
-                            },
-                            label: (item) => `予定: ${item.raw} 問`
-                        }
-                    }
+                const reviewTime = reviewDate.setHours(0, 0, 0, 0);
+                const nowTime = new Date(now).setHours(0, 0, 0, 0);
+
+                if (reviewTime <= nowTime) {
+                    // Past or today = Today
+                    if (dataMap[todayStr] !== undefined) dataMap[todayStr]++;
+                } else if (dataMap[reviewDateStr] !== undefined) {
+                    // Future within range
+                    dataMap[reviewDateStr]++;
+                }
+            });
+
+            const data = labels.map(label => dataMap[label]);
+            const formattedLabels = labels.map(label => {
+                const d = new Date(label);
+                return (d.getMonth() + 1) + '/' + d.getDate();
+            });
+
+            if (this.srsProjectionChart) {
+                this.srsProjectionChart.destroy();
+            }
+
+            const ctx = canvas.getContext('2d');
+            this.srsProjectionChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: formattedLabels,
+                    datasets: [{
+                        label: '復習予定数',
+                        data: data,
+                        backgroundColor: labels.map(l => l === todayStr ? 'rgba(76, 201, 240, 0.8)' : 'rgba(76, 201, 240, 0.4)'),
+                        borderColor: 'var(--accent)',
+                        borderWidth: 1,
+                        borderRadius: 4,
+                        hoverBackgroundColor: 'var(--accent)'
+                    }]
                 },
-                scales: {
-                    x: {
-                        grid: { display: false },
-                        ticks: {
-                            color: 'rgba(255,255,255,0.5)',
-                            font: { size: 10 },
-                            maxRotation: 0,
-                            autoSkip: true,
-                            maxTicksLimit: 15
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                title: (items) => {
+                                    const idx = items[0].dataIndex;
+                                    return labels[idx].replace(/-/g, '/');
+                                },
+                                label: (item) => `予定: ${item.raw} 問`
+                            }
                         }
                     },
-                    y: {
-                        beginAtZero: true,
-                        grid: { color: 'rgba(255,255,255,0.05)' },
-                        ticks: {
-                            color: 'rgba(255,255,255,0.5)',
-                            stepSize: 1
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: {
+                                color: 'rgba(255,255,255,0.5)',
+                                font: { size: 10 },
+                                maxRotation: 0,
+                                autoSkip: true,
+                                maxTicksLimit: 15
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: {
+                                color: 'rgba(255,255,255,0.5)',
+                                stepSize: 1
+                            }
                         }
                     }
                 }
-            }
-        });
+            });
+        } catch (e) {
+            console.error("Error rendering SRS projection chart:", e);
+        }
     }
 
 
