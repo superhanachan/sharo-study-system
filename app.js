@@ -1319,6 +1319,7 @@ class QuizApp {
             // Only set value if not focused to avoid cursor jumping
             if (this.clauseTextEditor && document.activeElement !== this.clauseTextEditor) {
                 this.clauseTextEditor.value = set.text || '';
+                this.prevClauseText = set.text || '';
             }
             if (this.clauseDummiesEditor && document.activeElement !== this.clauseDummiesEditor) {
                 this.clauseDummiesEditor.value = (set.dummies || []).join(', ');
@@ -1329,34 +1330,45 @@ class QuizApp {
                 const start = this.clauseTextEditor.selectionStart;
                 const end = this.clauseTextEditor.selectionEnd;
 
-                // Find phrases in [[ ]]
-                const matches = val.match(/\[\[(.*?)\]\]/g);
-                if (matches) {
-                    let changed = false;
-                    const uniqueKeywords = [...new Set(matches.map(m => m.slice(2, -2)))].filter(k => k.length > 0);
+                const getKeywords = (text) => {
+                    const matches = text.match(/\[\[(.*?)\]\]/g) || [];
+                    return new Set(matches.map(m => m.slice(2, -2)).filter(k => k.length > 0));
+                };
 
-                    uniqueKeywords.forEach(keyword => {
-                        // Look for instances of keyword NOT surrounded by [[ ]]
-                        // Use negative lookbehind/lookahead if supported, or simpler regex approach
-                        const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                        // Match keyword only if not inside [[ ]]
-                        const regex = new RegExp(`(?<!\\[\\[)${escaped}(?!\\]\\])`, 'g');
+                const prevKeywords = getKeywords(this.prevClauseText || '');
+                const currKeywords = getKeywords(val);
 
-                        if (regex.test(val)) {
-                            // If the change happens before or at the cursor, we'll need to adjust cursor
-                            val = val.replace(regex, `[[${keyword}]]`);
-                            changed = true;
-                        }
-                    });
+                let changed = false;
 
-                    if (changed) {
-                        this.clauseTextEditor.value = val;
-                        // Restore cursor - note: simplistic restoration, might jump if many replacements added before cursor
-                        // Better to not auto-replace if user is currently typing the [[ ]] themselves to avoid interference
-                        this.clauseTextEditor.setSelectionRange(start, end);
+                // 1. Handle Added Keywords: If a new keyword appears, tag all its instances
+                const added = [...currKeywords].filter(k => !prevKeywords.has(k));
+                added.forEach(keyword => {
+                    const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                    const regex = new RegExp(`(?<!\\[\\[)${escaped}(?!\\]\\])`, 'g');
+                    if (regex.test(val)) {
+                        val = val.replace(regex, `[[${keyword}]]`);
+                        changed = true;
                     }
+                });
+
+                // 2. Handle Removed Keywords: If a keyword is gone from [[ ]], untag it everywhere
+                // This happens when the user breaks a [[ ]] tag.
+                const removed = [...prevKeywords].filter(k => !currKeywords.has(k));
+                removed.forEach(keyword => {
+                    const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                    const regex = new RegExp(`\\[\\[${escaped}\\]\\]`, 'g');
+                    if (regex.test(val)) {
+                        val = val.replace(regex, keyword);
+                        changed = true;
+                    }
+                });
+
+                if (changed) {
+                    this.clauseTextEditor.value = val;
+                    this.clauseTextEditor.setSelectionRange(start, end);
                 }
 
+                this.prevClauseText = val;
                 set.text = val;
                 this.saveData();
                 this.renderClauseView(set);
