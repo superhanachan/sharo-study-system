@@ -1697,9 +1697,14 @@ class QuizApp {
             const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
             const endOfThreeMonths = new Date(now.getFullYear(), now.getMonth() + 3, 0);
 
-            // Prepare date labels and data map
+            // Prepare data buckets
+            const datasets = {
+                low: { label: '未熟 (Lv0-2)', data: {}, color: 'rgba(255, 107, 107, 0.7)', border: '#ff6b6b' },
+                mid: { label: '成長 (Lv3-5)', data: {}, color: 'rgba(76, 201, 240, 0.7)', border: '#4cc9f0' },
+                high: { label: '習熟 (Lv6+)', data: {}, color: 'rgba(6, 214, 160, 0.7)', border: '#06d6a0' }
+            };
+
             const labels = [];
-            const dataMap = {};
             const formatDateStr = (d) => {
                 return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
             };
@@ -1710,32 +1715,35 @@ class QuizApp {
             while (iter <= endOfThreeMonths) {
                 const dateStr = formatDateStr(iter);
                 labels.push(dateStr);
-                dataMap[dateStr] = 0;
+                datasets.low.data[dateStr] = 0;
+                datasets.mid.data[dateStr] = 0;
+                datasets.high.data[dateStr] = 0;
                 iter.setDate(iter.getDate() + 1);
             }
 
-            // Aggregate SRS data
+            // Aggregate SRS data by level
             Object.entries(this.questionStats).forEach(([key, s]) => {
                 if (!s.nextReview) return;
-                // Ignore individual blanks to avoid overcounting (same logic as dueCount)
                 if (key.startsWith('clause-') && !key.startsWith('clause-summary-')) return;
+
+                const level = s.srsLevel || 0;
+                let bucket = 'low';
+                if (level >= 6) bucket = 'high';
+                else if (level >= 3) bucket = 'mid';
 
                 const reviewDate = new Date(s.nextReview);
                 const reviewDateStr = formatDateStr(reviewDate);
-
-                const reviewTime = reviewDate.setHours(0, 0, 0, 0);
+                const reviewTime = new Date(reviewDate).setHours(0, 0, 0, 0);
                 const nowTime = new Date(now).setHours(0, 0, 0, 0);
 
-                if (reviewTime <= nowTime) {
-                    // Past or today = Today
-                    if (dataMap[todayStr] !== undefined) dataMap[todayStr]++;
-                } else if (dataMap[reviewDateStr] !== undefined) {
-                    // Future within range
-                    dataMap[reviewDateStr]++;
+                let targetDate = reviewDateStr;
+                if (reviewTime <= nowTime) targetDate = todayStr;
+
+                if (datasets[bucket].data[targetDate] !== undefined) {
+                    datasets[bucket].data[targetDate]++;
                 }
             });
 
-            const data = labels.map(label => dataMap[label]);
             const formattedLabels = labels.map(label => {
                 const d = new Date(label);
                 return (d.getMonth() + 1) + '/' + d.getDate();
@@ -1750,33 +1758,44 @@ class QuizApp {
                 type: 'bar',
                 data: {
                     labels: formattedLabels,
-                    datasets: [{
-                        label: '復習予定数',
-                        data: data,
-                        backgroundColor: labels.map(l => l === todayStr ? 'rgba(76, 201, 240, 0.8)' : 'rgba(76, 201, 240, 0.4)'),
-                        borderColor: 'var(--accent)',
+                    datasets: Object.keys(datasets).map(key => ({
+                        label: datasets[key].label,
+                        data: labels.map(l => datasets[key].data[l]),
+                        backgroundColor: labels.map(l => l === todayStr ? datasets[key].color.replace('0.7', '0.9') : datasets[key].color),
+                        borderColor: datasets[key].border,
                         borderWidth: 1,
-                        borderRadius: 4,
-                        hoverBackgroundColor: 'var(--accent)'
-                    }]
+                        stack: 'srs'
+                    }))
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { display: false },
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            align: 'end',
+                            labels: {
+                                color: 'rgba(255,255,255,0.7)',
+                                boxWidth: 12,
+                                font: { size: 10 }
+                            }
+                        },
                         tooltip: {
+                            mode: 'index',
+                            intersect: false,
                             callbacks: {
                                 title: (items) => {
                                     const idx = items[0].dataIndex;
                                     return labels[idx].replace(/-/g, '/');
                                 },
-                                label: (item) => `予定: ${item.raw} 問`
+                                label: (item) => `${item.dataset.label}: ${item.raw} 問`
                             }
                         }
                     },
                     scales: {
                         x: {
+                            stacked: true,
                             grid: { display: false },
                             ticks: {
                                 color: 'rgba(255,255,255,0.5)',
@@ -1787,11 +1806,12 @@ class QuizApp {
                             }
                         },
                         y: {
+                            stacked: true,
                             beginAtZero: true,
                             grid: { color: 'rgba(255,255,255,0.05)' },
                             ticks: {
                                 color: 'rgba(255,255,255,0.5)',
-                                stepSize: 1
+                                stepSize: 5 // Better for larger counts
                             }
                         }
                     }
