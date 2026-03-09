@@ -670,7 +670,13 @@ class QuizApp {
 
     normalizeInput(str) {
         if (!str) return "";
-        return str.toString().trim().toLowerCase().replace(/[！-～]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xfee0));
+        // Convert to string, replace full-width spaces with standard ones, then trim and lowercase
+        // Also convert full-width alphanumeric to half-width
+        return str.toString()
+            .replace(/\u3000/g, ' ')
+            .trim()
+            .toLowerCase()
+            .replace(/[！-～]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xfee0));
     }
 
     /**
@@ -722,10 +728,17 @@ class QuizApp {
         if (!this.autoFillEnabled) return false;
         let stat = this.questionStats[statKey];
 
-        // Fallback: lookup summary if single stat missing
+        // Fallback: If specific stat is missing or hasn't reached threshold, check parent summary
         if (!stat) {
             if (statKey.startsWith('clause-summary-')) {
                 stat = this.questionStats[statKey.replace('clause-summary-', '')];
+            } else if (statKey.startsWith('clause-')) {
+                // Extract base ID from clause-BASE-IDX
+                const parts = statKey.split('-');
+                if (parts.length >= 3) {
+                    const baseId = parts.slice(1, -1).join('-');
+                    stat = this.questionStats[`clause-summary-${baseId}`];
+                }
             } else {
                 stat = this.questionStats[`clause-summary-${statKey}`];
             }
@@ -1168,7 +1181,7 @@ class QuizApp {
                     let rowAnsweredBlanks = 0;
                     keywordData.forEach((kwInfo, idx) => {
                         const val = this.userAnswers[`${q.id}-${idx}`];
-                        if (!val && kwInfo.type === 'drag') return;
+                        if (!val) return; // Skip empty answers for both drag and input types
                         rowAnsweredBlanks++;
                         const isKwCorrect = kwInfo.type === 'drag'
                             ? val === kwInfo.text
@@ -1503,7 +1516,7 @@ class QuizApp {
         container.className = 'clause-container';
 
         // Add history graph button if stats exist
-        const summaryKey = `clause-summary-${set.id}`;
+        const summaryKey = this.getSummaryStatKey(set.id, 'clause');
         if (this.questionStats[summaryKey] && !this.isEditMode) {
             const historyBtn = document.createElement('button');
             historyBtn.className = 'clause-history-btn';
@@ -1569,7 +1582,7 @@ class QuizApp {
                 blank.className = 'clause-blank';
                 blank.id = `blank-${currentIdx}`;
 
-                const statKey = `clause-${set.id}-${currentIdx}`;
+                const statKey = this.getBlankStatKey(set.id, currentIdx);
                 const autoFilled = !this.isChecked && !this.userAnswers[`${set.id}-${currentIdx}`] && this.shouldAutoFill(statKey);
                 if (autoFilled) {
                     this.userAnswers[`${set.id}-${currentIdx}`] = kwInfo.text;
@@ -1645,7 +1658,7 @@ class QuizApp {
                 input.className = 'clause-input-blank';
                 input.id = `input-${currentIdx}`;
 
-                const statKey = `clause-${set.id}-${currentIdx}`;
+                const statKey = this.getBlankStatKey(set.id, currentIdx);
                 const autoFilled = !this.isChecked && !this.userAnswers[`${set.id}-${currentIdx}`] && this.shouldAutoFill(statKey);
                 if (autoFilled) {
                     this.userAnswers[`${set.id}-${currentIdx}`] = kwInfo.text;
@@ -2578,7 +2591,7 @@ class QuizApp {
                 placeholders.forEach((placeholder) => {
                     const currentBlankIdx = parseInt(placeholder.dataset.idx);
                     const kwInfo = rowKeywords[currentBlankIdx];
-                    const statKey = `clause-${q.id}-${currentBlankIdx}`;
+                    const statKey = this.getBlankStatKey(q.id, currentBlankIdx);
 
                     const shouldFill = this.shouldAutoFill(statKey);
                     const isAlreadyFilled = !!this.userAnswers[`${q.id}-${currentBlankIdx}`];
@@ -2749,7 +2762,8 @@ class QuizApp {
 
             if (q.type !== 'clause') {
                 // Auto-fill logic for standard selection questions
-                if (!this.isChecked && !this.userAnswers[q.id] && this.shouldAutoFill(q.id)) {
+                const autoStatKey = this.getSummaryStatKey(q.id, 'page');
+                if (!this.isChecked && !this.userAnswers[q.id] && this.shouldAutoFill(autoStatKey)) {
                     this.userAnswers[q.id] = q.answer;
                 }
 
