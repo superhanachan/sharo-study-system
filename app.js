@@ -1756,8 +1756,22 @@ class QuizApp {
         };
         const todayStr = formatDateStr(now);
 
+        // Map for fast pool check (setId -> isInPool, qId -> setId)
+        const inPoolSets = new Set();
+        const qToSet = new Map();
+        this.quizData.forEach(set => {
+            if (set.isInPool !== false) inPoolSets.add(set.id);
+            if (set.questions) set.questions.forEach(q => qToSet.set(q.id, set.id));
+        });
+
+        const isStatInActivePool = (key) => {
+            if (key.startsWith('clause-summary-')) return inPoolSets.has(key.replace('clause-summary-', ''));
+            if (qToSet.has(key)) return inPoolSets.has(qToSet.get(key));
+            return inPoolSets.has(key);
+        };
+
         const dueTodayTotal = Object.entries(this.questionStats).filter(([key, s]) => {
-            if (!s.nextReview) return false;
+            if (!s.nextReview || !isStatInActivePool(key)) return false;
             if (key.startsWith('clause-') && !key.startsWith('clause-summary-')) return false;
             const reviewDate = new Date(s.nextReview);
             return formatDateStr(reviewDate) <= todayStr;
@@ -1765,7 +1779,7 @@ class QuizApp {
 
         // Current Due NOW (for the active learning buttons)
         const dueCount = Object.entries(this.questionStats).filter(([key, s]) => {
-            if (!s.nextReview) return false;
+            if (!s.nextReview || !isStatInActivePool(key)) return false;
             if (key.startsWith('clause-') && !key.startsWith('clause-summary-')) return false;
             return new Date(s.nextReview) <= now;
         }).length;
@@ -1776,7 +1790,7 @@ class QuizApp {
         const tomorrowStr = formatDateStr(tomorrow);
 
         const tomorrowSpecificCount = Object.entries(this.questionStats).filter(([key, s]) => {
-            if (!s.nextReview) return false;
+            if (!s.nextReview || !isStatInActivePool(key)) return false;
             if (key.startsWith('clause-') && !key.startsWith('clause-summary-')) return false;
             return formatDateStr(new Date(s.nextReview)) === tomorrowStr;
         }).length;
@@ -2036,7 +2050,7 @@ class QuizApp {
 
             if (stat.nextReview && new Date(stat.nextReview) <= now) {
                 const found = findQuestion(id);
-                if (found) {
+                if (found && found.set.isInPool !== false) {
                     due.push({
                         id,
                         type: found.set.type === 'clause' ? 'clause' : 'page',
@@ -3093,6 +3107,7 @@ class QuizApp {
 
         this.saveData();
         this.renderTOC();
+        this.updateDashboard();
     }
 
     clearAllPoolSelections() {
@@ -3102,6 +3117,7 @@ class QuizApp {
         });
         this.saveData();
         this.renderTOC();
+        this.updateDashboard();
     }
 
     selectAllPoolSelections() {
@@ -3111,6 +3127,7 @@ class QuizApp {
         });
         this.saveData();
         this.renderTOC();
+        this.updateDashboard();
     }
 
     isItemSelectedForPool(itemId) {
