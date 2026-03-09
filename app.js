@@ -2633,6 +2633,11 @@ class QuizApp {
             tr.appendChild(tdQ);
 
             if (q.type !== 'clause') {
+                // Auto-fill logic for standard selection questions
+                if (!this.isChecked && !this.userAnswers[q.id] && this.shouldAutoFill(q.id)) {
+                    this.userAnswers[q.id] = q.answer;
+                }
+
                 if (isAuto && q._autoKeywords && !this.isChecked) {
                     tr.dataset.keywords = JSON.stringify(q._autoKeywords);
                     tr.dataset.requiredCounts = JSON.stringify(q._autoRequired);
@@ -2662,11 +2667,16 @@ class QuizApp {
                         const userAnswer = this.userAnswers[q.id];
                         const isSelected = isQMulti ? (Array.isArray(userAnswer) && userAnswer.includes(colLabel)) : (userAnswer === colLabel);
 
+                        const isAutoFilledAttempt = !this.isChecked && this.shouldAutoFill(q.id);
+
                         if (this.isChecked) {
                             const isCorrectAnswer = isQMulti ? (Array.isArray(q.answer) && q.answer.includes(colLabel)) : (q.answer === colLabel);
                             if (isCorrectAnswer) td.classList.add('correct');
                             else if (isSelected) td.classList.add('wrong');
-                        } else if (isSelected) td.classList.add('selected');
+                        } else if (isSelected) {
+                            td.classList.add('selected');
+                            if (isAutoFilledAttempt) td.classList.add('auto-filled');
+                        }
                     }
 
                     td.onclick = () => {

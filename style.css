@@ -1852,6 +1852,13 @@ tr {
     background: rgba(76, 201, 240, 0.05) !important;
 }
 
+.choice-cell.auto-filled {
+    border: 1px dotted var(--accent) !important;
+    color: var(--accent) !important;
+    background: rgba(76, 201, 240, 0.05) !important;
+    font-style: italic;
+}
+
 .reveal-correct {
     font-size: 0.85rem;
     color: var(--success);
