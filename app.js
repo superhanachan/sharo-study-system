@@ -654,32 +654,18 @@ class QuizApp {
         });
     }
 
-    updateSRS(stat, isCorrect) {
-        if (!stat) return;
-        if (stat.srsLevel === undefined) stat.srsLevel = 0;
-        if (!stat.history) stat.history = [];
-
-        // Record attempt
-        stat.history.push({
-            date: new Date().toISOString(),
-            isCorrect: isCorrect,
-            level: stat.srsLevel
+    extractKeywords(text) {
+        if (!text) return [];
+        const keywordData = [];
+        const parts = text.split(/(\[\[.*?\]\]|［［.*?］］|\(\(.*?\)\)|（（.*?））)/g);
+        parts.forEach(part => {
+            if ((part.startsWith('[[') && part.endsWith(']]')) || (part.startsWith('［［') && part.endsWith('］］'))) {
+                keywordData.push({ text: part.substring(2, part.length - 2), type: 'drag' });
+            } else if ((part.startsWith('((') && part.endsWith('))')) || (part.startsWith('（（') && part.endsWith('））'))) {
+                keywordData.push({ text: part.substring(2, part.length - 2), type: 'input' });
+            }
         });
-        if (stat.history.length > 20) stat.history.shift();
-
-        if (isCorrect) {
-            stat.srsLevel = Math.min(stat.srsLevel + 1, SRS_INTERVALS.length - 1);
-        } else {
-            // Drop 2 levels on mistake, but keep at least 0
-            stat.srsLevel = Math.max(0, stat.srsLevel - 2);
-        }
-
-        const days = SRS_INTERVALS[stat.srsLevel];
-        const nextDate = new Date();
-        nextDate.setDate(nextDate.getDate() + days);
-        // Reset to beginning of day for simpler comparison (optional, but good for "daily" review)
-        nextDate.setHours(0, 0, 0, 0);
-        stat.nextReview = nextDate.toISOString();
+        return keywordData;
     }
 
     normalizeInput(str) {
