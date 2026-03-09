@@ -148,23 +148,27 @@ class QuizApp {
             const cleanedStats = {};
             const allIds = new Set();
             this.quizData.forEach(set => {
-                if (set.type === 'page' && set.questions) {
+                const type = set.type || 'page';
+                if (type === 'page' && set.questions) {
                     set.questions.forEach(q => {
-                        allIds.add(q.id);
-                        // Also add summary key for clauses in tables
-                        allIds.add(`clause-summary-${q.id}`);
-                        // Important: Count ALL types of blanks for reachable ID check
-                        const blankCount = this.extractKeywords(q.text).length;
-                        for (let i = 0; i < blankCount; i++) {
-                            allIds.add(`clause-${q.id}-${i}`);
+                        const baseId = this.getQuestionBaseId(q.id);
+                        allIds.add(baseId);
+                        allIds.add(`clause-summary-${baseId}`);
+
+                        // Detect if row has blanks even if not type clause
+                        if (q.type === 'clause' || /\[\[|［［|\(\(|（（/.test(q.text || '')) {
+                            const kwCount = this.extractKeywords(q.text).length;
+                            for (let i = 0; i < kwCount; i++) {
+                                allIds.add(`clause-${baseId}-${i}`);
+                            }
                         }
                     });
-                } else if (set.type === 'clause' && set.text) {
-                    // Include summary ID and individual IDs for each blank
-                    allIds.add(`clause-summary-${set.id}`);
-                    const blankCount = this.extractKeywords(set.text).length;
-                    for (let i = 0; i < blankCount; i++) {
-                        allIds.add(`clause-${set.id}-${i}`);
+                } else if (type === 'clause' && set.text) {
+                    const baseId = this.getQuestionBaseId(set.id);
+                    allIds.add(`clause-summary-${baseId}`);
+                    const kwCount = this.extractKeywords(set.text).length;
+                    for (let i = 0; i < kwCount; i++) {
+                        allIds.add(`clause-${baseId}-${i}`);
                     }
                 }
             });
@@ -172,19 +176,15 @@ class QuizApp {
             let hasWiped = false;
             Object.keys(this.questionStats).forEach(key => {
                 // Determine base ID to check if it's still reachable
-                let baseId = this.getQuestionBaseId(key);
-                let isReachable = allIds.has(key) || allIds.has(baseId);
-
-                if (!isReachable && key.startsWith('clause-')) {
-                    // Try to extract ID from clause-ID-index
+                let baseId = key;
+                if (key.startsWith('clause-summary-')) baseId = key.replace('clause-summary-', '');
+                else if (key.startsWith('clause-')) {
                     const parts = key.split('-');
-                    if (parts.length >= 3) {
-                        const midId = parts.slice(1, -1).join('-');
-                        if (allIds.has(midId)) isReachable = true;
-                    }
+                    // e.g. clause-p-123-0 -> baseId = p-123
+                    if (parts.length >= 3) baseId = parts.slice(1, -1).join('-');
                 }
 
-                if (isReachable) {
+                if (allIds.has(baseId) || allIds.has(key)) {
                     cleanedStats[key] = this.questionStats[key];
                     // Initialize recent history for older data
                     if (!cleanedStats[key].recent) {
@@ -196,9 +196,11 @@ class QuizApp {
                         for (let i = 0; i < count; i++) r.push(i < recentCorrect ? 1 : 0);
                         cleanedStats[key].recent = r;
                     }
+                    // Initialize SRS fields
                     if (cleanedStats[key].srsLevel === undefined) cleanedStats[key].srsLevel = 0;
 
-                    // Only Summaries or regular Questions should have a review schedule.
+                    // CRITICAL: Only Summaries or regular Questions should have a review schedule.
+                    // Clear nextReview from individual blanks (clause-ID-index) to prevent overcounting.
                     const isBlankStat = key.startsWith('clause-') && !key.startsWith('clause-summary-');
                     if (isBlankStat) {
                         cleanedStats[key].nextReview = null;
@@ -583,6 +585,10 @@ class QuizApp {
 
     loadData() { const saved = localStorage.getItem('sharoQuizData'); return saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(DEFAULT_QUIZ_DATA)); }
     saveData() {
+        if (!this.quizData || this.quizData.length === 0) {
+            console.error("Attempted to save empty quiz data. Aborting save for safety.");
+            return;
+        }
         this.pruneData();
         const dataStr = JSON.stringify(this.quizData);
         localStorage.setItem('sharoQuizData', dataStr);
@@ -600,16 +606,36 @@ class QuizApp {
     saveQuestionStats() { this.pruneData(); localStorage.setItem('sharoQuestionStats', JSON.stringify(this.questionStats)); }
 
     pruneData() {
-        if (!this.quizData) return;
+        if (!this.quizData || this.quizData.length === 0) return;
         const validIds = new Set();
+
         const walk = (items) => {
             items.forEach(item => {
-                if (item.type === 'clause') {
-                    validIds.add(`clause-summary-${item.id}`);
+                const type = item.type || 'page';
+                const baseId = this.getQuestionBaseId(item.id);
+
+                if (type === 'clause' && item.text) {
+                    validIds.add(`clause-summary-${baseId}`);
+                    const kwCount = this.extractKeywords(item.text).length;
+                    for (let i = 0; i < kwCount; i++) {
+                        validIds.add(`clause-${baseId}-${i}`);
+                    }
+                } else if (type === 'page' && item.questions) {
+                    item.questions.forEach(q => {
+                        const qBaseId = this.getQuestionBaseId(q.id);
+                        validIds.add(qBaseId);
+                        validIds.add(`clause-summary-${qBaseId}`);
+
+                        // Detect if row has blanks
+                        if (q.type === 'clause' || /\[\[|［［|\(\(|（（/.test(q.text || '')) {
+                            const kwCount = this.extractKeywords(q.text).length;
+                            for (let i = 0; i < kwCount; i++) {
+                                validIds.add(`clause-${qBaseId}-${i}`);
+                            }
+                        }
+                    });
                 }
-                if (item.questions) {
-                    item.questions.forEach(q => validIds.add(q.id));
-                }
+
                 if (item.children) walk(item.children);
             });
         };
@@ -661,36 +687,48 @@ class QuizApp {
         return str.toString().trim().toLowerCase().replace(/[！-～]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xfee0));
     }
 
-    // --- Fundamental Auto-Fill & Stat Helpers ---
-
     /**
-     * Get the base ID for a question or set, stripping auto-gen prefixes.
+     * Spaced Repetition logic
      */
-    getQuestionBaseId(qOrSetId) {
-        if (!qOrSetId) return "";
-        let id = qOrSetId.toString();
-        // Remove known auto-gen prefixes/tags used in review modes
-        id = id.replace(/^clause-summary-/, "");
-        id = id.replace(/^auto-due-review-clause-/, "");
-        id = id.replace(/^auto-/, "");
-        if (id === 'temp-autogen') return id; // Special case for random/rare
-        return id;
+    updateSRS(stat, isCorrect) {
+        if (!stat) return;
+        if (stat.srsLevel === undefined) stat.srsLevel = 0;
+        if (!stat.history) stat.history = [];
+
+        // Record attempt
+        stat.history.push({
+            date: new Date().toISOString(),
+            isCorrect: isCorrect,
+            level: stat.srsLevel
+        });
+        if (stat.history.length > 20) stat.history.shift();
+
+        if (isCorrect) {
+            stat.srsLevel = Math.min(stat.srsLevel + 1, SRS_INTERVALS.length - 1);
+        } else {
+            // Drop 2 levels on mistake, but keep at least 0
+            stat.srsLevel = Math.max(0, stat.srsLevel - 2);
+        }
+
+        const days = SRS_INTERVALS[stat.srsLevel];
+        const nextDate = new Date();
+        nextDate.setDate(nextDate.getDate() + days);
+        nextDate.setHours(0, 0, 0, 0);
+        stat.nextReview = nextDate.toISOString();
     }
 
-    /**
-     * Consistent key for individual blank stats
-     */
-    getBlankStatKey(qId, blankIdx) {
+    getQuestionBaseId(id) {
+        if (!id) return null;
+        return id.replace(/^(weak|rare|random|srs-clause|srs-page)-/, '');
+    }
+
+    getBlankStatKey(qId, idx) {
         const baseId = this.getQuestionBaseId(qId);
-        return `clause-${baseId}-${blankIdx}`;
+        return `clause-${baseId}-${idx}`;
     }
 
-    /**
-     * Consistent key for overall question/page stats
-     */
     getSummaryStatKey(qId, type) {
         const baseId = this.getQuestionBaseId(qId);
-        // If it's a clause-style summary, use prefix, otherwise use baseId
         return type === 'clause' ? `clause-summary-${baseId}` : baseId;
     }
 
@@ -698,7 +736,7 @@ class QuizApp {
         if (!this.autoFillEnabled) return false;
         let stat = this.questionStats[statKey];
 
-        // Fallback: If not found, try stripping/adding clause-summary prefix
+        // Fallback: lookup summary if single stat missing
         if (!stat) {
             if (statKey.startsWith('clause-summary-')) {
                 stat = this.questionStats[statKey.replace('clause-summary-', '')];
@@ -707,23 +745,16 @@ class QuizApp {
             }
         }
 
-        // If threshold is 0, always fill if we have ANY data or even if new (per user request)
         if (this.autoFillThreshold <= 0) return true;
-
         if (!stat || !stat.recent || stat.recent.length === 0) return false;
 
-        // Check if last N (threshold) are all correct
         const threshold = Math.max(1, this.autoFillThreshold);
         const recent = stat.recent || [];
         if (recent.length < threshold) return false;
-
         const lastN = recent.slice(-threshold);
         return lastN.length === threshold && lastN.every(r => r === 1);
     }
 
-    /**
-     * Centralized logic to populate userAnswers with learned items
-     */
     applyAutoFill() {
         if (!this.autoFillEnabled || this.isChecked) return;
 
@@ -731,7 +762,6 @@ class QuizApp {
         if (!set || set.type === 'folder') return;
 
         if (set.type === 'clause') {
-            // Full page clause
             const keywordData = this.extractKeywords(set.text);
             keywordData.forEach((kw, idx) => {
                 const statKey = this.getBlankStatKey(set.id, idx);
@@ -740,24 +770,19 @@ class QuizApp {
                 }
             });
         } else if (set.questions) {
-            // Table-based quiz
             set.questions.forEach(q => {
                 if (q.type === 'clause' || /\[\[|［［|\(\(|（（/.test(q.text)) {
-                    // Row is a clause/mini-blank type
                     const keywordData = this.extractKeywords(q.text);
                     keywordData.forEach((kw, idx) => {
                         const cellKey = `${q.id}-${idx}`;
-                        if (this.userAnswers[cellKey]) return; // Don't overwrite manual input
-
+                        if (this.userAnswers[cellKey]) return;
                         const statKey = this.getBlankStatKey(q.id, idx);
                         if (this.shouldAutoFill(statKey)) {
                             this.userAnswers[cellKey] = kw.text;
                         }
                     });
                 } else {
-                    // Standard selection row
-                    if (this.userAnswers[q.id]) return; // Don't overwrite
-
+                    if (this.userAnswers[q.id]) return;
                     const statKey = this.getSummaryStatKey(q.id, 'page');
                     if (this.shouldAutoFill(statKey)) {
                         this.userAnswers[q.id] = q.answer;
@@ -766,143 +791,125 @@ class QuizApp {
             });
         }
     }
-}
 
-/**
- * Helper to extract keywords from bracketed text consistently
- */
-extractKeywords(text) {
-    const keywordData = [];
-    if (!text) return keywordData;
-    const parts = text.split(/(\[\[.*?\]\]|［［.*?］］|\(\(.*?\)\)|（（.*?））)/g);
-    parts.forEach(part => {
-        if ((part.startsWith('[[') && part.endsWith(']]')) || (part.startsWith('［［') && part.endsWith('］］'))) {
-            keywordData.push({ text: part.substring(2, part.length - 2), type: 'drag' });
-        } else if ((part.startsWith('((') && part.endsWith('))')) || (part.startsWith('（（') && part.endsWith('））'))) {
-            keywordData.push({ text: part.substring(2, part.length - 2), type: 'input' });
+    showSRSDetail(statKey) {
+        const stat = this.questionStats[statKey];
+        if (!stat) return;
+
+        this.srsModal.classList.remove('hidden');
+        this.srsModalTitle.textContent = `記憶定着の推移: ${stat.text.substring(0, 40)}${stat.text.length > 40 ? '...' : ''}`;
+
+        // Ensure history exists or reconstruct from recent for legacy data
+        let history = stat.history || [];
+        if (history.length === 0 && stat.recent && stat.recent.length > 0) {
+            history = stat.recent.map((isCorrect, i) => ({
+                date: new Date(Date.now() - (stat.recent.length - 1 - i) * 60000).toISOString(),
+                isCorrect: !!isCorrect
+            }));
+            // Persist the reconstructed history so it shows up next time and is synced
+            stat.history = history;
+            this.saveQuestionStats();
         }
-    });
-    return keywordData;
-}
 
-showSRSDetail(statKey) {
-    const stat = this.questionStats[statKey];
-    if (!stat) return;
+        const nextReview = stat.nextReview ? new Date(stat.nextReview) : null;
 
-    this.srsModal.classList.remove('hidden');
-    this.srsModalTitle.textContent = `記憶定着の推移: ${stat.text.substring(0, 40)}${stat.text.length > 40 ? '...' : ''}`;
+        const labels = history.map((h, i) => {
+            const d = new Date(h.date);
+            const dateStr = isNaN(d) ? '?' : (d.getMonth() + 1) + '/' + d.getDate();
+            return `${i + 1}回目 (${dateStr})`;
+        });
 
-    // Ensure history exists or reconstruct from recent for legacy data
-    let history = stat.history || [];
-    if (history.length === 0 && stat.recent && stat.recent.length > 0) {
-        history = stat.recent.map((isCorrect, i) => ({
-            date: new Date(Date.now() - (stat.recent.length - 1 - i) * 60000).toISOString(),
-            isCorrect: !!isCorrect
-        }));
-        // Persist the reconstructed history so it shows up next time and is synced
-        stat.history = history;
-        this.saveQuestionStats();
-    }
+        const data = history.map((h, index) => {
+            // 直近5回分（自分を含む）の正答率を計算
+            const start = Math.max(0, index - 4);
+            const window = history.slice(start, index + 1);
+            const correctInWindow = window.filter(x => x.isCorrect).length;
+            return Math.round((correctInWindow / window.length) * 100);
+        });
 
-    const nextReview = stat.nextReview ? new Date(stat.nextReview) : null;
+        const pointColors = history.map(h => h.isCorrect ? '#4ade80' : '#f72585');
 
-    const labels = history.map((h, i) => {
-        const d = new Date(h.date);
-        const dateStr = isNaN(d) ? '?' : (d.getMonth() + 1) + '/' + d.getDate();
-        return `${i + 1}回目 (${dateStr})`;
-    });
+        // 直近5回の正答率を取得（最新のデータから）
+        const recentAccuracy = data.length > 0 ? data[data.length - 1] : 0;
 
-    const data = history.map((h, index) => {
-        // 直近5回分（自分を含む）の正答率を計算
-        const start = Math.max(0, index - 4);
-        const window = history.slice(start, index + 1);
-        const correctInWindow = window.filter(x => x.isCorrect).length;
-        return Math.round((correctInWindow / window.length) * 100);
-    });
+        if (nextReview) {
+            labels.push(`次回 (${(nextReview.getMonth() + 1)}/${nextReview.getDate()})`);
+            data.push(recentAccuracy);
+            pointColors.push('#ffd166');
+        }
 
-    const pointColors = history.map(h => h.isCorrect ? '#4ade80' : '#f72585');
+        if (this.srsDetailChart) {
+            this.srsDetailChart.destroy();
+            this.srsDetailChart = null;
+        }
 
-    // 直近5回の正答率を取得（最新のデータから）
-    const recentAccuracy = data.length > 0 ? data[data.length - 1] : 0;
+        // Use a short delay to ensure canvas is ready and sized
+        setTimeout(() => {
+            const canvas = document.getElementById('srsDetailChart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
 
-    if (nextReview) {
-        labels.push(`次回 (${(nextReview.getMonth() + 1)}/${nextReview.getDate()})`);
-        data.push(recentAccuracy);
-        pointColors.push('#ffd166');
-    }
-
-    if (this.srsDetailChart) {
-        this.srsDetailChart.destroy();
-        this.srsDetailChart = null;
-    }
-
-    // Use a short delay to ensure canvas is ready and sized
-    setTimeout(() => {
-        const canvas = document.getElementById('srsDetailChart');
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-
-        this.srsDetailChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: '正答率 (%)',
-                    data: data,
-                    borderColor: '#4cc9f0',
-                    backgroundColor: 'rgba(76, 201, 240, 0.2)',
-                    fill: true,
-                    tension: 0.1, // Reduced tension to avoid weird curves with few points
-                    pointBackgroundColor: pointColors,
-                    pointRadius: 6,
-                    pointHoverRadius: 8,
-                    showLine: true
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    x: {
-                        grid: { color: 'rgba(255,255,255,0.05)' },
-                        ticks: { color: 'rgba(255,255,255,0.8)', font: { size: 10 } }
-                    },
-                    y: {
-                        beginAtZero: true,
-                        max: 100,
-                        grid: { color: 'rgba(255,255,255,0.05)' },
-                        ticks: {
-                            color: 'rgba(255,255,255,0.8)',
-                            stepSize: 20,
-                            callback: (value) => value + '%'
-                        }
-                    }
+            this.srsDetailChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '正答率 (%)',
+                        data: data,
+                        borderColor: '#4cc9f0',
+                        backgroundColor: 'rgba(76, 201, 240, 0.2)',
+                        fill: true,
+                        tension: 0.1, // Reduced tension to avoid weird curves with few points
+                        pointBackgroundColor: pointColors,
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        showLine: true
+                    }]
                 },
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        callbacks: {
-                            label: (context) => {
-                                const idx = context.dataIndex;
-                                if (idx < history.length) {
-                                    return `正答率: ${context.raw}% (${history[idx].isCorrect ? '正解' : '不正解'})`;
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: { color: 'rgba(255,255,255,0.8)', font: { size: 10 } }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: {
+                                color: 'rgba(255,255,255,0.8)',
+                                stepSize: 20,
+                                callback: (value) => value + '%'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => {
+                                    const idx = context.dataIndex;
+                                    if (idx < history.length) {
+                                        return `正答率: ${context.raw}% (${history[idx].isCorrect ? '正解' : '不正解'})`;
+                                    }
+                                    return `現在の正答率: ${context.raw}%`;
                                 }
-                                return `現在の正答率: ${context.raw}%`;
                             }
                         }
                     }
                 }
-            }
-        });
-    }, 100);
+            });
+        }, 100);
 
-    // Calculate recent accuracy from indices
-    const recentHistory = history.slice(-5);
-    const recentCorrect = recentHistory.filter(h => h.isCorrect).length;
-    const recentTotal = recentHistory.length;
-    const recentRate = recentTotal > 0 ? Math.round((recentCorrect / recentTotal) * 100) : 0;
+        // Calculate recent accuracy from indices
+        const recentHistory = history.slice(-5);
+        const recentCorrect = recentHistory.filter(h => h.isCorrect).length;
+        const recentTotal = recentHistory.length;
+        const recentRate = recentTotal > 0 ? Math.round((recentCorrect / recentTotal) * 100) : 0;
 
-    this.srsInfo.innerHTML = `
+        this.srsInfo.innerHTML = `
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 12px;">
                 <div>
                     <p><strong>現在の習熟度:</strong> Lv.${stat.srsLevel || 0}</p>
@@ -916,380 +923,417 @@ showSRSDetail(statKey) {
             <p style="margin-top: 0.5rem; opacity: 0.6; font-size: 0.75rem; text-align: right;">累計成績: ${stat.correct}/${stat.total} (${stat.total > 0 ? Math.round((stat.correct / stat.total) * 100) : 0}%)</p>
             <p style="margin-top: 1rem; opacity: 0.7; font-size: 0.8rem;">※グラフは直近5回分の移動平均を表示しています。 <span style="color:#4ade80">●</span> が正解、<span style="color:#f72585">●</span> が不正解です。</p>
         `;
-}
-
-
-switchView(view) {
-    // Toggle active classes based on view and current state
-    const isHome = view === 'quiz' && this.currentSetId === null;
-    const isQuiz = view === 'quiz' && this.currentSetId !== null;
-    const isStats = view === 'stats';
-
-    if (this.homeBtn) this.homeBtn.classList.toggle('active', isHome);
-    if (this.tabQuiz) this.tabQuiz.classList.toggle('active', isQuiz);
-    if (this.tabStats) this.tabStats.classList.toggle('active', isStats);
-
-    this.quizView.classList.toggle('hidden', view !== 'quiz');
-    this.statsView.classList.toggle('hidden', view !== 'stats');
-
-    if (view === 'stats') {
-        this.renderStats();
-        if (this.globalKeywordBank) this.globalKeywordBank.classList.add('hidden');
-    } else if (view === 'quiz') {
-        // Recalculate bank visibility when switching to quiz
-        setTimeout(() => this.activateFirstVisibleBank(), 100);
     }
-}
 
-loadSet(id) {
-    if (id === null) {
-        this.currentSetId = null;
-        if (this.quizTitle) this.quizTitle.textContent = "ホーム / 富士登山";
-        if (this.homeDashboard) this.homeDashboard.classList.remove('hidden');
-        if (this.quizArea) this.quizArea.classList.add('hidden');
-        this.updateActiveTOC(null);
+
+    switchView(view) {
+        // Toggle active classes based on view and current state
+        const isHome = view === 'quiz' && this.currentSetId === null;
+        const isQuiz = view === 'quiz' && this.currentSetId !== null;
+        const isStats = view === 'stats';
+
+        if (this.homeBtn) this.homeBtn.classList.toggle('active', isHome);
+        if (this.tabQuiz) this.tabQuiz.classList.toggle('active', isQuiz);
+        if (this.tabStats) this.tabStats.classList.toggle('active', isStats);
+
+        this.quizView.classList.toggle('hidden', view !== 'quiz');
+        this.statsView.classList.toggle('hidden', view !== 'stats');
+
+        if (view === 'stats') {
+            this.renderStats();
+            if (this.globalKeywordBank) this.globalKeywordBank.classList.add('hidden');
+        } else if (view === 'quiz') {
+            // Recalculate bank visibility when switching to quiz
+            setTimeout(() => this.activateFirstVisibleBank(), 100);
+        }
+    }
+
+    loadSet(id) {
+        if (id === null) {
+            this.currentSetId = null;
+            if (this.quizTitle) this.quizTitle.textContent = "ホーム / 富士登山";
+            if (this.homeDashboard) this.homeDashboard.classList.remove('hidden');
+            if (this.quizArea) this.quizArea.classList.add('hidden');
+            this.updateActiveTOC(null);
+            this.updateDashboard();
+            if (this.globalKeywordBank) {
+                this.globalKeywordBank.classList.add('hidden');
+                this.globalKeywordBank.classList.remove('active-bank');
+            }
+            this.switchView('quiz');
+            return;
+        }
+
+        const set = this.isAutoGenerated ? this.autoGeneratedSet : this.quizData.find(s => s.id === id);
+        if (!set || set.type === 'folder') return;
+
+        if (this.homeDashboard) this.homeDashboard.classList.add('hidden');
+        if (this.quizArea) this.quizArea.classList.remove('hidden');
+
+        this.currentSetId = id;
+        this.quizTitle.textContent = set.title;
+        this.updateTitleEditability();
+
+        this.resetQuiz();
+        this.renderTable();
+        this.updateActiveTOC(id);
         this.updateDashboard();
-        if (this.globalKeywordBank) {
-            this.globalKeywordBank.classList.add('hidden');
-            this.globalKeywordBank.classList.remove('active-bank');
-        }
+        this.switchView('quiz'); // Ensure tab active state updates
+    }
+
+    updateActiveTOC(id) {
+        const tocLinks = this.tocList.querySelectorAll('a');
+        tocLinks.forEach(a => {
+            const isActive = !this.isAutoGenerated && a.getAttribute('href') === `#${id}`;
+            a.classList.toggle('active', isActive);
+        });
+    }
+
+    updateTitleEditability() {
+        this.quizTitle.contentEditable = this.isEditMode && !this.isAutoGenerated;
+    }
+
+    navigateToQuestion(pageId) {
+        if (!pageId) return;
+        this.isAutoGenerated = false;
+        this.currentSetId = pageId;
         this.switchView('quiz');
-        return;
+        this.loadSet(pageId);
     }
 
-    const set = this.isAutoGenerated ? this.autoGeneratedSet : this.quizData.find(s => s.id === id);
-    if (!set || set.type === 'folder') return;
-
-    if (this.homeDashboard) this.homeDashboard.classList.add('hidden');
-    if (this.quizArea) this.quizArea.classList.remove('hidden');
-
-    this.currentSetId = id;
-    this.quizTitle.textContent = set.title;
-    this.updateTitleEditability();
-
-    this.resetQuiz();
-    this.renderTable();
-    this.updateActiveTOC(id);
-    this.updateDashboard();
-    this.switchView('quiz'); // Ensure tab active state updates
-}
-
-updateActiveTOC(id) {
-    const tocLinks = this.tocList.querySelectorAll('a');
-    tocLinks.forEach(a => {
-        const isActive = !this.isAutoGenerated && a.getAttribute('href') === `#${id}`;
-        a.classList.toggle('active', isActive);
-    });
-}
-
-updateTitleEditability() {
-    this.quizTitle.contentEditable = this.isEditMode && !this.isAutoGenerated;
-}
-
-navigateToQuestion(pageId) {
-    if (!pageId) return;
-    this.isAutoGenerated = false;
-    this.currentSetId = pageId;
-    this.switchView('quiz');
-    this.loadSet(pageId);
-}
-
-resetQuiz() {
-    this.isChecked = false;
-    this.userAnswers = {};
-    document.body.classList.remove('answers-revealed');
-    if (this.peekAnswersBtn) {
-        this.peekAnswersBtn.innerHTML = '👁️ 答えを表示する';
-        this.peekAnswersBtn.classList.remove('active');
-    }
-    this.shuffledCache = {};
-    this.selectedKeyword = null; // Reset selected keyword
-    this.scoreDisplay.textContent = "正解数: 0 / 0";
-    this.applyAutoFill(); // Population learned answers automatically
-    this.renderTable();
-}
-
-resetWrongAnswers() {
-    if (!this.isChecked) {
-        alert('答え合わせをした後に使用できます。');
-        return;
-    }
-
-    const set = this.isAutoGenerated ? this.autoGeneratedSet : this.quizData.find(s => s.id === this.currentSetId);
-    if (!set) return;
-
-    if (set.type === 'clause') {
-        const keywordData = this.extractKeywords(set.text);
-        keywordData.forEach((kwInfo, idx) => {
-            const key = `${set.id}-${idx}`;
-            const userAnswer = (this.userAnswers[key] || "").toString();
-            const isCorrect = kwInfo.type === 'drag'
-                ? userAnswer === kwInfo.text
-                : this.normalizeInput(userAnswer) === this.normalizeInput(kwInfo.text);
-
-            if (!isCorrect) {
-                delete this.userAnswers[key];
-            }
-        });
-    } else {
-        set.questions.forEach((q) => {
-            if (q.type === 'clause' || /\[\[|［［|\(\(|（（/.test(q.text)) {
-                const keywordData = this.extractKeywords(q.text);
-                keywordData.forEach((kwInfo, idx) => {
-                    const key = `${q.id}-${idx}`;
-                    const val = (this.userAnswers[key] || "").toString();
-                    if (val) {
-                        const isCorrect = kwInfo.type === 'drag'
-                            ? val === kwInfo.text
-                            : this.normalizeInput(val) === this.normalizeInput(kwInfo.text);
-                        if (!isCorrect) delete this.userAnswers[key];
-                    }
-                });
-            } else {
-                const userAnswer = this.userAnswers[q.id];
-                const isQMulti = this.isAutoGenerated ? q.isMultiSelect : set.isMultiSelect;
-                let isAllCorrect = false;
-                if (isQMulti) {
-                    const correctSet = new Set(q.answer);
-                    const userSet = new Set(userAnswer || []);
-                    isAllCorrect = (correctSet.size === userSet.size && [...correctSet].every(item => userSet.has(item)));
-                } else {
-                    isAllCorrect = userAnswer === q.answer;
-                }
-                if (!isAllCorrect) delete this.userAnswers[q.id];
-            }
-        });
-    }
-
-    this.isChecked = false; // Return to answering mode
-    this.renderTable();
-}
-
-batchCheckAnswers() {
-    if (this.isChecked) return;
-    const set = this.isAutoGenerated ? this.autoGeneratedSet : this.quizData.find(s => s.id === this.currentSetId);
-    let correctCount = 0; let answeredCount = 0;
-
-    if (set.type === 'clause') {
-        const keywordData = this.extractKeywords(set.text);
-        let allBlanksCorrect = true;
-        keywordData.forEach((kwInfo, idx) => {
-            const userAnswer = (this.userAnswers[`${set.id}-${idx}`] || "").toString();
-            if (!userAnswer && kwInfo.type === 'drag') {
-                allBlanksCorrect = false;
-                return;
-            }
-            answeredCount++;
-
-            const isCorrect = kwInfo.type === 'drag'
-                ? userAnswer === kwInfo.text
-                : this.normalizeInput(userAnswer) === this.normalizeInput(kwInfo.text);
-
-            if (isCorrect) correctCount++;
-            else allBlanksCorrect = false;
-
-            // Detailed stat per blank
-            const statKey = this.getBlankStatKey(set.id, idx);
-            if (!this.questionStats[statKey]) {
-                this.questionStats[statKey] = {
-                    correct: 0, total: 0, recent: [],
-                    page: set.title, pageId: set.id,
-                    text: `穴埋め: ${kwInfo.text}`
-                };
-            }
-            const stat = this.questionStats[statKey];
-            stat.total++;
-            if (isCorrect) stat.correct++;
-            if (!stat.recent) stat.recent = [];
-            stat.recent.push(isCorrect ? 1 : 0);
-            if (stat.recent.length > 20) stat.recent.shift();
-            stat.text = `穴埋め: ${kwInfo.text}`; stat.page = set.title;
-            this.updateSRS(stat, isCorrect);
-        });
-
-
-        // Summary stat for the whole clause
-        const summaryKey = this.getSummaryStatKey(set.id, 'clause');
-        if (!this.questionStats[summaryKey]) {
-            this.questionStats[summaryKey] = {
-                correct: 0, total: 0, recent: [],
-                page: set.title, pageId: set.id,
-                text: `条文全体: ${set.title}`
-            };
+    resetQuiz() {
+        this.isChecked = false;
+        this.userAnswers = {};
+        document.body.classList.remove('answers-revealed');
+        if (this.peekAnswersBtn) {
+            this.peekAnswersBtn.innerHTML = '👁️ 答えを表示する';
+            this.peekAnswersBtn.classList.remove('active');
         }
-        const summaryStat = this.questionStats[summaryKey];
-        summaryStat.total++;
-        if (allBlanksCorrect) summaryStat.correct++;
-        if (!summaryStat.recent) summaryStat.recent = [];
-        summaryStat.recent.push(allBlanksCorrect ? 1 : 0);
-        if (summaryStat.recent.length > 5) summaryStat.recent.shift();
-        summaryStat.text = `条文全体: ${set.title}`; summaryStat.page = set.title;
-        this.updateSRS(summaryStat, allBlanksCorrect);
-    } else {
-        set.questions.forEach((q) => {
-            let isCorrect = false;
-            const userAnswer = this.userAnswers[q.id];
+        this.shuffledCache = {};
+        this.selectedKeyword = null; // Reset selected keyword
+        this.scoreDisplay.textContent = "正解数: 0 / 0";
+        this.applyAutoFill();
+        this.renderTable();
+    }
 
-            // Treat any question with [[...]] or ((...)) as a clause/blank type
-            if (q.type === 'clause' || /\[\[|［［|\(\(|（（/.test(q.text)) {
-                // For clause type in special quiz, count individual blanks
-                const keywordData = this.extractKeywords(q.text);
-                let rowCorrectBlanks = 0;
-                let rowAnsweredBlanks = 0;
-                keywordData.forEach((kwInfo, idx) => {
-                    const val = this.userAnswers[`${q.id}-${idx}`];
-                    if (!val && kwInfo.type === 'drag') return;
-                    rowAnsweredBlanks++;
-                    const isKwCorrect = kwInfo.type === 'drag'
-                        ? val === kwInfo.text
-                        : this.normalizeInput(val) === this.normalizeInput(kwInfo.text);
-                    if (isKwCorrect) rowCorrectBlanks++;
+    resetWrongAnswers() {
+        if (!this.isChecked) {
+            alert('答え合わせをした後に使用できます。');
+            return;
+        }
 
-                    // Detailed stat per blank (Added for auto-fill support in review mode)
-                    const bStatKey = this.getBlankStatKey(q.id, idx);
-                    if (!this.questionStats[bStatKey]) {
-                        this.questionStats[bStatKey] = {
-                            correct: 0, total: 0, recent: [],
-                            page: q.origPage || set.title, pageId: q.id,
-                            text: `穴埋め: ${kwInfo.text}`
-                        };
+        const set = this.isAutoGenerated ? this.autoGeneratedSet : this.quizData.find(s => s.id === this.currentSetId);
+        if (!set) return;
+
+        if (set.type === 'clause') {
+            const keywordData = [];
+            const parts = set.text.split(/(\[\[.*?\]\]|\(\(.*?\)\))/g);
+            parts.forEach(part => {
+                if (part.startsWith('[[') && part.endsWith(']]')) {
+                    keywordData.push({ text: part.substring(2, part.length - 2), type: 'drag' });
+                } else if (part.startsWith('((') && part.endsWith('))')) {
+                    keywordData.push({ text: part.substring(2, part.length - 2), type: 'input' });
+                }
+            });
+
+            keywordData.forEach((kwInfo, idx) => {
+                const key = `${set.id}-${idx}`;
+                const userAnswer = (this.userAnswers[key] || "").toString();
+                const isCorrect = kwInfo.type === 'drag'
+                    ? userAnswer === kwInfo.text
+                    : this.normalizeInput(userAnswer) === this.normalizeInput(kwInfo.text);
+
+                if (!isCorrect) {
+                    delete this.userAnswers[key];
+                }
+            });
+        } else {
+            set.questions.forEach((q) => {
+                if (q.type === 'clause' || /\[\[|［［|\(\(|（（/.test(q.text)) {
+                    const keywordData = [];
+                    const parts = q.text.split(/(\[\[.*?\]\]|［［.*?］］|\(\(.*?\)\)|（（.*?））)/g);
+                    parts.forEach(part => {
+                        if ((part.startsWith('[[') && part.endsWith(']]')) || (part.startsWith('［［') && part.endsWith('］］'))) {
+                            keywordData.push({ text: part.substring(2, part.length - 2), type: 'drag' });
+                        } else if ((part.startsWith('((') && part.endsWith('))')) || (part.startsWith('（（') && part.endsWith('））'))) {
+                            keywordData.push({ text: part.substring(2, part.length - 2), type: 'input' });
+                        }
+                    });
+
+                    keywordData.forEach((kwInfo, idx) => {
+                        const key = `${q.id}-${idx}`;
+                        const val = (this.userAnswers[key] || "").toString();
+                        if (val) {
+                            const isCorrect = kwInfo.type === 'drag'
+                                ? val === kwInfo.text
+                                : this.normalizeInput(val) === this.normalizeInput(kwInfo.text);
+                            if (!isCorrect) delete this.userAnswers[key];
+                        }
+                    });
+                } else {
+                    const userAnswer = this.userAnswers[q.id];
+                    const isQMulti = this.isAutoGenerated ? q.isMultiSelect : set.isMultiSelect;
+                    let isAllCorrect = false;
+                    if (isQMulti) {
+                        const correctSet = new Set(q.answer);
+                        const userSet = new Set(userAnswer || []);
+                        isAllCorrect = (correctSet.size === userSet.size && [...correctSet].every(item => userSet.has(item)));
+                    } else {
+                        isAllCorrect = userAnswer === q.answer;
                     }
-                    const bStat = this.questionStats[bStatKey];
-                    bStat.total++;
-                    if (isKwCorrect) bStat.correct++;
-                    if (!bStat.recent) bStat.recent = [];
-                    bStat.recent.push(isKwCorrect ? 1 : 0);
-                    if (bStat.recent.length > 20) bStat.recent.shift();
-                    bStat.text = `穴埋め: ${kwInfo.text}`; bStat.page = q.origPage || set.title;
-                    this.updateSRS(bStat, isKwCorrect);
-                });
+                    if (!isAllCorrect) delete this.userAnswers[q.id];
+                }
+            });
+        }
 
-                answeredCount += rowAnsweredBlanks;
-                correctCount += rowCorrectBlanks;
-                // For the overall row status/stat, consider it correct only if all blanks are correct
-                isCorrect = (keywordData.length > 0 && rowAnsweredBlanks === keywordData.length && rowCorrectBlanks === keywordData.length);
-            } else {
-                if (!userAnswer || (Array.isArray(userAnswer) && userAnswer.length === 0)) return;
+        this.isChecked = false; // Return to answering mode
+        this.renderTable();
+    }
+
+    batchCheckAnswers() {
+        if (this.isChecked) return;
+        const set = this.isAutoGenerated ? this.autoGeneratedSet : this.quizData.find(s => s.id === this.currentSetId);
+        let correctCount = 0; let answeredCount = 0;
+
+        if (set.type === 'clause') {
+            const keywordData = [];
+            // Match both [[...]] and ((...)) in order (including full-width)
+            const parts = set.text.split(/(\[\[.*?\]\]|［［.*?］］|\(\(.*?\)\)|（（.*?））)/g);
+            parts.forEach(part => {
+                if ((part.startsWith('[[') && part.endsWith(']]')) || (part.startsWith('［［') && part.endsWith('］］'))) {
+                    keywordData.push({ text: part.substring(2, part.length - 2), type: 'drag' });
+                } else if ((part.startsWith('((') && part.endsWith('))')) || (part.startsWith('（（') && part.endsWith('））'))) {
+                    keywordData.push({ text: part.substring(2, part.length - 2), type: 'input' });
+                }
+            });
+
+            let allBlanksCorrect = true;
+            keywordData.forEach((kwInfo, idx) => {
+                const userAnswer = (this.userAnswers[`${set.id}-${idx}`] || "").toString();
+                if (!userAnswer && kwInfo.type === 'drag') {
+                    allBlanksCorrect = false;
+                    return;
+                }
                 answeredCount++;
 
-                const isMulti = this.isAutoGenerated ? q.isMultiSelect : set.isMultiSelect;
-                if (isMulti) {
-                    const correctSet = new Set(q.answer);
-                    const userSet = new Set(userAnswer);
-                    isCorrect = (correctSet.size === userSet.size && [...correctSet].every(item => userSet.has(item)));
-                } else {
-                    isCorrect = userAnswer === q.answer;
-                }
-                if (isCorrect) correctCount++;
-            }
+                const isCorrect = kwInfo.type === 'drag'
+                    ? userAnswer === kwInfo.text
+                    : this.normalizeInput(userAnswer) === this.normalizeInput(kwInfo.text);
 
-            const statKey = this.getSummaryStatKey(q.id, q.type === 'clause' ? 'clause' : 'page');
-            if (!this.questionStats[statKey]) {
-                this.questionStats[statKey] = {
+                if (isCorrect) correctCount++;
+                else allBlanksCorrect = false;
+
+                // Detailed stat per blank
+                const statKey = this.getBlankStatKey(set.id, idx);
+                if (!this.questionStats[statKey]) {
+                    this.questionStats[statKey] = {
+                        correct: 0, total: 0, recent: [],
+                        page: set.title, pageId: set.id,
+                        text: `穴埋め: ${kwInfo.text}`
+                    };
+                }
+                const stat = this.questionStats[statKey];
+                stat.total++;
+                if (isCorrect) stat.correct++;
+                if (!stat.recent) stat.recent = [];
+                stat.recent.push(isCorrect ? 1 : 0);
+                if (stat.recent.length > 20) stat.recent.shift();
+                stat.text = `穴埋め: ${kwInfo.text}`; stat.page = set.title;
+                this.updateSRS(stat, isCorrect);
+            });
+
+
+            // Summary stat for the whole clause
+            const summaryKey = this.getSummaryStatKey(set.id, 'clause');
+            if (!this.questionStats[summaryKey]) {
+                this.questionStats[summaryKey] = {
                     correct: 0, total: 0, recent: [],
-                    page: q.origPage || set.title,
-                    pageId: q.pageId || set.id,
-                    text: q.type === 'clause' ? `条文全体: ${q.title || set.title}` : q.text
+                    page: set.title, pageId: set.id,
+                    text: `条文全体: ${set.title}`
                 };
             }
-            const stat = this.questionStats[statKey];
-            stat.total++;
-            if (isCorrect) stat.correct++;
-            if (!stat.recent) stat.recent = [];
-            stat.recent.push(isCorrect ? 1 : 0);
-            if (stat.recent.length > 20) stat.recent.shift();
-            stat.text = q.type === 'clause' ? `条文全体: ${q.origPage}` : q.text;
-            stat.page = q.origPage || set.title;
-            this.updateSRS(stat, isCorrect);
-        });
-    }
+            const summaryStat = this.questionStats[summaryKey];
+            summaryStat.total++;
+            if (allBlanksCorrect) summaryStat.correct++;
+            if (!summaryStat.recent) summaryStat.recent = [];
+            summaryStat.recent.push(allBlanksCorrect ? 1 : 0);
+            if (summaryStat.recent.length > 5) summaryStat.recent.shift();
+            summaryStat.text = `条文全体: ${set.title}`; summaryStat.page = set.title;
+            this.updateSRS(summaryStat, allBlanksCorrect);
+        } else {
+            set.questions.forEach((q) => {
+                let isCorrect = false;
+                const userAnswer = this.userAnswers[q.id];
 
-    this.isChecked = true;
+                // Treat any question with [[...]] or ((...)) as a clause/blank type
+                if (q.type === 'clause' || /\[\[|［［|\(\(|（（/.test(q.text)) {
+                    // For clause type in special quiz, count individual blanks
+                    const keywordData = [];
+                    const parts = q.text.split(/(\[\[.*?\]\]|［［.*?］］|\(\(.*?\)\)|（（.*?））)/g);
+                    parts.forEach(part => {
+                        if ((part.startsWith('[[') && part.endsWith(']]')) || (part.startsWith('［［') && part.endsWith('］］'))) {
+                            keywordData.push({ text: part.substring(2, part.length - 2), type: 'drag' });
+                        } else if ((part.startsWith('((') && part.endsWith('))')) || (part.startsWith('（（') && part.endsWith('））'))) {
+                            keywordData.push({ text: part.substring(2, part.length - 2), type: 'input' });
+                        }
+                    });
 
-    // Calculate total items correctly: sum of questions (standard) + sum of blanks (clause)
-    let totalItems = 0;
-    const countBlanks = (text) => (text.match(/\[\[|［［|\(\(|（（/g) || []).length;
-    if (set.type === 'clause') {
-        totalItems = countBlanks(set.text);
-    } else {
-        set.questions.forEach(q => {
-            if (q.type === 'clause' || countBlanks(q.text) > 0) {
-                totalItems += countBlanks(q.text);
-            } else {
-                totalItems++;
-            }
-        });
-    }
+                    let rowCorrectBlanks = 0;
+                    let rowAnsweredBlanks = 0;
+                    keywordData.forEach((kwInfo, idx) => {
+                        const val = this.userAnswers[`${q.id}-${idx}`];
+                        if (!val && kwInfo.type === 'drag') return;
+                        rowAnsweredBlanks++;
+                        const isKwCorrect = kwInfo.type === 'drag'
+                            ? val === kwInfo.text
+                            : this.normalizeInput(val) === this.normalizeInput(kwInfo.text);
+                        if (isKwCorrect) rowCorrectBlanks++;
 
-    this.scoreDisplay.textContent = `正解数: ${correctCount} / ${answeredCount} (合計: ${totalItems})`;
-    this.history.unshift({
-        timestamp: new Date().toLocaleString(),
-        isoDate: new Date().toISOString(),
-        page: set.title,
-        pageId: set.id,
-        score: `${correctCount} / ${answeredCount}`,
-        accuracy: answeredCount > 0 ? Math.round((correctCount / answeredCount) * 100) : 0
-    });
-    if (this.history.length > 50) this.history.pop();
-    this.saveHistory(); this.saveQuestionStats(); this.renderTable();
-    this.updateDashboard();
-}
+                        // Detailed stat per blank (Added for auto-fill support in review mode)
+                        const bStatKey = this.getBlankStatKey(q.id, idx);
+                        if (!this.questionStats[bStatKey]) {
+                            this.questionStats[bStatKey] = {
+                                correct: 0, total: 0, recent: [],
+                                page: q.origPage || set.title, pageId: q.id,
+                                text: `穴埋め: ${kwInfo.text}`
+                            };
+                        }
+                        const bStat = this.questionStats[bStatKey];
+                        bStat.total++;
+                        if (isKwCorrect) bStat.correct++;
+                        if (!bStat.recent) bStat.recent = [];
+                        bStat.recent.push(isKwCorrect ? 1 : 0);
+                        if (bStat.recent.length > 20) bStat.recent.shift();
+                        bStat.text = `穴埋め: ${kwInfo.text}`; bStat.page = q.origPage || set.title;
+                        this.updateSRS(bStat, isKwCorrect);
+                    });
 
-renderStats() {
-    if (this.history.length === 0) {
-        this.totalAccuracy.textContent = "0%"; this.totalAnsweredDisplay.textContent = "0";
-        this.historyBody.innerHTML = '<tr><td colspan="4">履歴がありません</td></tr>';
-        this.weakQuestionsBody.innerHTML = '<tr><td colspan="4">データがありません</td></tr>';
-        return;
-    }
+                    answeredCount += rowAnsweredBlanks;
+                    correctCount += rowCorrectBlanks;
+                    // For the overall row status/stat, consider it correct only if all blanks are correct
+                    isCorrect = (keywordData.length > 0 && rowAnsweredBlanks === keywordData.length && rowCorrectBlanks === keywordData.length);
+                } else {
+                    if (!userAnswer || (Array.isArray(userAnswer) && userAnswer.length === 0)) return;
+                    answeredCount++;
 
-    // 全体の正答率と総解答数を、履歴（上限50件）ではなく各問題の統計から算出するように変更
-    const allStatsValues = Object.values(this.questionStats);
-    const totalCorrect = allStatsValues.reduce((sum, s) => sum + (s.correct || 0), 0);
-    const totalTotal = allStatsValues.reduce((sum, s) => sum + (s.total || 0), 0);
-    const avg = totalTotal > 0 ? Math.round((totalCorrect / totalTotal) * 100) : 0;
+                    const isMulti = this.isAutoGenerated ? q.isMultiSelect : set.isMultiSelect;
+                    if (isMulti) {
+                        const correctSet = new Set(q.answer);
+                        const userSet = new Set(userAnswer);
+                        isCorrect = (correctSet.size === userSet.size && [...correctSet].every(item => userSet.has(item)));
+                    } else {
+                        isCorrect = userAnswer === q.answer;
+                    }
+                    if (isCorrect) correctCount++;
+                }
 
-    this.totalAccuracy.textContent = `${avg}%`;
-    this.totalAnsweredDisplay.textContent = totalTotal;
-    this.updateDashboard();
-
-    this.historyBody.innerHTML = this.history.map(h => `<tr><td>${h.timestamp}</td><td><span class="question-link" onclick="app.navigateToQuestion('${h.pageId}')">${h.page}</span></td><td>${h.score}</td><td>${h.accuracy}%</td></tr>`).join('');
-
-    const statsArray = Object.entries(this.questionStats).map(([id, s]) => {
-        const recent = s.recent || [];
-        const rTotal = recent.length;
-        const rCorrect = recent.reduce((a, b) => a + b, 0);
-        const accuracy = rTotal > 0 ? Math.round((rCorrect / rTotal) * 100) : 0;
-
-        // Get pageId (fallback for old data)
-        let pageId = s.pageId;
-        if (!pageId) {
-            if (id.startsWith('clause-summary-')) pageId = id.replace('clause-summary-', '');
-            else if (id.startsWith('clause-')) {
-                const parts = id.split('-');
-                if (parts.length >= 3) pageId = parts[1];
-            } else {
-                const foundSet = this.quizData.find(st => st.questions && st.questions.some(q => q.id === id));
-                if (foundSet) pageId = foundSet.id;
-            }
+                const statKey = this.getSummaryStatKey(q.id, q.type === 'clause' ? 'clause' : 'page');
+                if (!this.questionStats[statKey]) {
+                    this.questionStats[statKey] = {
+                        correct: 0, total: 0, recent: [],
+                        page: q.origPage || set.title,
+                        pageId: q.pageId || set.id,
+                        text: q.type === 'clause' ? `条文全体: ${q.title || set.title}` : q.text
+                    };
+                }
+                const stat = this.questionStats[statKey];
+                stat.total++;
+                if (isCorrect) stat.correct++;
+                if (!stat.recent) stat.recent = [];
+                stat.recent.push(isCorrect ? 1 : 0);
+                if (stat.recent.length > 20) stat.recent.shift();
+                stat.text = q.type === 'clause' ? `条文全体: ${q.origPage}` : q.text;
+                stat.page = q.origPage || set.title;
+                this.updateSRS(stat, isCorrect);
+            });
         }
 
-        return { ...s, id, pageId, accuracy, rTotal, rCorrect };
-    }).filter(s => s.total > 0).sort((a, b) => {
-        if (a.accuracy !== b.accuracy) return a.accuracy - b.accuracy;
-        return a.total - b.total;
-    }).slice(0, 10);
+        this.isChecked = true;
 
-    this.weakQuestionsBody.innerHTML = statsArray.map(s => {
-        const nextRev = s.nextReview ? new Date(s.nextReview) : null;
-        const isDue = nextRev && nextRev <= new Date();
-        const srsStatus = nextRev
-            ? `<span class="srs-badge level-${s.srsLevel} ${isDue ? 'due' : ''}">${s.srsLevel} (${nextRev.toLocaleDateString()})</span>`
-            : '<span class="srs-badge level-0">新規</span>';
+        // Calculate total items correctly: sum of questions (standard) + sum of blanks (clause)
+        let totalItems = 0;
+        const countBlanks = (text) => (text.match(/\[\[|［［|\(\(|（（/g) || []).length;
+        if (set.type === 'clause') {
+            totalItems = countBlanks(set.text);
+        } else {
+            set.questions.forEach(q => {
+                if (q.type === 'clause' || countBlanks(q.text) > 0) {
+                    totalItems += countBlanks(q.text);
+                } else {
+                    totalItems++;
+                }
+            });
+        }
 
-        return `<tr>
+        this.scoreDisplay.textContent = `正解数: ${correctCount} / ${answeredCount} (合計: ${totalItems})`;
+        this.history.unshift({
+            timestamp: new Date().toLocaleString(),
+            isoDate: new Date().toISOString(),
+            page: set.title,
+            pageId: set.id,
+            score: `${correctCount} / ${answeredCount}`,
+            accuracy: answeredCount > 0 ? Math.round((correctCount / answeredCount) * 100) : 0
+        });
+        if (this.history.length > 50) this.history.pop();
+        this.saveHistory(); this.saveQuestionStats(); this.renderTable();
+        this.updateDashboard();
+    }
+
+    renderStats() {
+        if (this.history.length === 0) {
+            this.totalAccuracy.textContent = "0%"; this.totalAnsweredDisplay.textContent = "0";
+            this.historyBody.innerHTML = '<tr><td colspan="4">履歴がありません</td></tr>';
+            this.weakQuestionsBody.innerHTML = '<tr><td colspan="4">データがありません</td></tr>';
+            return;
+        }
+
+        // 全体の正答率と総解答数を、履歴（上限50件）ではなく各問題の統計から算出するように変更
+        const allStatsValues = Object.values(this.questionStats);
+        const totalCorrect = allStatsValues.reduce((sum, s) => sum + (s.correct || 0), 0);
+        const totalTotal = allStatsValues.reduce((sum, s) => sum + (s.total || 0), 0);
+        const avg = totalTotal > 0 ? Math.round((totalCorrect / totalTotal) * 100) : 0;
+
+        this.totalAccuracy.textContent = `${avg}%`;
+        this.totalAnsweredDisplay.textContent = totalTotal;
+        this.updateDashboard();
+
+        this.historyBody.innerHTML = this.history.map(h => `<tr><td>${h.timestamp}</td><td><span class="question-link" onclick="app.navigateToQuestion('${h.pageId}')">${h.page}</span></td><td>${h.score}</td><td>${h.accuracy}%</td></tr>`).join('');
+
+        const statsArray = Object.entries(this.questionStats).map(([id, s]) => {
+            const recent = s.recent || [];
+            const rTotal = recent.length;
+            const rCorrect = recent.reduce((a, b) => a + b, 0);
+            const accuracy = rTotal > 0 ? Math.round((rCorrect / rTotal) * 100) : 0;
+
+            // Get pageId (fallback for old data)
+            let pageId = s.pageId;
+            if (!pageId) {
+                if (id.startsWith('clause-summary-')) pageId = id.replace('clause-summary-', '');
+                else if (id.startsWith('clause-')) {
+                    const parts = id.split('-');
+                    if (parts.length >= 3) pageId = parts[1];
+                } else {
+                    const foundSet = this.quizData.find(st => st.questions && st.questions.some(q => q.id === id));
+                    if (foundSet) pageId = foundSet.id;
+                }
+            }
+
+            return { ...s, id, pageId, accuracy, rTotal, rCorrect };
+        }).filter(s => s.total > 0).sort((a, b) => {
+            if (a.accuracy !== b.accuracy) return a.accuracy - b.accuracy;
+            return a.total - b.total;
+        }).slice(0, 10);
+
+        this.weakQuestionsBody.innerHTML = statsArray.map(s => {
+            const nextRev = s.nextReview ? new Date(s.nextReview) : null;
+            const isDue = nextRev && nextRev <= new Date();
+            const srsStatus = nextRev
+                ? `<span class="srs-badge level-${s.srsLevel} ${isDue ? 'due' : ''}">${s.srsLevel} (${nextRev.toLocaleDateString()})</span>`
+                : '<span class="srs-badge level-0">新規</span>';
+
+            return `<tr>
                 <td style="text-align: left;">
-                    <span class="question-link" onclick="app.showSRSDetail('${s.id}')">${s.text}</span> 
+                    <span class="question-link" onclick="app.navigateToQuestion('${s.pageId}')">${s.text}</span> 
                     <span class="history-icon-btn" onclick="app.showSRSDetail('${s.id}')" title="記憶定着の推移を見る">📈</span>
                 </td>
                 <td>${s.page}</td>
@@ -1297,37 +1341,56 @@ renderStats() {
                 <td style="color: ${s.accuracy < 50 ? 'var(--error)' : 'var(--text-primary)'}">${s.accuracy}%</td>
                 <td>${srsStatus}</td>
             </tr>`;
-    }).join('');
+        }).join('');
 
-    // Sync auto-fill UI settings
-    if (this.autoFillToggle) this.autoFillToggle.checked = this.autoFillEnabled;
-    if (this.autoFillThresholdInput) this.autoFillThresholdInput.value = this.autoFillThreshold;
+        // Sync auto-fill UI settings
+        if (this.autoFillToggle) this.autoFillToggle.checked = this.autoFillEnabled;
+        if (this.autoFillThresholdInput) this.autoFillThresholdInput.value = this.autoFillThreshold;
 
-    this.updateChartTabs(); this.renderChart();
-    this.renderUnderstandingMap();
-}
+        this.updateChartTabs(); this.renderChart();
+        this.renderUnderstandingMap();
+    }
 
-updateChartTabs() { Object.keys(this.chartBtns).forEach(mode => { this.chartBtns[mode].classList.toggle('active', this.chartMode === mode); }); }
+    updateChartTabs() { Object.keys(this.chartBtns).forEach(mode => { this.chartBtns[mode].classList.toggle('active', this.chartMode === mode); }); }
 
-renderUnderstandingMap() {
-    if (!this.understandingMap) return;
-    this.understandingMap.innerHTML = '';
+    renderUnderstandingMap() {
+        if (!this.understandingMap) return;
+        this.understandingMap.innerHTML = '';
 
-    const allQuestions = [];
-    this.quizData.forEach(set => {
-        if (set.type === 'page' && set.questions) {
-            set.questions.forEach(q => {
-                const stat = this.questionStats[q.id] || { correct: 0, total: 0, recent: [] };
+        const allQuestions = [];
+        this.quizData.forEach(set => {
+            if (set.type === 'page' && set.questions) {
+                set.questions.forEach(q => {
+                    const stat = this.questionStats[q.id] || { correct: 0, total: 0, recent: [] };
+                    const recent = stat.recent || [];
+                    const rTotal = recent.length;
+                    const rCorrect = recent.reduce((a, b) => a + b, 0);
+                    const accuracy = recent.length > 0 ? Math.round((recent.reduce((a, b) => a + b, 0) / recent.length) * 100) : -1;
+                    const nextReview = stat.nextReview ? new Date(stat.nextReview).toLocaleDateString() : '未定';
+
+                    allQuestions.push({
+                        id: q.id,
+                        type: 'page',
+                        text: q.text,
+                        page: set.title,
+                        accuracy: accuracy,
+                        total: stat.total,
+                        srsLevel: stat.srsLevel || 0,
+                        nextReview: nextReview,
+                        pageId: set.id
+                    });
+                });
+            } else if (set.type === 'clause' && set.text) {
+                const statKey = `clause-summary-${set.id}`;
+                const stat = this.questionStats[statKey] || { correct: 0, total: 0, recent: [] };
                 const recent = stat.recent || [];
-                const rTotal = recent.length;
-                const rCorrect = recent.reduce((a, b) => a + b, 0);
                 const accuracy = recent.length > 0 ? Math.round((recent.reduce((a, b) => a + b, 0) / recent.length) * 100) : -1;
                 const nextReview = stat.nextReview ? new Date(stat.nextReview).toLocaleDateString() : '未定';
 
                 allQuestions.push({
-                    id: q.id,
-                    type: 'page',
-                    text: q.text,
+                    id: set.id,
+                    type: 'clause',
+                    text: `条文暗記: ${set.title}`,
                     page: set.title,
                     accuracy: accuracy,
                     total: stat.total,
@@ -1335,1531 +1398,1531 @@ renderUnderstandingMap() {
                     nextReview: nextReview,
                     pageId: set.id
                 });
-            });
-        } else if (set.type === 'clause' && set.text) {
-            const statKey = this.getSummaryStatKey(set.id, 'clause');
-            const stat = this.questionStats[statKey] || { correct: 0, total: 0, recent: [] };
-            const recent = stat.recent || [];
-            const accuracy = recent.length > 0 ? Math.round((recent.reduce((a, b) => a + b, 0) / recent.length) * 100) : -1;
-            const nextReview = stat.nextReview ? new Date(stat.nextReview).toLocaleDateString() : '未定';
 
-            allQuestions.push({
-                id: set.id,
-                type: 'clause',
-                text: `条文暗記: ${set.title}`,
-                page: set.title,
-                accuracy: accuracy,
-                total: stat.total,
-                srsLevel: stat.srsLevel || 0,
-                nextReview: nextReview,
-                pageId: set.id
-            });
-
-        }
-    });
-
-    allQuestions.forEach(q => {
-        const cell = document.createElement('div');
-        cell.className = 'map-cell';
-
-        let bgColor = 'rgba(255, 255, 255, 0.1)'; // 未学習
-        if (q.accuracy !== -1) {
-            // Determine 10% step (0, 10, 20... 100)
-            const step = Math.floor(q.accuracy / 10) * 10;
-            // Map 0-100 to HSL hue 0-120 (Red to Green)
-            const hue = (step * 1.2);
-            bgColor = `hsl(${hue}, 70%, 50%)`;
-        }
-
-        cell.style.backgroundColor = bgColor;
-        cell.setAttribute('data-tooltip', `【${q.page}】\n${q.text}\n正答率: ${q.accuracy === -1 ? '未解答' : q.accuracy + '%'}\n習熟度: Lv.${q.srsLevel} / 次回予定: ${q.nextReview}`);
-
-        cell.onclick = () => {
-            if (q.pageId) {
-                this.switchView('quiz');
-                this.loadSet(q.pageId);
-                if (q.type === 'page') {
-                    setTimeout(() => {
-                        const row = document.getElementById(`row-${q.id}`);
-                        if (row) row.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }, 100);
-                }
             }
-        };
+        });
 
-        this.understandingMap.appendChild(cell);
-    });
-}
+        allQuestions.forEach(q => {
+            const cell = document.createElement('div');
+            cell.className = 'map-cell';
 
-renderClauseView(set) {
-    this.clauseEditor.classList.remove('hidden'); // Ensure it's not logically blocked
-    this.clauseEditor.classList.toggle('hidden-quiz', !this.isEditMode);
-    this.clauseDisplay.classList.remove('hidden');
-    this.tableWrapper.classList.add('hidden');
-    this.columnControls.classList.add('hidden');
-    this.tableControls.classList.add('hidden');
+            let bgColor = 'rgba(255, 255, 255, 0.1)'; // 未学習
+            if (q.accuracy !== -1) {
+                // Determine 10% step (0, 10, 20... 100)
+                const step = Math.floor(q.accuracy / 10) * 10;
+                // Map 0-100 to HSL hue 0-120 (Red to Green)
+                const hue = (step * 1.2);
+                bgColor = `hsl(${hue}, 70%, 50%)`;
+            }
 
-    if (this.clauseDisplay) {
-        this.clauseDisplay.innerHTML = '';
-        this.clauseDisplay.classList.remove('hidden');
-    }
+            cell.style.backgroundColor = bgColor;
+            cell.setAttribute('data-tooltip', `【${q.page}】\n${q.text}\n正答率: ${q.accuracy === -1 ? '未解答' : q.accuracy + '%'}\n習熟度: Lv.${q.srsLevel} / 次回予定: ${q.nextReview}`);
 
-    if (this.isEditMode) {
-        // Only set value if not focused to avoid cursor jumping
-        if (this.clauseTextEditor && document.activeElement !== this.clauseTextEditor) {
-            this.clauseTextEditor.value = set.text || '';
-            this.prevClauseText = set.text || '';
-        }
-        if (this.clauseDummiesEditor && document.activeElement !== this.clauseDummiesEditor) {
-            this.clauseDummiesEditor.value = (set.dummies || []).join(', ');
-        }
-
-        this.clauseTextEditor.oninput = (e) => {
-            let val = this.clauseTextEditor.value;
-            const start = this.clauseTextEditor.selectionStart;
-            const end = this.clauseTextEditor.selectionEnd;
-
-            const getKeywords = (text) => {
-                const matches = text.match(/\[\[(.*?)\]\]/g) || [];
-                return new Set(matches.map(m => m.slice(2, -2)).filter(k => k.length > 0));
+            cell.onclick = () => {
+                if (q.pageId) {
+                    this.switchView('quiz');
+                    this.loadSet(q.pageId);
+                    if (q.type === 'page') {
+                        setTimeout(() => {
+                            const row = document.getElementById(`row-${q.id}`);
+                            if (row) row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }, 100);
+                    }
+                }
             };
 
-            const prevKeywords = getKeywords(this.prevClauseText || '');
-            const currKeywords = getKeywords(val);
-
-            let changed = false;
-
-            // 1. Handle Added Keywords: If a new keyword appears, tag all its instances
-            const added = [...currKeywords].filter(k => !prevKeywords.has(k));
-            added.forEach(keyword => {
-                const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                const regex = new RegExp(`(?<!\\[\\[)${escaped}(?!\\]\\])`, 'g');
-                if (regex.test(val)) {
-                    val = val.replace(regex, `[[${keyword}]]`);
-                    changed = true;
-                }
-            });
-
-            // 2. Handle Removed Keywords: If a keyword is gone from [[ ]], untag it everywhere
-            // This happens when the user breaks a [[ ]] tag.
-            const removed = [...prevKeywords].filter(k => !currKeywords.has(k));
-            removed.forEach(keyword => {
-                const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                const regex = new RegExp(`\\[\\[${escaped}\\]\\]`, 'g');
-                if (regex.test(val)) {
-                    val = val.replace(regex, keyword);
-                    changed = true;
-                }
-            });
-
-            if (changed) {
-                this.clauseTextEditor.value = val;
-                this.clauseTextEditor.setSelectionRange(start, end);
-            }
-
-            this.prevClauseText = val;
-            set.text = val;
-            this.saveData();
-            this.renderClauseView(set);
-        };
-        this.clauseDummiesEditor.oninput = () => {
-            set.dummies = this.clauseDummiesEditor.value.split(/[，,]/).map(s => s.trim()).filter(s => s);
-            this.saveData();
-            this.renderClauseView(set);
-        };
-    }
-
-    const container = document.createElement('div');
-    container.className = 'clause-container';
-
-    // Add history graph button if stats exist
-    const summaryKey = this.getSummaryStatKey(set.id, 'clause');
-    if (this.questionStats[summaryKey] && !this.isEditMode) {
-        const historyBtn = document.createElement('button');
-        historyBtn.className = 'clause-history-btn';
-        historyBtn.innerHTML = '📈 正答率の推移を確認';
-        historyBtn.onclick = () => this.showSRSDetail(summaryKey);
-        container.appendChild(historyBtn);
-    }
-
-    const clauseText = document.createElement('div');
-    clauseText.className = 'clause-text';
-
-    // Render clause content (with table support)
-    const rawText = set.text || '(条文が入力されていません)';
-    const lines = rawText.split('\n');
-    const hasTable = lines.some(l => l.trim().startsWith('|'));
-
-    let htmlContent = '';
-    if (hasTable) {
-        let processedHtml = '';
-        let tableLines = [];
-
-        lines.forEach(line => {
-            if (line.trim().startsWith('|')) {
-                tableLines.push(line);
-            } else {
-                if (tableLines.length > 0) {
-                    processedHtml += this.renderTableFromMarkdown(tableLines);
-                    tableLines = [];
-                }
-                processedHtml += line + '<br>';
-            }
+            this.understandingMap.appendChild(cell);
         });
-        if (tableLines.length > 0) {
-            processedHtml += this.renderTableFromMarkdown(tableLines);
-        }
-        htmlContent = processedHtml;
-    } else {
-        htmlContent = rawText.replace(/\n/g, '<br>');
     }
-    const keywords = this.extractKeywords(htmlContent);
-    let blankIndex = 0;
 
-    // Use placeholder strategy for blanks
-    const finalHtml = htmlContent.replace(/\[\[(.*?)\]\]|［［(.*?)］］|\(\((.*?)\)\)|（（(.*?)））/g, (match, p1, p2, p3, p4) => {
-        const keyword = p1 || p2 || p3 || p4;
-        const type = (p1 || p2) ? 'drag' : 'input';
-        // keywords.push({ text: keyword, type: type }); // Keywords are now extracted once at the top
-        return `<span id="placeholder-${set.id.replace(/[^a-zA-Z0-9]/g, '-')}-${blankIndex++}"></span>`;
-    });
+    renderClauseView(set) {
+        this.clauseEditor.classList.remove('hidden'); // Ensure it's not logically blocked
+        this.clauseEditor.classList.toggle('hidden-quiz', !this.isEditMode);
+        this.clauseDisplay.classList.remove('hidden');
+        this.tableWrapper.classList.add('hidden');
+        this.columnControls.classList.add('hidden');
+        this.tableControls.classList.add('hidden');
 
-    clauseText.innerHTML = finalHtml;
+        if (this.clauseDisplay) {
+            this.clauseDisplay.innerHTML = '';
+            this.clauseDisplay.classList.remove('hidden');
+        }
 
-    // Replace placeholders with real interactive blanks
-    for (let i = 0; i < blankIndex; i++) {
-        const placeholder = clauseText.querySelector(`#placeholder-${set.id.replace(/[^a-zA-Z0-9]/g, '-')}-${i}`);
-        if (!placeholder) continue;
-
-        const kwInfo = keywords[i];
-        const currentIdx = i;
-
-        if (kwInfo.type === 'drag') {
-            const blank = document.createElement('div');
-            blank.className = 'clause-blank';
-            blank.id = `blank-${currentIdx}`;
-
-            const savedAnswer = this.userAnswers[`${set.id}-${currentIdx}`];
-            const isAutoFilled = !this.isChecked && savedAnswer === kwInfo.text; // autoFill is handled by applyAutoFill() before render
-
-            blank.dataset.answer = kwInfo.text; // Store correct answer for peek
-            if (savedAnswer) {
-                blank.textContent = savedAnswer;
-                blank.classList.add('filled');
-                if (isAutoFilled) blank.classList.add('auto-filled');
-            } else {
-                blank.innerHTML = '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+        if (this.isEditMode) {
+            // Only set value if not focused to avoid cursor jumping
+            if (this.clauseTextEditor && document.activeElement !== this.clauseTextEditor) {
+                this.clauseTextEditor.value = set.text || '';
+                this.prevClauseText = set.text || '';
+            }
+            if (this.clauseDummiesEditor && document.activeElement !== this.clauseDummiesEditor) {
+                this.clauseDummiesEditor.value = (set.dummies || []).join(', ');
             }
 
-            if (!this.isChecked) {
-                blank.ondragover = (e) => { e.preventDefault(); blank.classList.add('drag-over'); };
-                blank.ondragleave = () => blank.classList.remove('drag-over');
-                blank.ondrop = (e) => {
-                    e.preventDefault();
-                    blank.classList.remove('drag-over');
-                    const text = e.dataTransfer.getData('text/plain');
-                    if (text) {
-                        this.userAnswers[`${set.id}-${currentIdx}`] = text;
-                        // Auto-fill other blanks with same correct answer
-                        keywords.forEach((otherKw, j) => {
-                            if (otherKw.text === kwInfo.text) this.userAnswers[`${set.id}-${j}`] = text;
-                        });
-                        this.renderClauseView(set);
-                    }
+            this.clauseTextEditor.oninput = (e) => {
+                let val = this.clauseTextEditor.value;
+                const start = this.clauseTextEditor.selectionStart;
+                const end = this.clauseTextEditor.selectionEnd;
+
+                const getKeywords = (text) => {
+                    const matches = text.match(/\[\[(.*?)\]\]/g) || [];
+                    return new Set(matches.map(m => m.slice(2, -2)).filter(k => k.length > 0));
                 };
-                blank.onclick = () => {
-                    if (this.selectedKeyword) {
-                        // Click-to-Fill logic
-                        const val = this.selectedKeyword;
+
+                const prevKeywords = getKeywords(this.prevClauseText || '');
+                const currKeywords = getKeywords(val);
+
+                let changed = false;
+
+                // 1. Handle Added Keywords: If a new keyword appears, tag all its instances
+                const added = [...currKeywords].filter(k => !prevKeywords.has(k));
+                added.forEach(keyword => {
+                    const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                    const regex = new RegExp(`(?<!\\[\\[)${escaped}(?!\\]\\])`, 'g');
+                    if (regex.test(val)) {
+                        val = val.replace(regex, `[[${keyword}]]`);
+                        changed = true;
+                    }
+                });
+
+                // 2. Handle Removed Keywords: If a keyword is gone from [[ ]], untag it everywhere
+                // This happens when the user breaks a [[ ]] tag.
+                const removed = [...prevKeywords].filter(k => !currKeywords.has(k));
+                removed.forEach(keyword => {
+                    const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                    const regex = new RegExp(`\\[\\[${escaped}\\]\\]`, 'g');
+                    if (regex.test(val)) {
+                        val = val.replace(regex, keyword);
+                        changed = true;
+                    }
+                });
+
+                if (changed) {
+                    this.clauseTextEditor.value = val;
+                    this.clauseTextEditor.setSelectionRange(start, end);
+                }
+
+                this.prevClauseText = val;
+                set.text = val;
+                this.saveData();
+                this.renderClauseView(set);
+            };
+            this.clauseDummiesEditor.oninput = () => {
+                set.dummies = this.clauseDummiesEditor.value.split(/[，,]/).map(s => s.trim()).filter(s => s);
+                this.saveData();
+                this.renderClauseView(set);
+            };
+        }
+
+        const container = document.createElement('div');
+        container.className = 'clause-container';
+
+        // Add history graph button if stats exist
+        const summaryKey = `clause-summary-${set.id}`;
+        if (this.questionStats[summaryKey] && !this.isEditMode) {
+            const historyBtn = document.createElement('button');
+            historyBtn.className = 'clause-history-btn';
+            historyBtn.innerHTML = '📈 正答率の推移を確認';
+            historyBtn.onclick = () => this.showSRSDetail(summaryKey);
+            container.appendChild(historyBtn);
+        }
+
+        const clauseText = document.createElement('div');
+        clauseText.className = 'clause-text';
+
+        // Render clause content (with table support)
+        const rawText = set.text || '(条文が入力されていません)';
+        const lines = rawText.split('\n');
+        const hasTable = lines.some(l => l.trim().startsWith('|'));
+
+        let htmlContent = '';
+        if (hasTable) {
+            let processedHtml = '';
+            let tableLines = [];
+
+            lines.forEach(line => {
+                if (line.trim().startsWith('|')) {
+                    tableLines.push(line);
+                } else {
+                    if (tableLines.length > 0) {
+                        processedHtml += this.renderTableFromMarkdown(tableLines);
+                        tableLines = [];
+                    }
+                    processedHtml += line + '<br>';
+                }
+            });
+            if (tableLines.length > 0) {
+                processedHtml += this.renderTableFromMarkdown(tableLines);
+            }
+            htmlContent = processedHtml;
+        } else {
+            htmlContent = rawText.replace(/\n/g, '<br>');
+        }
+        const keywords = [];
+        let blankIndex = 0;
+
+        // Use placeholder strategy for blanks
+        const finalHtml = htmlContent.replace(/\[\[(.*?)\]\]|［［(.*?)］］|\(\((.*?)\)\)|（（(.*?)））/g, (match, p1, p2, p3, p4) => {
+            const keyword = p1 || p2 || p3 || p4;
+            const type = (p1 || p2) ? 'drag' : 'input';
+            keywords.push({ text: keyword, type: type });
+            return `<span id="placeholder-${set.id.replace(/[^a-zA-Z0-9]/g, '-')}-${blankIndex++}"></span>`;
+        });
+
+        clauseText.innerHTML = finalHtml;
+
+        // Replace placeholders with real interactive blanks
+        for (let i = 0; i < blankIndex; i++) {
+            const placeholder = clauseText.querySelector(`#placeholder-${set.id.replace(/[^a-zA-Z0-9]/g, '-')}-${i}`);
+            if (!placeholder) continue;
+
+            const kwInfo = keywords[i];
+            const currentIdx = i;
+
+            if (kwInfo.type === 'drag') {
+                const blank = document.createElement('div');
+                blank.className = 'clause-blank';
+                blank.id = `blank-${currentIdx}`;
+
+                const statKey = `clause-${set.id}-${currentIdx}`;
+                const autoFilled = !this.isChecked && !this.userAnswers[`${set.id}-${currentIdx}`] && this.shouldAutoFill(statKey);
+                if (autoFilled) {
+                    this.userAnswers[`${set.id}-${currentIdx}`] = kwInfo.text;
+                }
+
+                const savedAnswer = this.userAnswers[`${set.id}-${currentIdx}`];
+                blank.dataset.answer = kwInfo.text; // Store correct answer for peek
+                if (savedAnswer) {
+                    blank.textContent = savedAnswer;
+                    blank.classList.add('filled');
+                    if (autoFilled) blank.classList.add('auto-filled');
+                } else {
+                    blank.innerHTML = '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+                }
+
+                if (!this.isChecked) {
+                    blank.ondragover = (e) => { e.preventDefault(); blank.classList.add('drag-over'); };
+                    blank.ondragleave = () => blank.classList.remove('drag-over');
+                    blank.ondrop = (e) => {
+                        e.preventDefault();
+                        blank.classList.remove('drag-over');
+                        const text = e.dataTransfer.getData('text/plain');
+                        if (text) {
+                            this.userAnswers[`${set.id}-${currentIdx}`] = text;
+                            // Auto-fill other blanks with same correct answer
+                            keywords.forEach((otherKw, j) => {
+                                if (otherKw.text === kwInfo.text) this.userAnswers[`${set.id}-${j}`] = text;
+                            });
+                            this.renderClauseView(set);
+                        }
+                    };
+                    blank.onclick = () => {
+                        if (this.selectedKeyword) {
+                            // Click-to-Fill logic
+                            const val = this.selectedKeyword;
+                            this.userAnswers[`${set.id}-${currentIdx}`] = val;
+                            // Auto-fill other blanks with same correct answer
+                            keywords.forEach((otherKw, j) => {
+                                if (otherKw.text === kwInfo.text) this.userAnswers[`${set.id}-${j}`] = val;
+                            });
+                            this.selectedKeyword = null;
+                            this.renderClauseView(set);
+                        } else if (this.userAnswers[`${set.id}-${currentIdx}`]) {
+                            const val = this.userAnswers[`${set.id}-${currentIdx}`];
+                            delete this.userAnswers[`${set.id}-${currentIdx}`];
+                            // Sync removal
+                            keywords.forEach((otherKw, j) => {
+                                if (otherKw.text === kwInfo.text && this.userAnswers[`${set.id}-${j}`] === val) {
+                                    delete this.userAnswers[`${set.id}-${j}`];
+                                }
+                            });
+                            this.renderClauseView(set);
+                        }
+                    };
+                } else {
+                    const isCorrect = savedAnswer === kwInfo.text;
+                    blank.classList.add(isCorrect ? 'correct' : 'wrong');
+                    if (!isCorrect) {
+                        const reveal = document.createElement('span');
+                        reveal.className = 'reveal-correct';
+                        reveal.textContent = ` (${kwInfo.text})`;
+                        blank.appendChild(reveal);
+                    }
+                }
+                const peek = document.createElement('span');
+                peek.className = 'peek-answer';
+                peek.textContent = `(${kwInfo.text})`;
+                placeholder.replaceWith(blank, peek);
+            } else {
+                // Input type
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.className = 'clause-input-blank';
+                input.id = `input-${currentIdx}`;
+
+                const statKey = `clause-${set.id}-${currentIdx}`;
+                const autoFilled = !this.isChecked && !this.userAnswers[`${set.id}-${currentIdx}`] && this.shouldAutoFill(statKey);
+                if (autoFilled) {
+                    this.userAnswers[`${set.id}-${currentIdx}`] = kwInfo.text;
+                    input.classList.add('auto-filled');
+                }
+
+                const savedAnswer = this.userAnswers[`${set.id}-${currentIdx}`] || '';
+                input.value = savedAnswer;
+
+                const peek = document.createElement('span');
+                peek.className = 'peek-answer';
+                peek.textContent = `(${kwInfo.text})`;
+
+                if (!this.isChecked) {
+                    input.oninput = () => {
+                        const val = input.value;
+                        const normVal = this.normalizeInput(val);
                         this.userAnswers[`${set.id}-${currentIdx}`] = val;
-                        // Auto-fill other blanks with same correct answer
+                        // Auto-fill other input blanks with same correct answer (matching normalized text)
                         keywords.forEach((otherKw, j) => {
-                            if (otherKw.text === kwInfo.text) this.userAnswers[`${set.id}-${j}`] = val;
-                        });
-                        this.selectedKeyword = null;
-                        this.renderClauseView(set);
-                    } else if (this.userAnswers[`${set.id}-${currentIdx}`]) {
-                        const val = this.userAnswers[`${set.id}-${currentIdx}`];
-                        delete this.userAnswers[`${set.id}-${currentIdx}`];
-                        // Sync removal
-                        keywords.forEach((otherKw, j) => {
-                            if (otherKw.text === kwInfo.text && this.userAnswers[`${set.id}-${j}`] === val) {
-                                delete this.userAnswers[`${set.id}-${j}`];
+                            if (otherKw.type === 'input' && this.normalizeInput(otherKw.text) === this.normalizeInput(kwInfo.text)) {
+                                this.userAnswers[`${set.id}-${j}`] = val;
+                                const otherInput = clauseText.querySelector(`#input-${j}`);
+                                if (otherInput && otherInput !== input) {
+                                    otherInput.value = val;
+                                }
                             }
                         });
-                        this.renderClauseView(set);
-                    }
-                };
-            } else {
-                const isCorrect = savedAnswer === kwInfo.text;
-                blank.classList.add(isCorrect ? 'correct' : 'wrong');
-                if (!isCorrect) {
-                    const reveal = document.createElement('span');
-                    reveal.className = 'reveal-correct';
-                    reveal.textContent = ` (${kwInfo.text})`;
-                    blank.appendChild(reveal);
-                }
-            }
-            const peek = document.createElement('span');
-            peek.className = 'peek-answer';
-            peek.textContent = `(${kwInfo.text})`;
-            placeholder.replaceWith(blank, peek);
-        } else {
-            // Input type
-            const input = document.createElement('input');
-            input.type = 'text';
-            input.className = 'clause-input-blank';
-            input.id = `input-${currentIdx}`;
-
-            const statKey = this.getBlankStatKey(set.id, currentIdx);
-            const savedAnswer = this.userAnswers[`${set.id}-${currentIdx}`] || '';
-            const isAutoFilled = !this.isChecked && savedAnswer === kwInfo.text && this.shouldAutoFill(statKey);
-            if (isAutoFilled) input.classList.add('auto-filled');
-
-            input.value = savedAnswer;
-
-            const peek = document.createElement('span');
-            peek.className = 'peek-answer';
-            peek.textContent = `(${kwInfo.text})`;
-
-            if (!this.isChecked) {
-                input.oninput = () => {
-                    const val = input.value;
-                    const normVal = this.normalizeInput(val);
-                    this.userAnswers[`${set.id}-${currentIdx}`] = val;
-                    // Auto-fill other input blanks with same correct answer (matching normalized text)
-                    keywords.forEach((otherKw, j) => {
-                        if (otherKw.type === 'input' && this.normalizeInput(otherKw.text) === this.normalizeInput(kwInfo.text)) {
-                            this.userAnswers[`${set.id}-${j}`] = val;
-                            const otherInput = clauseText.querySelector(`#input-${j}`);
-                            if (otherInput && otherInput !== input) {
-                                otherInput.value = val;
-                            }
-                        }
-                    });
-                };
-            } else {
-                input.disabled = true;
-                const isCorrect = this.normalizeInput(savedAnswer) === this.normalizeInput(kwInfo.text);
-                input.classList.add(isCorrect ? 'correct' : 'wrong');
-                if (!isCorrect) {
-                    const tip = document.createElement('span');
-                    tip.className = 'reveal-correct';
-                    tip.textContent = ` (${kwInfo.text})`;
-                    placeholder.parentNode.insertBefore(tip, placeholder.nextSibling);
-                }
-            }
-            placeholder.replaceWith(input, peek);
-        }
-    }
-
-    container.appendChild(clauseText);
-    this.clauseDisplay.appendChild(container);
-
-    // Keyword Bank - Link to Global Bank in single view
-    if (!this.isChecked && !this.isEditMode) {
-        const dragKeywords = keywords.filter(kw => kw.type === 'drag');
-        const dragTexts = dragKeywords.map(kw => kw.text);
-        const allOptions = [...new Set([...dragTexts, ...(set.dummies || [])])];
-
-        if (allOptions.length > 0) {
-            this.updateGlobalKeywordBank({
-                id: `cl-${set.id}`,
-                dataset: {
-                    qid: set.id,
-                    keywords: JSON.stringify(allOptions),
-                    requiredCounts: JSON.stringify(dragTexts.reduce((acc, t) => { acc[t] = (acc[t] || 0) + 1; return acc; }, {}))
-                }
-            });
-        }
-    }
-}
-
-updateDashboard() {
-    // Overall Mastery (Mt. Fuji)
-    // Weighted Progress: sum of levels (capped at 8) / (total * 8)
-    const allStats = Object.values(this.questionStats);
-
-    // Better total questions calculation (flatten all)
-    const getFlatTotal = (list) => {
-        let count = 0;
-        list.forEach(item => {
-            if (item.type === 'clause') count++;
-            else if (item.questions) count += item.questions.length;
-            if (item.children) count += getFlatTotal(item.children);
-        });
-        return count;
-    };
-    const realTotalQuestions = getFlatTotal(this.quizData);
-
-    const sumOfLevels = allStats.reduce((acc, s) => acc + Math.min(8, (s.srsLevel || 0)), 0);
-    const maxPossibleLevels = (realTotalQuestions || 1) * 8;
-    const masteryPercent = Math.min(100, Math.round((sumOfLevels / maxPossibleLevels) * 100 * 10) / 10);
-
-    // Map 0-100% to 0-3776m
-    const heightMeters = Math.round(masteryPercent * 37.76);
-
-    // SRS Due Today (Everything including overdue)
-    const now = new Date();
-    const formatDateStr = (d) => {
-        return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-    };
-    const todayStr = formatDateStr(now);
-
-    const dueTodayTotal = Object.entries(this.questionStats).filter(([key, s]) => {
-        if (!s.nextReview) return false;
-        if (key.startsWith('clause-') && !key.startsWith('clause-summary-')) return false;
-        const reviewDate = new Date(s.nextReview);
-        return formatDateStr(reviewDate) <= todayStr;
-    }).length;
-
-    // Current Due NOW (for the active learning buttons)
-    const dueCount = Object.entries(this.questionStats).filter(([key, s]) => {
-        if (!s.nextReview) return false;
-        if (key.startsWith('clause-') && !key.startsWith('clause-summary-')) return false;
-        return new Date(s.nextReview) <= now;
-    }).length;
-
-    // SRS Due Tomorrow calculation (Specific to that day, to match the bar)
-    const tomorrow = new Date(now);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const tomorrowStr = formatDateStr(tomorrow);
-
-    const tomorrowSpecificCount = Object.entries(this.questionStats).filter(([key, s]) => {
-        if (!s.nextReview) return false;
-        if (key.startsWith('clause-') && !key.startsWith('clause-summary-')) return false;
-        return formatDateStr(new Date(s.nextReview)) === tomorrowStr;
-    }).length;
-
-    // Update UI
-    const masteryEl = document.getElementById('mastery-percent');
-    const heightEl = document.getElementById('climb-height');
-    const dueCountEl = document.getElementById('srs-due-count');
-    const dueTomorrowEl = document.getElementById('srs-tomorrow-count');
-    const hikerMarker = document.getElementById('hiker-marker');
-    const fujiSvg = document.querySelector('.fuji-svg');
-
-    if (masteryEl) masteryEl.textContent = `${masteryPercent}%`;
-    if (heightEl) heightEl.textContent = `${heightMeters} m`;
-    if (dueCountEl) {
-        dueCountEl.textContent = dueTodayTotal; // Match the first bar
-        const card = dueCountEl.closest('.main-stat-card');
-        if (card) card.classList.toggle('due-active', dueCount > 0);
-    }
-    if (dueTomorrowEl) {
-        dueTomorrowEl.textContent = tomorrowSpecificCount; // Match the second bar
-    }
-
-    if (hikerMarker) {
-        // Mt Fuji path logic in SVG: Base (20, 110) to Summit (100, 20)
-        const startX = 20; const startY = 110;
-        const endX = 100; const endY = 20;
-        const currentX = startX + (endX - startX) * (masteryPercent / 100);
-        const currentY = startY + (endY - startY) * (masteryPercent / 100);
-
-        // Trigger Walking Animation
-        hikerMarker.classList.add('walking');
-        hikerMarker.style.setProperty('--hiker-x', `${currentX}px`);
-        hikerMarker.style.setProperty('--hiker-y', `${currentY}px`);
-        hikerMarker.setAttribute('transform', `translate(${currentX}, ${currentY})`);
-
-        setTimeout(() => hikerMarker.classList.remove('walking'), 2000);
-    }
-
-    // Daily Progress
-    const nowTime = new Date();
-    nowTime.setHours(0, 0, 0, 0);
-    const todayAnswers = this.history.filter(h => {
-        const hDate = h.isoDate ? new Date(h.isoDate) : new Date(h.timestamp);
-        hDate.setHours(0, 0, 0, 0);
-        return hDate.getTime() === nowTime.getTime();
-    }).reduce((acc, h) => {
-        const scoreParts = h.score.split(' / ');
-        // Number of questions answered is in the second part of "Correct / Answered"
-        return acc + (parseInt(scoreParts[1]) || 0);
-    }, 0);
-
-    const dailyCountEl = document.getElementById('daily-count');
-    const dailyBarFill = document.getElementById('daily-bar-fill');
-
-    if (dailyCountEl) dailyCountEl.textContent = `${todayAnswers} / ${this.dailyGoal}`;
-    if (dailyBarFill) {
-        const dailyPercent = Math.min(100, (todayAnswers / this.dailyGoal) * 100);
-        dailyBarFill.style.width = `${dailyPercent}%`;
-
-        // Celebration color for daily goal
-        if (dailyPercent >= 100) {
-            dailyBarFill.style.background = 'linear-gradient(90deg, #ff9e00, #ff5400)';
-            if (fujiSvg) {
-                const sky = fujiSvg.querySelector('#skyGradient stop:last-child');
-                if (sky) sky.style.stopColor = '#4338ca'; // Deepen the sky
-            }
-        } else {
-            dailyBarFill.style.background = 'linear-gradient(90deg, #4cc9f0, #4361ee)';
-        }
-    }
-
-    // Show/Hide Review Buttons based on content
-    const dueItems = this.getDueQuestions();
-    const hasClauses = dueItems.some(i => i.type === 'clause');
-    const hasPages = dueItems.some(i => i.type === 'page');
-
-    if (this.startClauseOneReviewBtn) this.startClauseOneReviewBtn.classList.toggle('hidden', !hasClauses);
-    if (this.sidebarStartClauseOneReviewBtn) this.sidebarStartClauseOneReviewBtn.classList.toggle('hidden', !hasClauses);
-    if (this.startClauseReviewBtn) this.startClauseReviewBtn.classList.toggle('hidden', !hasClauses);
-    if (this.sidebarStartClauseReviewBtn) this.sidebarStartClauseReviewBtn.classList.toggle('hidden', !hasClauses);
-    if (this.startPageReviewBtn) this.startPageReviewBtn.classList.toggle('hidden', !hasPages);
-    if (this.sidebarStartPageReviewBtn) this.sidebarStartPageReviewBtn.classList.toggle('hidden', !hasPages);
-
-    if (this.sidebarSrsDueCount) {
-        this.sidebarSrsDueCount.textContent = dueCount;
-        const section = document.getElementById('sidebar-review-section');
-        if (section) section.classList.toggle('hidden', dueCount === 0);
-    }
-
-    // Always update projection chart when dashboard updates
-    this.renderSrsProjectionChart();
-}
-
-renderSrsProjectionChart() {
-    const canvas = document.getElementById('srsProjectionChart');
-    if (!canvas) return;
-
-    if (typeof Chart === 'undefined') {
-        console.error("Chart.js is not loaded.");
-        canvas.style.display = 'none';
-        return;
-    }
-
-    try {
-        const now = new Date();
-        const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-        const endOfThreeMonths = new Date(now.getFullYear(), now.getMonth() + 3, 0);
-
-        // Prepare data buckets
-        const datasets = {
-            low: { label: '未熟 (Lv0-2)', data: {}, color: 'rgba(255, 107, 107, 0.7)', border: '#ff6b6b' },
-            mid: { label: '成長 (Lv3-5)', data: {}, color: 'rgba(76, 201, 240, 0.7)', border: '#4cc9f0' },
-            high: { label: '習熟 (Lv6+)', data: {}, color: 'rgba(6, 214, 160, 0.7)', border: '#06d6a0' }
-        };
-
-        const labels = [];
-        const formatDateStr = (d) => {
-            return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-        };
-
-        const todayStr = formatDateStr(now);
-
-        let iter = new Date(startOfThisMonth);
-        while (iter <= endOfThreeMonths) {
-            const dateStr = formatDateStr(iter);
-            labels.push(dateStr);
-            datasets.low.data[dateStr] = 0;
-            datasets.mid.data[dateStr] = 0;
-            datasets.high.data[dateStr] = 0;
-            iter.setDate(iter.getDate() + 1);
-        }
-
-        // Aggregate SRS data by level
-        Object.entries(this.questionStats).forEach(([key, s]) => {
-            if (!s.nextReview) return;
-            if (key.startsWith('clause-') && !key.startsWith('clause-summary-')) return;
-
-            const level = s.srsLevel || 0;
-            let bucket = 'low';
-            if (level >= 6) bucket = 'high';
-            else if (level >= 3) bucket = 'mid';
-
-            const reviewDate = new Date(s.nextReview);
-            const reviewDateStr = formatDateStr(reviewDate);
-            const reviewTime = new Date(reviewDate).setHours(0, 0, 0, 0);
-            const nowTime = new Date(now).setHours(0, 0, 0, 0);
-
-            let targetDate = reviewDateStr;
-            if (reviewTime <= nowTime) targetDate = todayStr;
-
-            if (datasets[bucket].data[targetDate] !== undefined) {
-                datasets[bucket].data[targetDate]++;
-            }
-        });
-
-        const formattedLabels = labels.map(label => {
-            const d = new Date(label);
-            return (d.getMonth() + 1) + '/' + d.getDate();
-        });
-
-        if (this.srsProjectionChart) {
-            this.srsProjectionChart.destroy();
-        }
-
-        const ctx = canvas.getContext('2d');
-        this.srsProjectionChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: formattedLabels,
-                datasets: Object.keys(datasets).map(key => ({
-                    label: datasets[key].label,
-                    data: labels.map(l => datasets[key].data[l]),
-                    backgroundColor: labels.map(l => l === todayStr ? datasets[key].color.replace('0.7', '0.9') : datasets[key].color),
-                    borderColor: datasets[key].border,
-                    borderWidth: 1,
-                    stack: 'srs'
-                }))
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: true,
-                        position: 'top',
-                        align: 'end',
-                        labels: {
-                            color: 'rgba(255,255,255,0.7)',
-                            boxWidth: 12,
-                            font: { size: 10 }
-                        }
-                    },
-                    tooltip: {
-                        mode: 'index',
-                        intersect: false,
-                        callbacks: {
-                            title: (items) => {
-                                const idx = items[0].dataIndex;
-                                return labels[idx].replace(/-/g, '/');
-                            },
-                            label: (item) => `${item.dataset.label}: ${item.raw} 問`
-                        }
-                    }
-                },
-                scales: {
-                    x: {
-                        stacked: true,
-                        grid: { display: false },
-                        ticks: {
-                            color: 'rgba(255,255,255,0.5)',
-                            font: { size: 10 },
-                            maxRotation: 0,
-                            autoSkip: true,
-                            maxTicksLimit: 15
-                        }
-                    },
-                    y: {
-                        stacked: true,
-                        beginAtZero: true,
-                        grid: { color: 'rgba(255,255,255,0.05)' },
-                        ticks: {
-                            color: 'rgba(255,255,255,0.5)',
-                            stepSize: 5 // Better for larger counts
-                        }
+                    };
+                } else {
+                    input.disabled = true;
+                    const isCorrect = this.normalizeInput(savedAnswer) === this.normalizeInput(kwInfo.text);
+                    input.classList.add(isCorrect ? 'correct' : 'wrong');
+                    if (!isCorrect) {
+                        const tip = document.createElement('span');
+                        tip.className = 'reveal-correct';
+                        tip.textContent = ` (${kwInfo.text})`;
+                        placeholder.parentNode.insertBefore(tip, placeholder.nextSibling);
                     }
                 }
-            }
-        });
-    } catch (e) {
-        console.error("Error rendering SRS projection chart:", e);
-    }
-}
-
-
-getDueQuestions() {
-    const now = new Date();
-    const due = [];
-    // Helper to find question in quizData
-    const findQuestion = (qId) => {
-        const isClauseSummary = qId.startsWith('clause-summary-');
-        const searchId = isClauseSummary ? qId.replace('clause-summary-', '') : qId;
-
-        for (const set of this.quizData) {
-            if (set.type === 'clause' && set.id === searchId) return { set, q: set };
-            if (set.questions) {
-                const q = set.questions.find(item => item.id === qId);
-                if (q) return { set, q };
+                placeholder.replaceWith(input, peek);
             }
         }
-        return null;
-    };
 
-    Object.entries(this.questionStats).forEach(([id, stat]) => {
-        // Ignore individual blanks for due list (Summaries only)
-        if (id.startsWith('clause-') && !id.startsWith('clause-summary-')) return;
+        container.appendChild(clauseText);
+        this.clauseDisplay.appendChild(container);
 
-        if (stat.nextReview && new Date(stat.nextReview) <= now) {
-            const found = findQuestion(id);
-            if (found) {
-                due.push({
-                    id,
-                    type: found.set.type === 'clause' ? 'clause' : 'page',
-                    text: found.q.text || found.set.title,
-                    setName: found.set.title,
-                    fullSet: found.set,
-                    qObj: found.q
+        // Keyword Bank - Link to Global Bank in single view
+        if (!this.isChecked && !this.isEditMode) {
+            const dragKeywords = keywords.filter(kw => kw.type === 'drag');
+            const dragTexts = dragKeywords.map(kw => kw.text);
+            const allOptions = [...new Set([...dragTexts, ...(set.dummies || [])])];
+
+            if (allOptions.length > 0) {
+                this.updateGlobalKeywordBank({
+                    id: `cl-${set.id}`,
+                    dataset: {
+                        qid: set.id,
+                        keywords: JSON.stringify(allOptions),
+                        requiredCounts: JSON.stringify(dragTexts.reduce((acc, t) => { acc[t] = (acc[t] || 0) + 1; return acc; }, {}))
+                    }
                 });
             }
         }
-    });
-    return due;
-}
-
-toggleDueList() {
-    if (!this.dueListContainer) return;
-    const isHidden = this.dueListContainer.classList.contains('hidden');
-    if (!isHidden) {
-        this.dueListContainer.classList.add('hidden');
-        return;
     }
 
-    const dueItems = this.getDueQuestions();
-    if (dueItems.length === 0) {
-        alert("現在、復習待ちの問題はありません。");
-        return;
+    updateDashboard() {
+        // Overall Mastery (Mt. Fuji)
+        // Weighted Progress: sum of levels (capped at 8) / (total * 8)
+        const allStats = Object.values(this.questionStats);
+
+        // Better total questions calculation (flatten all)
+        const getFlatTotal = (list) => {
+            let count = 0;
+            list.forEach(item => {
+                if (item.type === 'clause') count++;
+                else if (item.questions) count += item.questions.length;
+                if (item.children) count += getFlatTotal(item.children);
+            });
+            return count;
+        };
+        const realTotalQuestions = getFlatTotal(this.quizData);
+
+        const sumOfLevels = allStats.reduce((acc, s) => acc + Math.min(8, (s.srsLevel || 0)), 0);
+        const maxPossibleLevels = (realTotalQuestions || 1) * 8;
+        const masteryPercent = Math.min(100, Math.round((sumOfLevels / maxPossibleLevels) * 100 * 10) / 10);
+
+        // Map 0-100% to 0-3776m
+        const heightMeters = Math.round(masteryPercent * 37.76);
+
+        // SRS Due Today (Everything including overdue)
+        const now = new Date();
+        const formatDateStr = (d) => {
+            return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+        };
+        const todayStr = formatDateStr(now);
+
+        const dueTodayTotal = Object.entries(this.questionStats).filter(([key, s]) => {
+            if (!s.nextReview) return false;
+            if (key.startsWith('clause-') && !key.startsWith('clause-summary-')) return false;
+            const reviewDate = new Date(s.nextReview);
+            return formatDateStr(reviewDate) <= todayStr;
+        }).length;
+
+        // Current Due NOW (for the active learning buttons)
+        const dueCount = Object.entries(this.questionStats).filter(([key, s]) => {
+            if (!s.nextReview) return false;
+            if (key.startsWith('clause-') && !key.startsWith('clause-summary-')) return false;
+            return new Date(s.nextReview) <= now;
+        }).length;
+
+        // SRS Due Tomorrow calculation (Specific to that day, to match the bar)
+        const tomorrow = new Date(now);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const tomorrowStr = formatDateStr(tomorrow);
+
+        const tomorrowSpecificCount = Object.entries(this.questionStats).filter(([key, s]) => {
+            if (!s.nextReview) return false;
+            if (key.startsWith('clause-') && !key.startsWith('clause-summary-')) return false;
+            return formatDateStr(new Date(s.nextReview)) === tomorrowStr;
+        }).length;
+
+        // Update UI
+        const masteryEl = document.getElementById('mastery-percent');
+        const heightEl = document.getElementById('climb-height');
+        const dueCountEl = document.getElementById('srs-due-count');
+        const dueTomorrowEl = document.getElementById('srs-tomorrow-count');
+        const hikerMarker = document.getElementById('hiker-marker');
+        const fujiSvg = document.querySelector('.fuji-svg');
+
+        if (masteryEl) masteryEl.textContent = `${masteryPercent}%`;
+        if (heightEl) heightEl.textContent = `${heightMeters} m`;
+        if (dueCountEl) {
+            dueCountEl.textContent = dueTodayTotal; // Match the first bar
+            const card = dueCountEl.closest('.main-stat-card');
+            if (card) card.classList.toggle('due-active', dueCount > 0);
+        }
+        if (dueTomorrowEl) {
+            dueTomorrowEl.textContent = tomorrowSpecificCount; // Match the second bar
+        }
+
+        if (hikerMarker) {
+            // Mt Fuji path logic in SVG: Base (20, 110) to Summit (100, 20)
+            const startX = 20; const startY = 110;
+            const endX = 100; const endY = 20;
+            const currentX = startX + (endX - startX) * (masteryPercent / 100);
+            const currentY = startY + (endY - startY) * (masteryPercent / 100);
+
+            // Trigger Walking Animation
+            hikerMarker.classList.add('walking');
+            hikerMarker.style.setProperty('--hiker-x', `${currentX}px`);
+            hikerMarker.style.setProperty('--hiker-y', `${currentY}px`);
+            hikerMarker.setAttribute('transform', `translate(${currentX}, ${currentY})`);
+
+            setTimeout(() => hikerMarker.classList.remove('walking'), 2000);
+        }
+
+        // Daily Progress
+        const nowTime = new Date();
+        nowTime.setHours(0, 0, 0, 0);
+        const todayAnswers = this.history.filter(h => {
+            const hDate = h.isoDate ? new Date(h.isoDate) : new Date(h.timestamp);
+            hDate.setHours(0, 0, 0, 0);
+            return hDate.getTime() === nowTime.getTime();
+        }).reduce((acc, h) => {
+            const scoreParts = h.score.split(' / ');
+            // Number of questions answered is in the second part of "Correct / Answered"
+            return acc + (parseInt(scoreParts[1]) || 0);
+        }, 0);
+
+        const dailyCountEl = document.getElementById('daily-count');
+        const dailyBarFill = document.getElementById('daily-bar-fill');
+
+        if (dailyCountEl) dailyCountEl.textContent = `${todayAnswers} / ${this.dailyGoal}`;
+        if (dailyBarFill) {
+            const dailyPercent = Math.min(100, (todayAnswers / this.dailyGoal) * 100);
+            dailyBarFill.style.width = `${dailyPercent}%`;
+
+            // Celebration color for daily goal
+            if (dailyPercent >= 100) {
+                dailyBarFill.style.background = 'linear-gradient(90deg, #ff9e00, #ff5400)';
+                if (fujiSvg) {
+                    const sky = fujiSvg.querySelector('#skyGradient stop:last-child');
+                    if (sky) sky.style.stopColor = '#4338ca'; // Deepen the sky
+                }
+            } else {
+                dailyBarFill.style.background = 'linear-gradient(90deg, #4cc9f0, #4361ee)';
+            }
+        }
+
+        // Show/Hide Review Buttons based on content
+        const dueItems = this.getDueQuestions();
+        const hasClauses = dueItems.some(i => i.type === 'clause');
+        const hasPages = dueItems.some(i => i.type === 'page');
+
+        if (this.startClauseOneReviewBtn) this.startClauseOneReviewBtn.classList.toggle('hidden', !hasClauses);
+        if (this.sidebarStartClauseOneReviewBtn) this.sidebarStartClauseOneReviewBtn.classList.toggle('hidden', !hasClauses);
+        if (this.startClauseReviewBtn) this.startClauseReviewBtn.classList.toggle('hidden', !hasClauses);
+        if (this.sidebarStartClauseReviewBtn) this.sidebarStartClauseReviewBtn.classList.toggle('hidden', !hasClauses);
+        if (this.startPageReviewBtn) this.startPageReviewBtn.classList.toggle('hidden', !hasPages);
+        if (this.sidebarStartPageReviewBtn) this.sidebarStartPageReviewBtn.classList.toggle('hidden', !hasPages);
+
+        if (this.sidebarSrsDueCount) {
+            this.sidebarSrsDueCount.textContent = dueCount;
+            const section = document.getElementById('sidebar-review-section');
+            if (section) section.classList.toggle('hidden', dueCount === 0);
+        }
+
+        // Always update projection chart when dashboard updates
+        this.renderSrsProjectionChart();
     }
 
-    this.dueListBody.innerHTML = dueItems.map(item => `
+    renderSrsProjectionChart() {
+        const canvas = document.getElementById('srsProjectionChart');
+        if (!canvas) return;
+
+        if (typeof Chart === 'undefined') {
+            console.error("Chart.js is not loaded.");
+            canvas.style.display = 'none';
+            return;
+        }
+
+        try {
+            const now = new Date();
+            const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+            const endOfThreeMonths = new Date(now.getFullYear(), now.getMonth() + 3, 0);
+
+            // Prepare data buckets
+            const datasets = {
+                low: { label: '未熟 (Lv0-2)', data: {}, color: 'rgba(255, 107, 107, 0.7)', border: '#ff6b6b' },
+                mid: { label: '成長 (Lv3-5)', data: {}, color: 'rgba(76, 201, 240, 0.7)', border: '#4cc9f0' },
+                high: { label: '習熟 (Lv6+)', data: {}, color: 'rgba(6, 214, 160, 0.7)', border: '#06d6a0' }
+            };
+
+            const labels = [];
+            const formatDateStr = (d) => {
+                return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+            };
+
+            const todayStr = formatDateStr(now);
+
+            let iter = new Date(startOfThisMonth);
+            while (iter <= endOfThreeMonths) {
+                const dateStr = formatDateStr(iter);
+                labels.push(dateStr);
+                datasets.low.data[dateStr] = 0;
+                datasets.mid.data[dateStr] = 0;
+                datasets.high.data[dateStr] = 0;
+                iter.setDate(iter.getDate() + 1);
+            }
+
+            // Aggregate SRS data by level
+            Object.entries(this.questionStats).forEach(([key, s]) => {
+                if (!s.nextReview) return;
+                if (key.startsWith('clause-') && !key.startsWith('clause-summary-')) return;
+
+                const level = s.srsLevel || 0;
+                let bucket = 'low';
+                if (level >= 6) bucket = 'high';
+                else if (level >= 3) bucket = 'mid';
+
+                const reviewDate = new Date(s.nextReview);
+                const reviewDateStr = formatDateStr(reviewDate);
+                const reviewTime = new Date(reviewDate).setHours(0, 0, 0, 0);
+                const nowTime = new Date(now).setHours(0, 0, 0, 0);
+
+                let targetDate = reviewDateStr;
+                if (reviewTime <= nowTime) targetDate = todayStr;
+
+                if (datasets[bucket].data[targetDate] !== undefined) {
+                    datasets[bucket].data[targetDate]++;
+                }
+            });
+
+            const formattedLabels = labels.map(label => {
+                const d = new Date(label);
+                return (d.getMonth() + 1) + '/' + d.getDate();
+            });
+
+            if (this.srsProjectionChart) {
+                this.srsProjectionChart.destroy();
+            }
+
+            const ctx = canvas.getContext('2d');
+            this.srsProjectionChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: formattedLabels,
+                    datasets: Object.keys(datasets).map(key => ({
+                        label: datasets[key].label,
+                        data: labels.map(l => datasets[key].data[l]),
+                        backgroundColor: labels.map(l => l === todayStr ? datasets[key].color.replace('0.7', '0.9') : datasets[key].color),
+                        borderColor: datasets[key].border,
+                        borderWidth: 1,
+                        stack: 'srs'
+                    }))
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            align: 'end',
+                            labels: {
+                                color: 'rgba(255,255,255,0.7)',
+                                boxWidth: 12,
+                                font: { size: 10 }
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                title: (items) => {
+                                    const idx = items[0].dataIndex;
+                                    return labels[idx].replace(/-/g, '/');
+                                },
+                                label: (item) => `${item.dataset.label}: ${item.raw} 問`
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            stacked: true,
+                            grid: { display: false },
+                            ticks: {
+                                color: 'rgba(255,255,255,0.5)',
+                                font: { size: 10 },
+                                maxRotation: 0,
+                                autoSkip: true,
+                                maxTicksLimit: 15
+                            }
+                        },
+                        y: {
+                            stacked: true,
+                            beginAtZero: true,
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: {
+                                color: 'rgba(255,255,255,0.5)',
+                                stepSize: 5 // Better for larger counts
+                            }
+                        }
+                    }
+                }
+            });
+        } catch (e) {
+            console.error("Error rendering SRS projection chart:", e);
+        }
+    }
+
+
+    getDueQuestions() {
+        const now = new Date();
+        const due = [];
+        // Helper to find question in quizData
+        const findQuestion = (qId) => {
+            const isClauseSummary = qId.startsWith('clause-summary-');
+            const searchId = isClauseSummary ? qId.replace('clause-summary-', '') : qId;
+
+            for (const set of this.quizData) {
+                if (set.type === 'clause' && set.id === searchId) return { set, q: set };
+                if (set.questions) {
+                    const q = set.questions.find(item => item.id === qId);
+                    if (q) return { set, q };
+                }
+            }
+            return null;
+        };
+
+        Object.entries(this.questionStats).forEach(([id, stat]) => {
+            // Ignore individual blanks for due list (Summaries only)
+            if (id.startsWith('clause-') && !id.startsWith('clause-summary-')) return;
+
+            if (stat.nextReview && new Date(stat.nextReview) <= now) {
+                const found = findQuestion(id);
+                if (found) {
+                    due.push({
+                        id,
+                        type: found.set.type === 'clause' ? 'clause' : 'page',
+                        text: found.q.text || found.set.title,
+                        setName: found.set.title,
+                        fullSet: found.set,
+                        qObj: found.q
+                    });
+                }
+            }
+        });
+        return due;
+    }
+
+    toggleDueList() {
+        if (!this.dueListContainer) return;
+        const isHidden = this.dueListContainer.classList.contains('hidden');
+        if (!isHidden) {
+            this.dueListContainer.classList.add('hidden');
+            return;
+        }
+
+        const dueItems = this.getDueQuestions();
+        if (dueItems.length === 0) {
+            alert("現在、復習待ちの問題はありません。");
+            return;
+        }
+
+        this.dueListBody.innerHTML = dueItems.map(item => `
             <tr>
                 <td><span class="badge ${item.type === 'clause' ? 'srs-clause' : 'srs-page'}">${item.type === 'clause' ? '条文' : '選択'}</span></td>
                 <td><div class="due-text" title="${item.text}">${item.text.substring(0, 50)}${item.text.length > 50 ? '...' : ''}</div><div class="due-source">${item.setName}</div></td>
                 <td><button class="secondary-btn mini-btn" onclick="app.navigateToQuestion('${item.fullSet.id}')">移動</button></td>
             </tr>
         `).join('');
-    this.dueListContainer.classList.remove('hidden');
-}
-
-generateDueReview(type, limit) {
-    const dueItems = this.getDueQuestions().filter(i => i.type === type);
-    if (dueItems.length === 0) return;
-
-    // Shuffle and Slice
-    const shuffled = dueItems.sort(() => 0.5 - Math.random());
-    const selected = shuffled.slice(0, limit);
-
-    this.isAutoGenerated = true;
-    if (type === 'clause') {
-        // Support multiple clauses by treating each as a individual "question" row in a page
-        // This ensures each clause retains its original ID for SRS tracking.
-        const questions = selected.map(item => {
-            const q = JSON.parse(JSON.stringify(item.fullSet));
-            // Strip prefix if it exists to get the base ID for batchCheckAnswers to use correctly
-            q.id = item.id.startsWith('clause-summary-') ? item.id.replace('clause-summary-', '') : item.id;
-            q.type = 'clause';
-            q.origPage = item.setName;
-            return q;
-        });
-
-        this.autoGeneratedSet = {
-            id: "auto-due-review-clause",
-            type: 'page', // Use page type to render questions individually
-            title: `【復習】穴埋め式問題 (${selected.length}題)`,
-            columns: ["条文"],
-            questions: questions
-        };
-    } else {
-        this.autoGeneratedSet = {
-            id: "auto-due-review",
-            title: `【復習】選択式 特訓 (${selected.length}題)`,
-            columns: selected[0].fullSet.columns || ["項目", "正解"],
-            questions: selected.map(i => {
-                return {
-                    ...JSON.parse(JSON.stringify(i.qObj)),
-                    origPage: i.fullSet.title,
-                    columns: i.fullSet.columns,
-                    isMultiSelect: i.fullSet.isMultiSelect
-                };
-            }),
-            isMultiSelect: selected.some(i => i.fullSet.isMultiSelect)
-        };
+        this.dueListContainer.classList.remove('hidden');
     }
 
-    this.loadSet(this.autoGeneratedSet.id);
-    if (this.sidebar) this.sidebar.classList.remove('open');
-}
+    generateDueReview(type, limit) {
+        const dueItems = this.getDueQuestions().filter(i => i.type === type);
+        if (dueItems.length === 0) return;
 
-renderTableFromMarkdown(lines) {
-    let tableHtml = '<div class="table-wrapper"><table>';
-    lines.forEach((line, idx) => {
-        const cells = line.split('|').map(c => c.trim()).filter((c, i, arr) => i > 0 && i < arr.length - 1);
-        if (cells.length === 0) return;
-        const tag = (idx === 0) ? 'th' : 'td';
+        // Shuffle and Slice
+        const shuffled = dueItems.sort(() => 0.5 - Math.random());
+        const selected = shuffled.slice(0, limit);
 
-        tableHtml += '<tr>';
-        cells.forEach(cell => {
-            let content = cell.replace(/_br_/g, '<br>');
-            let style = '';
+        this.isAutoGenerated = true;
+        if (type === 'clause') {
+            // Support multiple clauses by treating each as a individual "question" row in a page
+            // This ensures each clause retains its original ID for SRS tracking.
+            const questions = selected.map(item => {
+                const q = JSON.parse(JSON.stringify(item.fullSet));
+                // Strip prefix if it exists to get the base ID for batchCheckAnswers to use correctly
+                q.id = item.id.startsWith('clause-summary-') ? item.id.replace('clause-summary-', '') : item.id;
+                q.type = 'clause';
+                q.origPage = item.setName;
+                return q;
+            });
 
-            // Parse {width} for headers
-            if (idx === 0) {
-                const widthMatch = content.match(/\{(.*?)\}/);
-                if (widthMatch) {
-                    style = ` style="width: ${widthMatch[1]}; min-width: ${widthMatch[1]};"`;
-                    content = content.replace(widthMatch[0], '');
+            this.autoGeneratedSet = {
+                id: "auto-due-review-clause",
+                type: 'page', // Use page type to render questions individually
+                title: `【復習】穴埋め式問題 (${selected.length}題)`,
+                columns: ["条文"],
+                questions: questions
+            };
+        } else {
+            this.autoGeneratedSet = {
+                id: "auto-due-review",
+                title: `【復習】選択式 特訓 (${selected.length}題)`,
+                columns: selected[0].fullSet.columns || ["項目", "正解"],
+                questions: selected.map(i => {
+                    return {
+                        ...JSON.parse(JSON.stringify(i.qObj)),
+                        origPage: i.fullSet.title,
+                        columns: i.fullSet.columns,
+                        isMultiSelect: i.fullSet.isMultiSelect
+                    };
+                }),
+                isMultiSelect: selected.some(i => i.fullSet.isMultiSelect)
+            };
+        }
+
+        this.loadSet(this.autoGeneratedSet.id);
+        if (this.sidebar) this.sidebar.classList.remove('open');
+    }
+
+    renderTableFromMarkdown(lines) {
+        let tableHtml = '<div class="table-wrapper"><table>';
+        lines.forEach((line, idx) => {
+            const cells = line.split('|').map(c => c.trim()).filter((c, i, arr) => i > 0 && i < arr.length - 1);
+            if (cells.length === 0) return;
+            const tag = (idx === 0) ? 'th' : 'td';
+
+            tableHtml += '<tr>';
+            cells.forEach(cell => {
+                let content = cell.replace(/_br_/g, '<br>');
+                let style = '';
+
+                // Parse {width} for headers
+                if (idx === 0) {
+                    const widthMatch = content.match(/\{(.*?)\}/);
+                    if (widthMatch) {
+                        style = ` style="width: ${widthMatch[1]}; min-width: ${widthMatch[1]};"`;
+                        content = content.replace(widthMatch[0], '');
+                    }
                 }
-            }
 
-            tableHtml += `<${tag}${style}>${content}</${tag}>`;
+                tableHtml += `<${tag}${style}>${content}</${tag}>`;
+            });
+            tableHtml += '</tr>';
         });
-        tableHtml += '</tr>';
-    });
-    tableHtml += '</table></div>';
-    return tableHtml;
-}
+        tableHtml += '</table></div>';
+        return tableHtml;
+    }
 
-renderChart() {
-    const ctx = document.getElementById('statsChart').getContext('2d');
-    if (this.statsChart) this.statsChart.destroy();
-    const allStats = Object.values(this.questionStats).filter(s => s.total > 0).map(s => {
-        const recent = s.recent || [];
-        const rTotal = recent.length;
-        const rCorrect = recent.reduce((a, b) => a + b, 0);
-        const accuracy = rTotal > 0 ? Math.round((rCorrect / rTotal) * 100) : 0;
-        const errors = rTotal - rCorrect;
-        return { ...s, accuracy, errors, rTotal, rCorrect };
-    });
-    let sortedStats, data, label, color;
-    if (this.chartMode === 'accuracy') { sortedStats = allStats.sort((a, b) => a.accuracy - b.accuracy).slice(0, 10); data = sortedStats.map(s => s.accuracy); label = '正答率 (%)'; color = '#4cc9f0'; }
-    else if (this.chartMode === 'frequency') { sortedStats = allStats.sort((a, b) => b.total - a.total).slice(0, 10); data = sortedStats.map(s => s.total); label = '解答回数 (回)'; color = '#f72585'; }
-    else { sortedStats = allStats.sort((a, b) => b.errors - a.errors).slice(0, 10); data = sortedStats.map(s => s.errors); label = '最近の誤答回数 (回/5回中)'; color = '#ff9f1c'; }
-    const labels = sortedStats.map(s => s.text.length > 8 ? s.text.substring(0, 7) + '...' : s.text);
-    this.statsChart = new Chart(ctx, {
-        type: 'bar', data: { labels: labels, datasets: [{ label: label, data: data, backgroundColor: color + 'dd', borderColor: color, borderWidth: 1, borderRadius: 8 }] },
-        options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false }, tooltip: { callbacks: { title: (items) => sortedStats[items[0].dataIndex].text, label: (item) => `${label}: ${item.raw}` } } }, scales: { x: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: 'rgba(255,255,255,0.6)' } }, y: { grid: { display: false }, ticks: { color: 'rgba(255,255,255,0.8)', font: { size: 12 } } } } }
-    });
-}
+    renderChart() {
+        const ctx = document.getElementById('statsChart').getContext('2d');
+        if (this.statsChart) this.statsChart.destroy();
+        const allStats = Object.values(this.questionStats).filter(s => s.total > 0).map(s => {
+            const recent = s.recent || [];
+            const rTotal = recent.length;
+            const rCorrect = recent.reduce((a, b) => a + b, 0);
+            const accuracy = rTotal > 0 ? Math.round((rCorrect / rTotal) * 100) : 0;
+            const errors = rTotal - rCorrect;
+            return { ...s, accuracy, errors, rTotal, rCorrect };
+        });
+        let sortedStats, data, label, color;
+        if (this.chartMode === 'accuracy') { sortedStats = allStats.sort((a, b) => a.accuracy - b.accuracy).slice(0, 10); data = sortedStats.map(s => s.accuracy); label = '正答率 (%)'; color = '#4cc9f0'; }
+        else if (this.chartMode === 'frequency') { sortedStats = allStats.sort((a, b) => b.total - a.total).slice(0, 10); data = sortedStats.map(s => s.total); label = '解答回数 (回)'; color = '#f72585'; }
+        else { sortedStats = allStats.sort((a, b) => b.errors - a.errors).slice(0, 10); data = sortedStats.map(s => s.errors); label = '最近の誤答回数 (回/5回中)'; color = '#ff9f1c'; }
+        const labels = sortedStats.map(s => s.text.length > 8 ? s.text.substring(0, 7) + '...' : s.text);
+        this.statsChart = new Chart(ctx, {
+            type: 'bar', data: { labels: labels, datasets: [{ label: label, data: data, backgroundColor: color + 'dd', borderColor: color, borderWidth: 1, borderRadius: 8 }] },
+            options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false }, tooltip: { callbacks: { title: (items) => sortedStats[items[0].dataIndex].text, label: (item) => `${label}: ${item.raw}` } } }, scales: { x: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: 'rgba(255,255,255,0.6)' } }, y: { grid: { display: false }, ticks: { color: 'rgba(255,255,255,0.8)', font: { size: 12 } } } } }
+        });
+    }
 
-generateSpecialQuiz(type) {
-    const allQuestions = [];
-    let maxCols = 2;
-    let bestCols = ["項目", "選択肢"];
+    generateSpecialQuiz(type) {
+        const allQuestions = [];
+        let maxCols = 2;
+        let bestCols = ["項目", "選択肢"];
 
-    this.quizData.forEach(set => {
-        if (!this.isItemSelectedForPool(set.id)) return;
+        this.quizData.forEach(set => {
+            if (!this.isItemSelectedForPool(set.id)) return;
 
-        const isSrs = type.startsWith('srs');
-        const targetType = isSrs ? type.split('-')[1] : null; // 'clause' or 'page'
+            const isSrs = type.startsWith('srs');
+            const targetType = isSrs ? type.split('-')[1] : null; // 'clause' or 'page'
 
-        if (set.type === 'page' && set.questions && type !== 'clause-weak') {
-            if (isSrs && targetType !== 'page') return;
+            if (set.type === 'page' && set.questions && type !== 'clause-weak') {
+                if (isSrs && targetType !== 'page') return;
 
-            if (set.columns && set.columns.length > maxCols) {
-                maxCols = set.columns.length;
-                bestCols = [...set.columns];
-            }
-            set.questions.forEach(q => {
-                if (q.isInPool === false) return;
-                const stat = this.questionStats[q.id] || { correct: 0, total: 0, recent: [] };
+                if (set.columns && set.columns.length > maxCols) {
+                    maxCols = set.columns.length;
+                    bestCols = [...set.columns];
+                }
+                set.questions.forEach(q => {
+                    if (q.isInPool === false) return;
+                    const stat = this.questionStats[q.id] || { correct: 0, total: 0, recent: [] };
+                    const recent = stat.recent || [];
+                    const accuracy = recent.length > 0 ? (recent.reduce((a, b) => a + b, 0) / recent.length) : -1;
+
+                    allQuestions.push({
+                        id: q.id,
+                        type: 'page',
+                        text: q.text,
+                        answer: q.answer,
+                        memo: q.memo || '',
+                        origPage: set.title,
+                        pageId: set.id,
+                        columns: set.columns,
+                        accuracy: accuracy,
+                        total: stat.total,
+                        nextReview: stat.nextReview,
+                        isMultiSelect: set.isMultiSelect
+                    });
+                });
+            } else if (set.type === 'clause' && set.text) {
+                if (type !== 'clause-weak' && !isSrs && type !== 'rare' && type !== 'random') return;
+                if (isSrs && targetType !== 'clause') return;
+
+                const statKey = `clause-summary-${set.id}`;
+                const stat = this.questionStats[statKey] || { correct: 0, total: 0, recent: [] };
                 const recent = stat.recent || [];
                 const accuracy = recent.length > 0 ? (recent.reduce((a, b) => a + b, 0) / recent.length) : -1;
 
                 allQuestions.push({
-                    id: q.id,
-                    type: 'page',
-                    text: q.text,
-                    answer: q.answer,
-                    memo: q.memo || '',
+                    id: set.id,
+                    type: 'clause',
+                    text: set.text,
+                    dummies: set.dummies,
                     origPage: set.title,
                     pageId: set.id,
-                    columns: set.columns,
                     accuracy: accuracy,
                     total: stat.total,
                     nextReview: stat.nextReview,
-                    isMultiSelect: set.isMultiSelect
+                    isMultiSelect: false
                 });
-            });
-        } else if (set.type === 'clause' && set.text) {
-            if (type !== 'clause-weak' && !isSrs && type !== 'rare' && type !== 'random') return;
-            if (isSrs && targetType !== 'clause') return;
-
-            const statKey = `clause-summary-${set.id}`;
-            const stat = this.questionStats[statKey] || { correct: 0, total: 0, recent: [] };
-            const recent = stat.recent || [];
-            const accuracy = recent.length > 0 ? (recent.reduce((a, b) => a + b, 0) / recent.length) : -1;
-
-            allQuestions.push({
-                id: set.id,
-                type: 'clause',
-                text: set.text,
-                dummies: set.dummies,
-                origPage: set.title,
-                pageId: set.id,
-                accuracy: accuracy,
-                total: stat.total,
-                nextReview: stat.nextReview,
-                isMultiSelect: false
-            });
-        }
-    });
-
-    if (allQuestions.length === 0) {
-        alert('特訓の対象となる問題がありません。サイドバーのチェックボックスを入れて対象を選択してください。');
-        return;
-    }
-
-    let filtered, title;
-    if (type === 'weak') {
-        title = "特訓：苦手な問題ワースト10";
-        // Get all questions with errors, sort by accuracy
-        const candidates = allQuestions.filter(q => q.total > 0).sort((a, b) => a.accuracy - b.accuracy);
-        if (candidates.length === 0) {
-            alert('まだ間違えた記録がありません。まずは普通に学習して回答を記録してください。');
-            return;
-        }
-        // Pick from the top 20 worst questions and shuffle for variety
-        filtered = candidates.slice(0, 20).sort(() => Math.random() - 0.5).slice(0, 10);
-    } else if (type === 'clause-weak') {
-        title = "特訓：苦手な条文ワースト3";
-        const candidates = allQuestions.filter(q => q.total > 0).sort((a, b) => a.accuracy - b.accuracy);
-        if (candidates.length === 0) {
-            alert('まだ間違えた記録のある条文がありません。まずは各ページから条文暗記に取り組んでください。');
-            return;
-        }
-        // Pick from the top 10 worst clauses and shuffle for variety
-        filtered = candidates.slice(0, 10).sort(() => Math.random() - 0.5).slice(0, 3);
-    } else if (type.startsWith('srs')) {
-        const mode = type.split('-')[1];
-        title = mode === 'clause' ? "特訓：忘却曲線（条文穴埋め）" : "特訓：忘却曲線（選択式）";
-        const now = new Date();
-        filtered = allQuestions.filter(q => {
-            if (!q.nextReview) return true;
-            return new Date(q.nextReview) <= now;
-        });
-        if (filtered.length === 0) {
-            alert('現在、復習が必要な問題はありません。素晴らしいですね！');
-            return;
-        }
-        // Shuffle and limit
-        const limit = mode === 'clause' ? 3 : 15;
-        filtered = filtered.sort(() => Math.random() - 0.5).slice(0, limit);
-
-        this.isAutoGenerated = true;
-        if (mode === 'clause') {
-            // Consistent with generateDueReview for clause multi-display
-            this.autoGeneratedSet = {
-                id: `auto-${type}`,
-                title: title,
-                type: 'page', // Use page type to ensure each clause is treated as its own row/stat
-                columns: ["条文"],
-                questions: filtered.map(q => ({
-                    ...q,
-                    type: 'clause'
-                }))
-            };
-        } else {
-            this.autoGeneratedSet = {
-                id: `auto-${type}`,
-                title: title,
-                type: 'page',
-                columns: bestCols,
-                questions: filtered
-            };
-        }
-        this.switchView('quiz');
-        this.loadSet(this.autoGeneratedSet.id);
-        return;
-    } else if (type === 'random') {
-        title = "特訓：全問題からランダム10問";
-        filtered = allQuestions.sort(() => Math.random() - 0.5).slice(0, 10);
-    } else {
-        title = "特訓：未学習・低頻度な問題10問";
-        filtered = allQuestions.sort((a, b) => {
-            if (a.total !== b.total) return a.total - b.total;
-            return a.accuracy - b.accuracy;
-        }).slice(0, 10);
-    }
-
-    // Recalculate optimal columns - use UNION of all columns to ensure compatibility
-    let finalBestCols = ["項目"];
-    const colSet = new Set();
-    filtered.forEach(q => {
-        if (q.type === 'page' && q.columns) {
-            // Skip the first column '項目' which we already added
-            for (let i = 1; i < q.columns.length; i++) {
-                colSet.add(q.columns[i]);
             }
+        });
+
+        if (allQuestions.length === 0) {
+            alert('特訓の対象となる問題がありません。サイドバーのチェックボックスを入れて対象を選択してください。');
+            return;
         }
-    });
-    if (colSet.size > 0) {
-        finalBestCols = ["項目", ...Array.from(colSet)];
-    } else if (filtered.every(q => q.type === 'clause')) {
-        finalBestCols = ["条文内容"];
-    } else {
-        finalBestCols = ["項目", "選択肢"];
-    }
-    bestCols = finalBestCols;
 
-    this.autoGeneratedSet = {
-        id: 'temp-autogen',
-        title: title,
-        questions: filtered,
-        columns: bestCols
-    };
-    this.isAutoGenerated = true;
-    this.switchView('quiz');
-    this.loadSet('temp-autogen');
-}
-
-renderTable() {
-    this._currentActiveRowId = null; // Force refresh bank on re-render
-    if (this.globalKeywordBank) {
-        this.globalKeywordBank.innerHTML = '';
-        this.globalKeywordBank.classList.add('hidden');
-        this.globalKeywordBank.classList.remove('active-bank');
-    }
-    this.shuffledCache = {}; // Aggressive clear to prevent stale options
-    if (!this.currentSetId && !this.isAutoGenerated) return;
-    const set = this.isAutoGenerated ? this.autoGeneratedSet : this.quizData.find(s => s.id === this.currentSetId);
-
-    // Hide delete/clone buttons for folders or when no set is selected or in auto-generated mode
-    const isFolder = !set || set.type === 'folder' || this.isAutoGenerated;
-    if (this.deletePageBtn) this.deletePageBtn.classList.toggle('hidden', isFolder);
-    if (this.clonePageBtn) this.clonePageBtn.classList.toggle('hidden', isFolder);
-
-    if (!set || set.type === 'folder') {
-        this.tableBody.innerHTML = '';
-        this.tableHead.innerHTML = '';
-        this.quizTitle.textContent = set ? set.title : '問題を選択してください';
-        if (this.clauseEditor) this.clauseEditor.classList.add('hidden');
-        if (this.clauseDisplay) this.clauseDisplay.classList.add('hidden');
-        return;
-    }
-
-    const isClause = set.type === 'clause';
-    if (this.clauseDisplay) {
-        this.clauseDisplay.classList.toggle('hidden', !isClause);
-        if (!isClause) this.clauseDisplay.innerHTML = '';
-    }
-    if (this.clauseEditor) {
-        this.clauseEditor.classList.toggle('hidden', !isClause);
-        this.clauseEditor.classList.toggle('hidden-quiz', !isClause || !this.isEditMode);
-    }
-    this.tableWrapper.classList.toggle('hidden', isClause);
-
-    if (isClause) {
-        this.renderClauseView(set);
-        return;
-    } else {
-        if (this.columnControls) this.columnControls.classList.toggle('hidden', !this.isEditMode);
-        if (this.tableControls) this.tableControls.classList.toggle('hidden', !this.isEditMode);
-    }
-
-    this.tableWrapper.innerHTML = '';
-
-    if (this.isAutoGenerated) {
-        // Group questions by their original column structure to avoid cross-page noise
-        const groups = [];
-        set.questions.forEach(q => {
-            // Clause types in auto-gen are always their own block
-            if (q.type === 'clause') {
-                groups.push({ type: 'clause', questions: [q], columns: ["条文内容"] });
+        let filtered, title;
+        if (type === 'weak') {
+            title = "特訓：苦手な問題ワースト10";
+            // Get all questions with errors, sort by accuracy
+            const candidates = allQuestions.filter(q => q.total > 0).sort((a, b) => a.accuracy - b.accuracy);
+            if (candidates.length === 0) {
+                alert('まだ間違えた記録がありません。まずは普通に学習して回答を記録してください。');
                 return;
             }
-
-            const colKey = q.columns ? q.columns.join('|') : 'default';
-            let g = groups.find(it => it.type === 'page' && it.key === colKey);
-            if (!g) {
-                g = { type: 'page', key: colKey, questions: [], columns: q.columns || ["項目", "選択肢"] };
-                groups.push(g);
+            // Pick from the top 20 worst questions and shuffle for variety
+            filtered = candidates.slice(0, 20).sort(() => Math.random() - 0.5).slice(0, 10);
+        } else if (type === 'clause-weak') {
+            title = "特訓：苦手な条文ワースト3";
+            const candidates = allQuestions.filter(q => q.total > 0).sort((a, b) => a.accuracy - b.accuracy);
+            if (candidates.length === 0) {
+                alert('まだ間違えた記録のある条文がありません。まずは各ページから条文暗記に取り組んでください。');
+                return;
             }
-            g.questions.push(q);
+            // Pick from the top 10 worst clauses and shuffle for variety
+            filtered = candidates.slice(0, 10).sort(() => Math.random() - 0.5).slice(0, 3);
+        } else if (type.startsWith('srs')) {
+            const mode = type.split('-')[1];
+            title = mode === 'clause' ? "特訓：忘却曲線（条文穴埋め）" : "特訓：忘却曲線（選択式）";
+            const now = new Date();
+            filtered = allQuestions.filter(q => {
+                if (!q.nextReview) return true;
+                return new Date(q.nextReview) <= now;
+            });
+            if (filtered.length === 0) {
+                alert('現在、復習が必要な問題はありません。素晴らしいですね！');
+                return;
+            }
+            // Shuffle and limit
+            const limit = mode === 'clause' ? 3 : 15;
+            filtered = filtered.sort(() => Math.random() - 0.5).slice(0, limit);
+
+            this.isAutoGenerated = true;
+            if (mode === 'clause') {
+                // Consistent with generateDueReview for clause multi-display
+                this.autoGeneratedSet = {
+                    id: `auto-${type}`,
+                    title: title,
+                    type: 'page', // Use page type to ensure each clause is treated as its own row/stat
+                    columns: ["条文"],
+                    questions: filtered.map(q => ({
+                        ...q,
+                        type: 'clause'
+                    }))
+                };
+            } else {
+                this.autoGeneratedSet = {
+                    id: `auto-${type}`,
+                    title: title,
+                    type: 'page',
+                    columns: bestCols,
+                    questions: filtered
+                };
+            }
+            this.switchView('quiz');
+            this.loadSet(this.autoGeneratedSet.id);
+            return;
+        } else if (type === 'random') {
+            title = "特訓：全問題からランダム10問";
+            filtered = allQuestions.sort(() => Math.random() - 0.5).slice(0, 10);
+        } else {
+            title = "特訓：未学習・低頻度な問題10問";
+            filtered = allQuestions.sort((a, b) => {
+                if (a.total !== b.total) return a.total - b.total;
+                return a.accuracy - b.accuracy;
+            }).slice(0, 10);
+        }
+
+        // Recalculate optimal columns - use UNION of all columns to ensure compatibility
+        let finalBestCols = ["項目"];
+        const colSet = new Set();
+        filtered.forEach(q => {
+            if (q.type === 'page' && q.columns) {
+                // Skip the first column '項目' which we already added
+                for (let i = 1; i < q.columns.length; i++) {
+                    colSet.add(q.columns[i]);
+                }
+            }
         });
+        if (colSet.size > 0) {
+            finalBestCols = ["項目", ...Array.from(colSet)];
+        } else if (filtered.every(q => q.type === 'clause')) {
+            finalBestCols = ["条文内容"];
+        } else {
+            finalBestCols = ["項目", "選択肢"];
+        }
+        bestCols = finalBestCols;
 
-        groups.forEach(g => {
-            // Collect keywords if the columns are generic
-            const genericNames = ["選択肢", "正解", "回答", "答え"];
-            const isGeneric = g.columns.some(col => genericNames.some(name => col.includes(name)));
+        this.autoGeneratedSet = {
+            id: 'temp-autogen',
+            title: title,
+            questions: filtered,
+            columns: bestCols
+        };
+        this.isAutoGenerated = true;
+        this.switchView('quiz');
+        this.loadSet('temp-autogen');
+    }
 
-            if (isGeneric) {
-                const keywords = new Set();
-                g.questions.forEach(q => {
-                    if (Array.isArray(q.answer)) q.answer.forEach(a => keywords.add(a));
-                    else if (q.answer) keywords.add(q.answer);
-                    if (q.dummies) q.dummies.forEach(d => keywords.add(d));
-                });
-                const allKws = Array.from(keywords).sort();
-                g.questions.forEach(q => {
-                    q._autoKeywords = allKws;
-                    const req = {};
-                    if (Array.isArray(q.answer)) q.answer.forEach(a => req[a] = (req[a] || 0) + 1);
-                    else if (q.answer) req[q.answer] = (req[q.answer] || 0) + 1;
-                    q._autoRequired = req;
-                });
-            }
+    renderTable() {
+        this._currentActiveRowId = null; // Force refresh bank on re-render
+        if (this.globalKeywordBank) {
+            this.globalKeywordBank.innerHTML = '';
+            this.globalKeywordBank.classList.add('hidden');
+            this.globalKeywordBank.classList.remove('active-bank');
+        }
+        this.shuffledCache = {}; // Aggressive clear to prevent stale options
+        if (!this.currentSetId && !this.isAutoGenerated) return;
+        const set = this.isAutoGenerated ? this.autoGeneratedSet : this.quizData.find(s => s.id === this.currentSetId);
 
+        // Hide delete/clone buttons for folders or when no set is selected or in auto-generated mode
+        const isFolder = !set || set.type === 'folder' || this.isAutoGenerated;
+        if (this.deletePageBtn) this.deletePageBtn.classList.toggle('hidden', isFolder);
+        if (this.clonePageBtn) this.clonePageBtn.classList.toggle('hidden', isFolder);
+
+        if (!set || set.type === 'folder') {
+            this.tableBody.innerHTML = '';
+            this.tableHead.innerHTML = '';
+            this.quizTitle.textContent = set ? set.title : '問題を選択してください';
+            if (this.clauseEditor) this.clauseEditor.classList.add('hidden');
+            if (this.clauseDisplay) this.clauseDisplay.classList.add('hidden');
+            return;
+        }
+
+        const isClause = set.type === 'clause';
+        if (this.clauseDisplay) {
+            this.clauseDisplay.classList.toggle('hidden', !isClause);
+            if (!isClause) this.clauseDisplay.innerHTML = '';
+        }
+        if (this.clauseEditor) {
+            this.clauseEditor.classList.toggle('hidden', !isClause);
+            this.clauseEditor.classList.toggle('hidden-quiz', !isClause || !this.isEditMode);
+        }
+        this.tableWrapper.classList.toggle('hidden', isClause);
+
+        if (isClause) {
+            this.renderClauseView(set);
+            return;
+        } else {
+            if (this.columnControls) this.columnControls.classList.toggle('hidden', !this.isEditMode);
+            if (this.tableControls) this.tableControls.classList.toggle('hidden', !this.isEditMode);
+        }
+
+        this.tableWrapper.innerHTML = '';
+
+        if (this.isAutoGenerated) {
+            // Group questions by their original column structure to avoid cross-page noise
+            const groups = [];
+            set.questions.forEach(q => {
+                // Clause types in auto-gen are always their own block
+                if (q.type === 'clause') {
+                    groups.push({ type: 'clause', questions: [q], columns: ["条文内容"] });
+                    return;
+                }
+
+                const colKey = q.columns ? q.columns.join('|') : 'default';
+                let g = groups.find(it => it.type === 'page' && it.key === colKey);
+                if (!g) {
+                    g = { type: 'page', key: colKey, questions: [], columns: q.columns || ["項目", "選択肢"] };
+                    groups.push(g);
+                }
+                g.questions.push(q);
+            });
+
+            groups.forEach(g => {
+                // Collect keywords if the columns are generic
+                const genericNames = ["選択肢", "正解", "回答", "答え"];
+                const isGeneric = g.columns.some(col => genericNames.some(name => col.includes(name)));
+
+                if (isGeneric) {
+                    const keywords = new Set();
+                    g.questions.forEach(q => {
+                        if (Array.isArray(q.answer)) q.answer.forEach(a => keywords.add(a));
+                        else if (q.answer) keywords.add(q.answer);
+                        if (q.dummies) q.dummies.forEach(d => keywords.add(d));
+                    });
+                    const allKws = Array.from(keywords).sort();
+                    g.questions.forEach(q => {
+                        q._autoKeywords = allKws;
+                        const req = {};
+                        if (Array.isArray(q.answer)) q.answer.forEach(a => req[a] = (req[a] || 0) + 1);
+                        else if (q.answer) req[q.answer] = (req[q.answer] || 0) + 1;
+                        q._autoRequired = req;
+                    });
+                }
+
+                const table = document.createElement('table');
+                table.className = 'quiz-table auto-gen-table';
+                const thead = document.createElement('thead');
+                const tbody = document.createElement('tbody');
+                table.appendChild(thead);
+                table.appendChild(tbody);
+                this.tableWrapper.appendChild(table);
+                this.renderTableContent(g.columns, g.questions, thead, tbody, true);
+            });
+            this.quizTitle.textContent = set.title;
+        } else {
             const table = document.createElement('table');
-            table.className = 'quiz-table auto-gen-table';
-            const thead = document.createElement('thead');
-            const tbody = document.createElement('tbody');
+            table.id = 'quiz-table';
+            const thead = document.createElement('thead'); thead.id = 'table-head';
+            const tbody = document.createElement('tbody'); tbody.id = 'table-body';
             table.appendChild(thead);
             table.appendChild(tbody);
             this.tableWrapper.appendChild(table);
-            this.renderTableContent(g.columns, g.questions, thead, tbody, true);
-        });
-        this.quizTitle.textContent = set.title;
-    } else {
-        const table = document.createElement('table');
-        table.id = 'quiz-table';
-        const thead = document.createElement('thead'); thead.id = 'table-head';
-        const tbody = document.createElement('tbody'); tbody.id = 'table-body';
-        table.appendChild(thead);
-        table.appendChild(tbody);
-        this.tableWrapper.appendChild(table);
-        this.tableHead = thead;
-        this.tableBody = tbody;
-        this.renderTableContent(set.columns, set.questions, thead, tbody, false);
-        this.quizTitle.textContent = set.title;
+            this.tableHead = thead;
+            this.tableBody = tbody;
+            this.renderTableContent(set.columns, set.questions, thead, tbody, false);
+            this.quizTitle.textContent = set.title;
+        }
+
+        // Initial activation of global bank
+        setTimeout(() => this.activateFirstVisibleBank(), 200);
+
+        // Setup observer for sticky keyword banks as you scroll
+        setTimeout(() => this.setupQuestionObserver(), 300);
     }
 
-    // Initial activation of global bank
-    setTimeout(() => this.activateFirstVisibleBank(), 200);
+    renderTableContent(columns, questions, thead, tbody, isAuto) {
+        const headTr = document.createElement('tr');
+        const set = this.isAutoGenerated ? this.autoGeneratedSet : this.quizData.find(s => s.id === this.currentSetId);
 
-    // Setup observer for sticky keyword banks as you scroll
-    setTimeout(() => this.setupQuestionObserver(), 300);
-}
-
-renderTableContent(columns, questions, thead, tbody, isAuto) {
-    const headTr = document.createElement('tr');
-    const set = this.isAutoGenerated ? this.autoGeneratedSet : this.quizData.find(s => s.id === this.currentSetId);
-
-    // Header Rendering
-    if (isAuto) {
-        columns.forEach(col => {
-            const th = document.createElement('th');
-            th.textContent = col.replace(/\{.*?\}/, '');
-            const widthMatch = col.match(/\{(.*?)\}/);
-            if (widthMatch) { th.style.width = widthMatch[1]; th.style.minWidth = widthMatch[1]; }
-            headTr.appendChild(th);
-        });
-    } else {
-        if (this.isEditMode) {
-            const thPool = document.createElement('th');
-            thPool.innerHTML = '特訓'; thPool.className = 'pool-cell';
-            headTr.appendChild(thPool);
-        }
-        columns.forEach((col, index) => {
-            const th = document.createElement('th');
-            let displayLabel = col;
-            const widthMatch = col.match(/\{(.*?)\}/);
-            if (widthMatch) { th.style.width = widthMatch[1]; th.style.minWidth = widthMatch[1]; displayLabel = col.replace(widthMatch[0], ''); }
-            const span = document.createElement('span');
-            span.className = 'col-label-edit'; span.textContent = displayLabel;
-            if (this.isEditMode) {
-                span.contentEditable = true;
-                span.onblur = () => {
-                    const widthMatch = col.match(/\{.*?\}/);
-                    const widthSpec = widthMatch ? widthMatch[0] : '';
-                    let newVal = span.textContent.trim();
-                    if (widthSpec && !newVal.includes('{')) newVal += widthSpec;
-                    if (col !== newVal) {
-                        const oldDisplay = col.replace(/\{.*?\}/, '').trim();
-                        const newDisplay = newVal.replace(/\{.*?\}/, '').trim();
-                        columns[index] = newVal;
-                        questions.forEach(q => {
-                            if (Array.isArray(q.answer)) q.answer = q.answer.map(a => a === oldDisplay ? newDisplay : a);
-                            else if (q.answer === oldDisplay) q.answer = newDisplay;
-                        });
-                        this.saveData(); this.renderTable();
-                    }
-                };
-            }
-            th.appendChild(span);
-            if (this.isEditMode && index > 0) {
-                const delBtn = document.createElement('span'); delBtn.className = 'delete-col-btn'; delBtn.innerHTML = '×';
-                delBtn.onclick = (e) => { e.stopPropagation(); this.deleteColumn(index); };
-                th.appendChild(delBtn);
-            }
-            headTr.appendChild(th);
-        });
-    }
-    thead.appendChild(headTr);
-
-    // Rows Rendering
-    questions.forEach((q) => {
-        const tr = document.createElement('tr'); tr.id = `row-${q.id}`;
-        const isQMulti = isAuto ? q.isMultiSelect : set.isMultiSelect;
-
-        if (this.isChecked) {
-            const userAnswer = this.userAnswers[q.id];
-            if (userAnswer && (!Array.isArray(userAnswer) || userAnswer.length > 0)) {
-                let isAllCorrect = false;
-                if (isQMulti) {
-                    const correctSet = new Set(q.answer); const userSet = new Set(userAnswer);
-                    isAllCorrect = (correctSet.size === userSet.size && [...correctSet].every(item => userSet.has(item)));
-                } else { isAllCorrect = userAnswer === q.answer; }
-                tr.classList.add(isAllCorrect ? 'row-correct' : 'row-wrong');
-            }
-        }
-
-        // Pool inclusion checkbox cell (REQUIRED FOR ALIGNMENT in edit mode)
-        if (!isAuto && this.isEditMode) {
-            const tdPool = document.createElement('td');
-            tdPool.className = 'pool-cell';
-            const poolCheck = document.createElement('input');
-            poolCheck.type = 'checkbox';
-            poolCheck.checked = q.isInPool !== false;
-            poolCheck.onchange = (e) => {
-                q.isInPool = e.target.checked;
-                this.saveData();
-            };
-            tdPool.appendChild(poolCheck);
-            tr.appendChild(tdPool);
-        }
-
-        const tdQ = document.createElement('td'); tdQ.className = 'question-cell';
-
-        // Treat any question with [[...]] or ((...)) (including full-width) as a clause/blank type
-        if (q.type === 'clause' || /\[\[|［［|\(\(|（（/.test(q.text)) {
-            const wrapper = document.createElement('div'); wrapper.className = 'table-clause-wrapper';
-            const badge = document.createElement('span'); badge.className = 'clause-badge'; badge.textContent = q.origPage || "条文";
-            wrapper.appendChild(badge);
-
-            const cText = document.createElement('div'); cText.className = 'clause-text-mini';
-            let htmlContent = q.text;
-            const lines = q.text.split('\n');
-            const hasTable = lines.some(l => l.trim().startsWith('|'));
-            if (hasTable) {
-                let processedHtml = ''; let tableLines = [];
-                lines.forEach(line => {
-                    if (line.trim().startsWith('|')) tableLines.push(line);
-                    else {
-                        if (tableLines.length > 0) { processedHtml += this.renderTableFromMarkdown(tableLines); tableLines = []; }
-                        processedHtml += line + '<br>';
-                    }
-                });
-                if (tableLines.length > 0) processedHtml += this.renderTableFromMarkdown(tableLines);
-                htmlContent = processedHtml;
-            } else { htmlContent = q.text.replace(/\n/g, '<br>'); }
-
-            const rowKeywords = []; let blankIdx = 0;
-            // Combined drag/input support (including full-width)
-            const finalHtml = htmlContent.replace(/\[\[(.*?)\]\]|［［(.*?)］］|\(\((.*?)\)\)|（（(.*?)））/g, (match, p1, p2, p3, p4) => {
-                const keyword = p1 || p2 || p3 || p4;
-                const type = (p1 || p2) ? 'drag' : 'input';
-                rowKeywords.push({ text: keyword, type: type });
-                return `<span class="blank-placeholder" data-idx="${blankIdx++}"></span>`;
+        // Header Rendering
+        if (isAuto) {
+            columns.forEach(col => {
+                const th = document.createElement('th');
+                th.textContent = col.replace(/\{.*?\}/, '');
+                const widthMatch = col.match(/\{(.*?)\}/);
+                if (widthMatch) { th.style.width = widthMatch[1]; th.style.minWidth = widthMatch[1]; }
+                headTr.appendChild(th);
             });
-            cText.innerHTML = finalHtml;
-
-            const placeholders = cText.querySelectorAll('.blank-placeholder');
-            placeholders.forEach((placeholder) => {
-                const currentBlankIdx = parseInt(placeholder.dataset.idx);
-                const kwInfo = rowKeywords[currentBlankIdx];
-                const statKey = this.getBlankStatKey(q.id, currentBlankIdx);
-
-                const savedAnswer = this.userAnswers[`${q.id}-${currentBlankIdx}`];
-                const isAutoFilled = !this.isChecked && savedAnswer === kwInfo.text && this.shouldAutoFill(statKey);
-
-                if (kwInfo.type === 'drag') {
-                    const blank = document.createElement('div');
-                    blank.className = 'clause-blank';
-                    if (savedAnswer) {
-                        blank.textContent = savedAnswer;
-                        blank.classList.add('filled');
-                        if (isAutoFilled) blank.classList.add('auto-filled');
-                    } else {
-                        blank.innerHTML = '&nbsp;&nbsp;&nbsp;&nbsp;';
-                    }
-
-                    if (!this.isChecked) {
-                        blank.ondragover = (e) => { e.preventDefault(); blank.classList.add('drag-over'); };
-                        blank.ondragleave = () => blank.classList.remove('drag-over');
-                        blank.ondrop = (e) => {
-                            e.preventDefault(); blank.classList.remove('drag-over');
-                            const text = e.dataTransfer.getData('text/plain');
-                            if (text) {
-                                this.userAnswers[`${q.id}-${currentBlankIdx}`] = text;
-                                // Auto-fill other blanks with same correct answer
-                                rowKeywords.forEach((otherKw, j) => {
-                                    if (otherKw.text === kwInfo.text) this.userAnswers[`${q.id}-${j}`] = text;
-                                });
-                                this.renderTable();
-                                const trTarget = blank.closest('tr');
-                                if (trTarget) this.updateGlobalKeywordBank(trTarget);
-                            }
-                        };
-                        blank.onclick = () => {
-                            if (this.selectedKeyword) {
-                                // Click-to-Fill logic
-                                const val = this.selectedKeyword;
-                                this.userAnswers[`${q.id}-${currentBlankIdx}`] = val;
-                                // Auto-fill other blanks with same correct answer
-                                rowKeywords.forEach((otherKw, j) => {
-                                    if (otherKw.text === kwInfo.text) this.userAnswers[`${q.id}-${j}`] = val;
-                                });
-                                this.selectedKeyword = null;
-                                this.renderTable();
-                            } else if (this.userAnswers[`${q.id}-${currentBlankIdx}`]) {
-                                const val = this.userAnswers[`${q.id}-${currentBlankIdx}`];
-                                delete this.userAnswers[`${q.id}-${currentBlankIdx}`];
-                                // Sync removal
-                                rowKeywords.forEach((otherKw, j) => {
-                                    if (otherKw.text === kwInfo.text && this.userAnswers[`${q.id}-${j}`] === val) {
-                                        delete this.userAnswers[`${q.id}-${j}`];
-                                    }
-                                });
-                                this.renderTable();
-                                const trTarget = blank.closest('tr');
-                                if (trTarget) this.updateGlobalKeywordBank(trTarget);
-                            }
-                        };
-                    } else {
-                        const isCorrect = savedAnswer === kwInfo.text;
-                        blank.classList.add(isCorrect ? 'correct' : 'wrong');
-                        if (!isCorrect) {
-                            const reveal = document.createElement('span');
-                            reveal.className = 'reveal-correct'; reveal.textContent = ` (${kwInfo.text})`;
-                            blank.appendChild(reveal);
-                        }
-                    }
-                    const peek = document.createElement('span');
-                    peek.className = 'peek-answer';
-                    peek.textContent = `(${kwInfo.text})`;
-                    placeholder.replaceWith(blank, peek);
-                } else {
-                    // Input type
-                    const input = document.createElement('input');
-                    input.type = 'text';
-                    input.className = 'clause-input-blank mini';
-                    input.dataset.blankIdx = currentBlankIdx;
-
-                    if (isAutoFilled) input.classList.add('auto-filled');
-
-                    const savedAnswer = this.userAnswers[`${q.id}-${currentBlankIdx}`] || '';
-                    input.value = savedAnswer;
-                    if (savedAnswer) input.classList.add('filled');
-
-                    const peek = document.createElement('span');
-                    peek.className = 'peek-answer';
-                    peek.textContent = `(${kwInfo.text})`;
-
-                    if (!this.isChecked) {
-                        input.oninput = () => {
-                            const val = input.value;
-                            this.userAnswers[`${q.id}-${currentBlankIdx}`] = val;
-                            // Auto-fill other input blanks with same correct answer (matching normalized text)
-                            rowKeywords.forEach((otherKw, j) => {
-                                if (otherKw.type === 'input' && this.normalizeInput(otherKw.text) === this.normalizeInput(kwInfo.text)) {
-                                    this.userAnswers[`${q.id}-${j}`] = val;
-                                    const otherInput = cText.querySelector(`.clause-input-blank[data-blank-idx="${j}"]`);
-                                    if (otherInput && otherInput !== input) {
-                                        otherInput.value = val;
-                                    }
-                                }
-                            });
-                        };
-                    } else {
-                        input.disabled = true;
-                        const isCorrect = this.normalizeInput(savedAnswer) === this.normalizeInput(kwInfo.text);
-                        input.classList.add(isCorrect ? 'correct' : 'wrong');
-                        if (!isCorrect) {
-                            const tip = document.createElement('span');
-                            tip.className = 'reveal-correct';
-                            tip.textContent = ` (${kwInfo.text})`;
-                            placeholder.parentNode.insertBefore(tip, placeholder.nextSibling);
-                        }
-                    }
-                    placeholder.replaceWith(input, peek);
-                }
-            });
-            wrapper.appendChild(cText);
-            tdQ.appendChild(wrapper);
-
-            if (!this.isChecked) {
-                const dragKeywords = rowKeywords.filter(kw => kw.type === 'drag').map(kw => kw.text);
-                const allOptions = [...new Set([...dragKeywords, ...(q.dummies || [])])];
-                if (allOptions.length > 0) {
-                    tr.dataset.keywords = JSON.stringify(allOptions);
-                    tr.dataset.requiredCounts = JSON.stringify(dragKeywords.reduce((acc, text) => { acc[text] = (acc[text] || 0) + 1; return acc; }, {}));
-                    tr.dataset.qid = q.id;
-                }
-            }
-            tdQ.colSpan = columns.length + (!isAuto && this.isEditMode ? 1 : 0);
         } else {
-            // Standard row
-            if (!isAuto && this.isEditMode) {
-                const delBtn = document.createElement('span'); delBtn.className = 'delete-row-btn'; delBtn.innerHTML = '×';
-                delBtn.onclick = () => this.deleteRow(q.id);
-                tdQ.appendChild(delBtn);
+            if (this.isEditMode) {
+                const thPool = document.createElement('th');
+                thPool.innerHTML = '特訓'; thPool.className = 'pool-cell';
+                headTr.appendChild(thPool);
             }
-            if (isAuto && q.origPage) { const tag = document.createElement('div'); tag.className = 'page-tag'; tag.innerHTML = `<span class="source-label">出典:</span> ${q.origPage}`; tdQ.appendChild(tag); }
-
-            const spanText = document.createElement('span'); spanText.textContent = q.text;
-            if (!isAuto && this.isEditMode) { spanText.contentEditable = true; spanText.onblur = () => { q.text = spanText.textContent.trim(); this.saveData(); }; }
-            tdQ.appendChild(spanText);
-
-            if (!isAuto && this.isEditMode) {
-                const memoEl = document.createElement('div'); memoEl.className = 'memo-input'; memoEl.placeholder = 'メモ...'; memoEl.contentEditable = true;
-                memoEl.textContent = q.memo || ''; memoEl.onblur = () => { q.memo = memoEl.textContent.trim(); this.saveData(); };
-                tdQ.appendChild(memoEl);
-            } else if (this.isChecked && q.memo) {
-                const memoEl = document.createElement('div'); memoEl.className = 'memo-display';
-                memoEl.innerHTML = `<strong>解説:</strong> ${q.memo.replace(/\n/g, '<br>')}`;
-                tdQ.appendChild(memoEl);
-            }
-        }
-
-        const statKey = q.type === 'clause' ? `clause-summary-${q.id}` : q.id;
-        if (this.questionStats[statKey]) {
-            const historyBtn = document.createElement('span'); historyBtn.className = 'history-icon-btn'; historyBtn.innerHTML = ' 📈';
-            historyBtn.onclick = (e) => { e.stopPropagation(); this.showSRSDetail(statKey); };
-            tdQ.appendChild(historyBtn);
-        }
-        tr.appendChild(tdQ);
-
-        if (q.type !== 'clause') {
-            if (isAuto && q._autoKeywords && !this.isChecked) {
-                tr.dataset.keywords = JSON.stringify(q._autoKeywords);
-                tr.dataset.requiredCounts = JSON.stringify(q._autoRequired);
-                tr.dataset.qid = q.id;
-            }
-            for (let i = 1; i < columns.length; i++) {
-                const colLabelRaw = columns[i];
-                const colLabel = colLabelRaw.replace(/\{.*?\}/, '').trim();
-                const td = document.createElement('td'); td.className = 'choice-cell';
-                if (isQMulti) td.classList.add('multi-select');
-
-                const genericNames = ["選択肢", "正解", "回答", "答え"];
-                const isGenericCol = genericNames.some(name => colLabel.includes(name));
-
-                if (isAuto && q._autoKeywords && isGenericCol) {
-                    const userAnswer = this.userAnswers[q.id];
-                    td.textContent = (isQMulti ? (userAnswer || []).join(', ') : userAnswer) || colLabel;
-                    if (userAnswer && (!Array.isArray(userAnswer) || userAnswer.length > 0)) td.classList.add('filled');
-                } else {
-                    td.textContent = colLabel;
-                }
-
-                if (this.isEditMode && !isAuto) {
-                    const isCorrect = isQMulti ? (Array.isArray(q.answer) && q.answer.includes(colLabel)) : (q.answer === colLabel);
-                    if (isCorrect) td.classList.add(isQMulti ? 'multi-selected' : 'correct');
-                } else {
-                    const userAnswer = this.userAnswers[q.id];
-                    const isSelected = isQMulti ? (Array.isArray(userAnswer) && userAnswer.includes(colLabel)) : (userAnswer === colLabel);
-
-                    const statKey = this.getSummaryStatKey(q.id, 'page');
-                    const isAutoFilledAttempt = !this.isChecked && isSelected && (this.userAnswers[q.id] === q.answer) && this.shouldAutoFill(statKey);
-
-                    if (this.isChecked) {
-                        const isCorrectAnswer = isQMulti ? (Array.isArray(q.answer) && q.answer.includes(colLabel)) : (q.answer === colLabel);
-                        if (isCorrectAnswer) td.classList.add('correct');
-                        else if (isSelected) td.classList.add('wrong');
-                    } else if (isSelected) {
-                        td.classList.add('selected');
-                        if (isAutoFilledAttempt) td.classList.add('auto-filled');
-                    }
-                }
-
-                td.onclick = () => {
-                    if (!this.isChecked && !this.isEditMode) {
-                        if (isAuto && q._autoKeywords && isGenericCol) {
-                            if (isQMulti) this.userAnswers[q.id] = [];
-                            else delete this.userAnswers[q.id];
-                        } else {
-                            if (isQMulti) {
-                                if (!Array.isArray(this.userAnswers[q.id])) this.userAnswers[q.id] = [];
-                                if (this.userAnswers[q.id].includes(colLabel)) this.userAnswers[q.id] = this.userAnswers[q.id].filter(a => a !== colLabel);
-                                else this.userAnswers[q.id].push(colLabel);
-                            } else { this.userAnswers[q.id] = colLabel; }
-                        }
-                        this.renderTable();
-                        this.updateGlobalKeywordBank(tr);
-                    } else if (this.isEditMode && !isAuto) {
-                        if (isQMulti) {
-                            if (!Array.isArray(q.answer)) q.answer = [];
-                            if (q.answer.includes(colLabel)) q.answer = q.answer.filter(a => a !== colLabel);
-                            else q.answer.push(colLabel);
-                        } else { q.answer = colLabel; }
-                        this.saveData(); this.renderTable();
-                    }
-                };
-
-                if (isAuto && q._autoKeywords && isGenericCol && !this.isChecked) {
-                    td.ondragover = (e) => { e.preventDefault(); td.classList.add('drag-over'); };
-                    td.ondragleave = () => td.classList.remove('drag-over');
-                    td.ondrop = (e) => {
-                        e.preventDefault(); td.classList.remove('drag-over');
-                        const text = e.dataTransfer.getData('text/plain');
-                        if (text) {
-                            if (isQMulti) {
-                                if (!Array.isArray(this.userAnswers[q.id])) this.userAnswers[q.id] = [];
-                                if (!this.userAnswers[q.id].includes(text)) this.userAnswers[q.id].push(text);
-                            } else { this.userAnswers[q.id] = text; }
-                            this.renderTable();
-                            this.updateGlobalKeywordBank(tr);
+            columns.forEach((col, index) => {
+                const th = document.createElement('th');
+                let displayLabel = col;
+                const widthMatch = col.match(/\{(.*?)\}/);
+                if (widthMatch) { th.style.width = widthMatch[1]; th.style.minWidth = widthMatch[1]; displayLabel = col.replace(widthMatch[0], ''); }
+                const span = document.createElement('span');
+                span.className = 'col-label-edit'; span.textContent = displayLabel;
+                if (this.isEditMode) {
+                    span.contentEditable = true;
+                    span.onblur = () => {
+                        const widthMatch = col.match(/\{.*?\}/);
+                        const widthSpec = widthMatch ? widthMatch[0] : '';
+                        let newVal = span.textContent.trim();
+                        if (widthSpec && !newVal.includes('{')) newVal += widthSpec;
+                        if (col !== newVal) {
+                            const oldDisplay = col.replace(/\{.*?\}/, '').trim();
+                            const newDisplay = newVal.replace(/\{.*?\}/, '').trim();
+                            columns[index] = newVal;
+                            questions.forEach(q => {
+                                if (Array.isArray(q.answer)) q.answer = q.answer.map(a => a === oldDisplay ? newDisplay : a);
+                                else if (q.answer === oldDisplay) q.answer = newDisplay;
+                            });
+                            this.saveData(); this.renderTable();
                         }
                     };
                 }
-                tr.appendChild(td);
-            }
+                th.appendChild(span);
+                if (this.isEditMode && index > 0) {
+                    const delBtn = document.createElement('span'); delBtn.className = 'delete-col-btn'; delBtn.innerHTML = '×';
+                    delBtn.onclick = (e) => { e.stopPropagation(); this.deleteColumn(index); };
+                    th.appendChild(delBtn);
+                }
+                headTr.appendChild(th);
+            });
         }
-        tbody.appendChild(tr);
-    });
-}
+        thead.appendChild(headTr);
 
+        // Rows Rendering
+        questions.forEach((q) => {
+            const tr = document.createElement('tr'); tr.id = `row-${q.id}`;
+            const isQMulti = isAuto ? q.isMultiSelect : set.isMultiSelect;
 
-deleteRow(id) {
-    if (this.isAutoGenerated) return;
-    const set = this.quizData.find(s => s.id === this.currentSetId);
-    if (set.questions.length <= 1) { alert('最低1行は必要です。'); return; }
-    if (confirm('この行を削除しますか？')) {
-        set.questions = set.questions.filter(q => q.id !== id);
-        this.saveData(); this.renderTable();
-    }
-}
-
-moveRow(id, direction) {
-    if (this.isAutoGenerated) return;
-    const set = this.quizData.find(s => s.id === this.currentSetId);
-    const index = set.questions.findIndex(q => q.id === id);
-    if (index === -1) return;
-
-    const newIndex = index + direction;
-    if (newIndex < 0 || newIndex >= set.questions.length) return;
-
-    // Swap
-    const temp = set.questions[index];
-    set.questions[index] = set.questions[newIndex];
-    set.questions[newIndex] = temp;
-
-    this.saveData();
-    this.renderTable();
-}
-
-deleteColumn(index) {
-    if (this.isAutoGenerated) return;
-    const set = this.quizData.find(s => s.id === this.currentSetId);
-    if (set.columns.length <= 2) { alert('最低1つの選択肢は必要です。'); return; }
-    const colName = set.columns[index];
-    if (confirm(`列「${colName}」を削除しますか？`)) {
-        set.columns.splice(index, 1);
-        set.questions.forEach(q => {
-            if (Array.isArray(q.answer)) q.answer = q.answer.filter(a => a !== colName);
-            else if (q.answer === colName) q.answer = set.columns[1];
-        });
-        this.saveData(); this.renderTable();
-    }
-}
-
-renderTOC() {
-    // Build a flat list in order of display (DFS)
-    const getFlatDisplayList = (parentId = null, depth = 0) => {
-        let result = [];
-        const items = this.quizData.filter(item => item.parentId === parentId);
-        items.forEach(item => {
-            const globalIndex = this.quizData.findIndex(d => d.id === item.id);
-            result.push({ ...item, depth, globalIndex });
-            if (item.type === 'folder' && !item.isCollapsed) {
-                result = result.concat(getFlatDisplayList(item.id, depth + 1));
+            if (this.isChecked) {
+                const userAnswer = this.userAnswers[q.id];
+                if (userAnswer && (!Array.isArray(userAnswer) || userAnswer.length > 0)) {
+                    let isAllCorrect = false;
+                    if (isQMulti) {
+                        const correctSet = new Set(q.answer); const userSet = new Set(userAnswer);
+                        isAllCorrect = (correctSet.size === userSet.size && [...correctSet].every(item => userSet.has(item)));
+                    } else { isAllCorrect = userAnswer === q.answer; }
+                    tr.classList.add(isAllCorrect ? 'row-correct' : 'row-wrong');
+                }
             }
+
+            // Pool inclusion checkbox cell (REQUIRED FOR ALIGNMENT in edit mode)
+            if (!isAuto && this.isEditMode) {
+                const tdPool = document.createElement('td');
+                tdPool.className = 'pool-cell';
+                const poolCheck = document.createElement('input');
+                poolCheck.type = 'checkbox';
+                poolCheck.checked = q.isInPool !== false;
+                poolCheck.onchange = (e) => {
+                    q.isInPool = e.target.checked;
+                    this.saveData();
+                };
+                tdPool.appendChild(poolCheck);
+                tr.appendChild(tdPool);
+            }
+
+            const tdQ = document.createElement('td'); tdQ.className = 'question-cell';
+
+            // Treat any question with [[...]] or ((...)) (including full-width) as a clause/blank type
+            if (q.type === 'clause' || /\[\[|［［|\(\(|（（/.test(q.text)) {
+                const wrapper = document.createElement('div'); wrapper.className = 'table-clause-wrapper';
+                const badge = document.createElement('span'); badge.className = 'clause-badge'; badge.textContent = q.origPage || "条文";
+                wrapper.appendChild(badge);
+
+                const cText = document.createElement('div'); cText.className = 'clause-text-mini';
+                let htmlContent = q.text;
+                const lines = q.text.split('\n');
+                const hasTable = lines.some(l => l.trim().startsWith('|'));
+                if (hasTable) {
+                    let processedHtml = ''; let tableLines = [];
+                    lines.forEach(line => {
+                        if (line.trim().startsWith('|')) tableLines.push(line);
+                        else {
+                            if (tableLines.length > 0) { processedHtml += this.renderTableFromMarkdown(tableLines); tableLines = []; }
+                            processedHtml += line + '<br>';
+                        }
+                    });
+                    if (tableLines.length > 0) processedHtml += this.renderTableFromMarkdown(tableLines);
+                    htmlContent = processedHtml;
+                } else { htmlContent = q.text.replace(/\n/g, '<br>'); }
+
+                const rowKeywords = []; let blankIdx = 0;
+                // Combined drag/input support (including full-width)
+                const finalHtml = htmlContent.replace(/\[\[(.*?)\]\]|［［(.*?)］］|\(\((.*?)\)\)|（（(.*?)））/g, (match, p1, p2, p3, p4) => {
+                    const keyword = p1 || p2 || p3 || p4;
+                    const type = (p1 || p2) ? 'drag' : 'input';
+                    rowKeywords.push({ text: keyword, type: type });
+                    return `<span class="blank-placeholder" data-idx="${blankIdx++}"></span>`;
+                });
+                cText.innerHTML = finalHtml;
+
+                const placeholders = cText.querySelectorAll('.blank-placeholder');
+                placeholders.forEach((placeholder) => {
+                    const currentBlankIdx = parseInt(placeholder.dataset.idx);
+                    const kwInfo = rowKeywords[currentBlankIdx];
+                    const statKey = `clause-${q.id}-${currentBlankIdx}`;
+
+                    const shouldFill = this.shouldAutoFill(statKey);
+                    const isAlreadyFilled = !!this.userAnswers[`${q.id}-${currentBlankIdx}`];
+
+                    if (shouldFill && !isAlreadyFilled && !this.isChecked) {
+                        this.userAnswers[`${q.id}-${currentBlankIdx}`] = kwInfo.text;
+                    }
+
+                    const savedAnswer = this.userAnswers[`${q.id}-${currentBlankIdx}`];
+                    const isAutoFilled = shouldFill && savedAnswer === kwInfo.text;
+
+                    if (kwInfo.type === 'drag') {
+                        const blank = document.createElement('div');
+                        blank.className = 'clause-blank';
+                        if (savedAnswer) {
+                            blank.textContent = savedAnswer;
+                            blank.classList.add('filled');
+                            if (isAutoFilled) blank.classList.add('auto-filled');
+                        } else {
+                            blank.innerHTML = '&nbsp;&nbsp;&nbsp;&nbsp;';
+                        }
+
+                        if (!this.isChecked) {
+                            blank.ondragover = (e) => { e.preventDefault(); blank.classList.add('drag-over'); };
+                            blank.ondragleave = () => blank.classList.remove('drag-over');
+                            blank.ondrop = (e) => {
+                                e.preventDefault(); blank.classList.remove('drag-over');
+                                const text = e.dataTransfer.getData('text/plain');
+                                if (text) {
+                                    this.userAnswers[`${q.id}-${currentBlankIdx}`] = text;
+                                    // Auto-fill other blanks with same correct answer
+                                    rowKeywords.forEach((otherKw, j) => {
+                                        if (otherKw.text === kwInfo.text) this.userAnswers[`${q.id}-${j}`] = text;
+                                    });
+                                    this.renderTable();
+                                    const trTarget = blank.closest('tr');
+                                    if (trTarget) this.updateGlobalKeywordBank(trTarget);
+                                }
+                            };
+                            blank.onclick = () => {
+                                if (this.selectedKeyword) {
+                                    // Click-to-Fill logic
+                                    const val = this.selectedKeyword;
+                                    this.userAnswers[`${q.id}-${currentBlankIdx}`] = val;
+                                    // Auto-fill other blanks with same correct answer
+                                    rowKeywords.forEach((otherKw, j) => {
+                                        if (otherKw.text === kwInfo.text) this.userAnswers[`${q.id}-${j}`] = val;
+                                    });
+                                    this.selectedKeyword = null;
+                                    this.renderTable();
+                                } else if (this.userAnswers[`${q.id}-${currentBlankIdx}`]) {
+                                    const val = this.userAnswers[`${q.id}-${currentBlankIdx}`];
+                                    delete this.userAnswers[`${q.id}-${currentBlankIdx}`];
+                                    // Sync removal
+                                    rowKeywords.forEach((otherKw, j) => {
+                                        if (otherKw.text === kwInfo.text && this.userAnswers[`${q.id}-${j}`] === val) {
+                                            delete this.userAnswers[`${q.id}-${j}`];
+                                        }
+                                    });
+                                    this.renderTable();
+                                    const trTarget = blank.closest('tr');
+                                    if (trTarget) this.updateGlobalKeywordBank(trTarget);
+                                }
+                            };
+                        } else {
+                            const isCorrect = savedAnswer === kwInfo.text;
+                            blank.classList.add(isCorrect ? 'correct' : 'wrong');
+                            if (!isCorrect) {
+                                const reveal = document.createElement('span');
+                                reveal.className = 'reveal-correct'; reveal.textContent = ` (${kwInfo.text})`;
+                                blank.appendChild(reveal);
+                            }
+                        }
+                        const peek = document.createElement('span');
+                        peek.className = 'peek-answer';
+                        peek.textContent = `(${kwInfo.text})`;
+                        placeholder.replaceWith(blank, peek);
+                    } else {
+                        // Input type
+                        const input = document.createElement('input');
+                        input.type = 'text';
+                        input.className = 'clause-input-blank mini';
+                        input.dataset.blankIdx = currentBlankIdx;
+
+                        if (isAutoFilled) input.classList.add('auto-filled');
+
+                        const savedAnswer = this.userAnswers[`${q.id}-${currentBlankIdx}`] || '';
+                        input.value = savedAnswer;
+                        if (savedAnswer) input.classList.add('filled');
+
+                        const peek = document.createElement('span');
+                        peek.className = 'peek-answer';
+                        peek.textContent = `(${kwInfo.text})`;
+
+                        if (!this.isChecked) {
+                            input.oninput = () => {
+                                const val = input.value;
+                                this.userAnswers[`${q.id}-${currentBlankIdx}`] = val;
+                                // Auto-fill other input blanks with same correct answer (matching normalized text)
+                                rowKeywords.forEach((otherKw, j) => {
+                                    if (otherKw.type === 'input' && this.normalizeInput(otherKw.text) === this.normalizeInput(kwInfo.text)) {
+                                        this.userAnswers[`${q.id}-${j}`] = val;
+                                        const otherInput = cText.querySelector(`.clause-input-blank[data-blank-idx="${j}"]`);
+                                        if (otherInput && otherInput !== input) {
+                                            otherInput.value = val;
+                                        }
+                                    }
+                                });
+                            };
+                        } else {
+                            input.disabled = true;
+                            const isCorrect = this.normalizeInput(savedAnswer) === this.normalizeInput(kwInfo.text);
+                            input.classList.add(isCorrect ? 'correct' : 'wrong');
+                            if (!isCorrect) {
+                                const tip = document.createElement('span');
+                                tip.className = 'reveal-correct';
+                                tip.textContent = ` (${kwInfo.text})`;
+                                placeholder.parentNode.insertBefore(tip, placeholder.nextSibling);
+                            }
+                        }
+                        placeholder.replaceWith(input, peek);
+                    }
+                });
+                wrapper.appendChild(cText);
+                tdQ.appendChild(wrapper);
+
+                if (!this.isChecked) {
+                    const dragKeywords = rowKeywords.filter(kw => kw.type === 'drag').map(kw => kw.text);
+                    const allOptions = [...new Set([...dragKeywords, ...(q.dummies || [])])];
+                    if (allOptions.length > 0) {
+                        tr.dataset.keywords = JSON.stringify(allOptions);
+                        tr.dataset.requiredCounts = JSON.stringify(dragKeywords.reduce((acc, text) => { acc[text] = (acc[text] || 0) + 1; return acc; }, {}));
+                        tr.dataset.qid = q.id;
+                    }
+                }
+                tdQ.colSpan = columns.length + (!isAuto && this.isEditMode ? 1 : 0);
+            } else {
+                // Standard row
+                if (!isAuto && this.isEditMode) {
+                    const delBtn = document.createElement('span'); delBtn.className = 'delete-row-btn'; delBtn.innerHTML = '×';
+                    delBtn.onclick = () => this.deleteRow(q.id);
+                    tdQ.appendChild(delBtn);
+                }
+                if (isAuto && q.origPage) { const tag = document.createElement('div'); tag.className = 'page-tag'; tag.innerHTML = `<span class="source-label">出典:</span> ${q.origPage}`; tdQ.appendChild(tag); }
+
+                const spanText = document.createElement('span'); spanText.textContent = q.text;
+                if (!isAuto && this.isEditMode) { spanText.contentEditable = true; spanText.onblur = () => { q.text = spanText.textContent.trim(); this.saveData(); }; }
+                tdQ.appendChild(spanText);
+
+                if (!isAuto && this.isEditMode) {
+                    const memoEl = document.createElement('div'); memoEl.className = 'memo-input'; memoEl.placeholder = 'メモ...'; memoEl.contentEditable = true;
+                    memoEl.textContent = q.memo || ''; memoEl.onblur = () => { q.memo = memoEl.textContent.trim(); this.saveData(); };
+                    tdQ.appendChild(memoEl);
+                } else if (this.isChecked && q.memo) {
+                    const memoEl = document.createElement('div'); memoEl.className = 'memo-display';
+                    memoEl.innerHTML = `<strong>解説:</strong> ${q.memo.replace(/\n/g, '<br>')}`;
+                    tdQ.appendChild(memoEl);
+                }
+            }
+
+            const statKey = q.type === 'clause' ? `clause-summary-${q.id}` : q.id;
+            if (this.questionStats[statKey]) {
+                const historyBtn = document.createElement('span'); historyBtn.className = 'history-icon-btn'; historyBtn.innerHTML = ' 📈';
+                historyBtn.onclick = (e) => { e.stopPropagation(); this.showSRSDetail(statKey); };
+                tdQ.appendChild(historyBtn);
+            }
+            tr.appendChild(tdQ);
+
+            if (q.type !== 'clause') {
+                // Auto-fill logic for standard selection questions
+                if (!this.isChecked && !this.userAnswers[q.id] && this.shouldAutoFill(q.id)) {
+                    this.userAnswers[q.id] = q.answer;
+                }
+
+                if (isAuto && q._autoKeywords && !this.isChecked) {
+                    tr.dataset.keywords = JSON.stringify(q._autoKeywords);
+                    tr.dataset.requiredCounts = JSON.stringify(q._autoRequired);
+                    tr.dataset.qid = q.id;
+                }
+                for (let i = 1; i < columns.length; i++) {
+                    const colLabelRaw = columns[i];
+                    const colLabel = colLabelRaw.replace(/\{.*?\}/, '').trim();
+                    const td = document.createElement('td'); td.className = 'choice-cell';
+                    if (isQMulti) td.classList.add('multi-select');
+
+                    const genericNames = ["選択肢", "正解", "回答", "答え"];
+                    const isGenericCol = genericNames.some(name => colLabel.includes(name));
+
+                    if (isAuto && q._autoKeywords && isGenericCol) {
+                        const userAnswer = this.userAnswers[q.id];
+                        td.textContent = (isQMulti ? (userAnswer || []).join(', ') : userAnswer) || colLabel;
+                        if (userAnswer && (!Array.isArray(userAnswer) || userAnswer.length > 0)) td.classList.add('filled');
+                    } else {
+                        td.textContent = colLabel;
+                    }
+
+                    if (this.isEditMode && !isAuto) {
+                        const isCorrect = isQMulti ? (Array.isArray(q.answer) && q.answer.includes(colLabel)) : (q.answer === colLabel);
+                        if (isCorrect) td.classList.add(isQMulti ? 'multi-selected' : 'correct');
+                    } else {
+                        const userAnswer = this.userAnswers[q.id];
+                        const isSelected = isQMulti ? (Array.isArray(userAnswer) && userAnswer.includes(colLabel)) : (userAnswer === colLabel);
+
+                        const autoStatKey = this.getSummaryStatKey(q.id, 'page');
+                        const isAutoFilledAttempt = !this.isChecked && this.shouldAutoFill(autoStatKey);
+
+                        if (this.isChecked) {
+                            const isCorrectAnswer = isQMulti ? (Array.isArray(q.answer) && q.answer.includes(colLabel)) : (q.answer === colLabel);
+                            if (isCorrectAnswer) td.classList.add('correct');
+                            else if (isSelected) td.classList.add('wrong');
+                        } else if (isSelected) {
+                            td.classList.add('selected');
+                            if (isAutoFilledAttempt) td.classList.add('auto-filled');
+                        }
+                    }
+
+                    td.onclick = () => {
+                        if (!this.isChecked && !this.isEditMode) {
+                            if (isAuto && q._autoKeywords && isGenericCol) {
+                                if (isQMulti) this.userAnswers[q.id] = [];
+                                else delete this.userAnswers[q.id];
+                            } else {
+                                if (isQMulti) {
+                                    if (!Array.isArray(this.userAnswers[q.id])) this.userAnswers[q.id] = [];
+                                    if (this.userAnswers[q.id].includes(colLabel)) this.userAnswers[q.id] = this.userAnswers[q.id].filter(a => a !== colLabel);
+                                    else this.userAnswers[q.id].push(colLabel);
+                                } else { this.userAnswers[q.id] = colLabel; }
+                            }
+                            this.renderTable();
+                            this.updateGlobalKeywordBank(tr);
+                        } else if (this.isEditMode && !isAuto) {
+                            if (isQMulti) {
+                                if (!Array.isArray(q.answer)) q.answer = [];
+                                if (q.answer.includes(colLabel)) q.answer = q.answer.filter(a => a !== colLabel);
+                                else q.answer.push(colLabel);
+                            } else { q.answer = colLabel; }
+                            this.saveData(); this.renderTable();
+                        }
+                    };
+
+                    if (isAuto && q._autoKeywords && isGenericCol && !this.isChecked) {
+                        td.ondragover = (e) => { e.preventDefault(); td.classList.add('drag-over'); };
+                        td.ondragleave = () => td.classList.remove('drag-over');
+                        td.ondrop = (e) => {
+                            e.preventDefault(); td.classList.remove('drag-over');
+                            const text = e.dataTransfer.getData('text/plain');
+                            if (text) {
+                                if (isQMulti) {
+                                    if (!Array.isArray(this.userAnswers[q.id])) this.userAnswers[q.id] = [];
+                                    if (!this.userAnswers[q.id].includes(text)) this.userAnswers[q.id].push(text);
+                                } else { this.userAnswers[q.id] = text; }
+                                this.renderTable();
+                                this.updateGlobalKeywordBank(tr);
+                            }
+                        };
+                    }
+                    tr.appendChild(td);
+                }
+            }
+            tbody.appendChild(tr);
         });
-        return result;
-    };
+    }
 
-    const list = getFlatDisplayList(null, 0);
 
-    this.tocList.innerHTML = list.map(s => {
-        const isFolder = s.type === 'folder';
-        const isActive = s.id === this.currentSetId && !this.isAutoGenerated && !isFolder;
-        const indent = s.depth * 15;
+    deleteRow(id) {
+        if (this.isAutoGenerated) return;
+        const set = this.quizData.find(s => s.id === this.currentSetId);
+        if (set.questions.length <= 1) { alert('最低1行は必要です。'); return; }
+        if (confirm('この行を削除しますか？')) {
+            set.questions = set.questions.filter(q => q.id !== id);
+            this.saveData(); this.renderTable();
+        }
+    }
 
-        return `
+    moveRow(id, direction) {
+        if (this.isAutoGenerated) return;
+        const set = this.quizData.find(s => s.id === this.currentSetId);
+        const index = set.questions.findIndex(q => q.id === id);
+        if (index === -1) return;
+
+        const newIndex = index + direction;
+        if (newIndex < 0 || newIndex >= set.questions.length) return;
+
+        // Swap
+        const temp = set.questions[index];
+        set.questions[index] = set.questions[newIndex];
+        set.questions[newIndex] = temp;
+
+        this.saveData();
+        this.renderTable();
+    }
+
+    deleteColumn(index) {
+        if (this.isAutoGenerated) return;
+        const set = this.quizData.find(s => s.id === this.currentSetId);
+        if (set.columns.length <= 2) { alert('最低1つの選択肢は必要です。'); return; }
+        const colName = set.columns[index];
+        if (confirm(`列「${colName}」を削除しますか？`)) {
+            set.columns.splice(index, 1);
+            set.questions.forEach(q => {
+                if (Array.isArray(q.answer)) q.answer = q.answer.filter(a => a !== colName);
+                else if (q.answer === colName) q.answer = set.columns[1];
+            });
+            this.saveData(); this.renderTable();
+        }
+    }
+
+    renderTOC() {
+        // Build a flat list in order of display (DFS)
+        const getFlatDisplayList = (parentId = null, depth = 0) => {
+            let result = [];
+            const items = this.quizData.filter(item => (item.parentId || null) === parentId);
+            items.forEach(item => {
+                const globalIndex = this.quizData.findIndex(d => d.id === item.id);
+                result.push({ ...item, depth, globalIndex });
+                if (item.type === 'folder' && !item.isCollapsed) {
+                    result = result.concat(getFlatDisplayList(item.id, depth + 1));
+                }
+            });
+            return result;
+        };
+
+        const list = getFlatDisplayList(null, 0);
+
+        this.tocList.innerHTML = list.map(s => {
+            const isFolder = s.type === 'folder';
+            const isActive = s.id === this.currentSetId && !this.isAutoGenerated && !isFolder;
+            const indent = s.depth * 15;
+
+            return `
             <li class="${isActive ? 'active' : ''} ${isFolder ? 'type-folder' : 'type-page'}" 
                 style="padding-left: ${indent}px"
                 draggable="${this.isEditMode}" 
@@ -2893,1025 +2956,1025 @@ renderTOC() {
                     </div>
                 </div>
             </li>`;
-    }).join('');
-}
-
-handleDragStart(e, id) {
-    if (!this.isEditMode) return;
-    this.draggedItemId = id;
-    e.dataTransfer.setData('text/plain', id);
-    e.currentTarget.classList.add('dragging');
-    e.dataTransfer.effectAllowed = 'move';
-}
-
-handleDragOver(e, id) {
-    if (!this.isEditMode) return;
-    e.preventDefault();
-    const li = e.currentTarget;
-    if (id === this.draggedItemId) return;
-
-    const targetItem = this.quizData.find(i => i.id === id);
-    if (!targetItem) return;
-
-    // Clean up previous classes
-    li.classList.remove('drag-over-top', 'drag-over-bottom', 'drag-over-folder');
-
-    const rect = li.getBoundingClientRect();
-    const relativeY = e.clientY - rect.top;
-    const height = rect.height;
-
-    if (targetItem.type === 'folder') {
-        if (relativeY < height * 0.25) {
-            li.classList.add('drag-over-top');
-            this.dropPosition = 'above';
-        } else if (relativeY > height * 0.75) {
-            li.classList.add('drag-over-bottom');
-            this.dropPosition = 'below';
-        } else {
-            li.classList.add('drag-over-folder');
-            this.dropPosition = 'inside';
-        }
-    } else {
-        if (relativeY < height / 2) {
-            li.classList.add('drag-over-top');
-            this.dropPosition = 'above';
-        } else {
-            li.classList.add('drag-over-bottom');
-            this.dropPosition = 'below';
-        }
-    }
-}
-
-isDescendant(targetId, potentialParentId) {
-    let currentParentId = potentialParentId;
-    while (currentParentId) {
-        if (currentParentId === targetId) return true;
-        const parent = this.quizData.find(i => i.id === currentParentId);
-        currentParentId = parent ? parent.parentId : null;
-    }
-    return false;
-}
-
-handleDrop(e, id) {
-    if (!this.isEditMode) return;
-    e.preventDefault();
-    const targetItem = this.quizData.find(i => i.id === id);
-    const draggedItem = this.quizData.find(i => i.id === this.draggedItemId);
-
-    if (!draggedItem || !targetItem || draggedItem.id === id) return;
-
-    if (draggedItem.type === 'folder' && this.isDescendant(draggedItem.id, id)) {
-        alert('フォルダを自分自身の子要素に移動することはできません。');
-        return;
+        }).join('');
     }
 
-    const data = [...this.quizData];
-    const itemIdx = data.findIndex(i => i.id === this.draggedItemId);
-    if (itemIdx === -1) return;
-    const item = data.splice(itemIdx, 1)[0];
-
-    if (this.dropPosition === 'inside' && targetItem.type === 'folder') {
-        item.parentId = targetItem.id;
-        targetItem.isCollapsed = false;
-        data.push(item);
-    } else {
-        item.parentId = targetItem.parentId;
-        let targetIdx = data.findIndex(d => d.id === id);
-        if (this.dropPosition === 'below') targetIdx++;
-        data.splice(targetIdx, 0, item);
+    handleDragStart(e, id) {
+        if (!this.isEditMode) return;
+        this.draggedItemId = id;
+        e.dataTransfer.setData('text/plain', id);
+        e.currentTarget.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
     }
 
-    this.quizData = data;
-    this.saveData();
-    this.renderTOC();
-}
+    handleDragOver(e, id) {
+        if (!this.isEditMode) return;
+        e.preventDefault();
+        const li = e.currentTarget;
+        if (id === this.draggedItemId) return;
 
-handleDragEnd(e) {
-    this.draggedItemId = null;
-    this.renderTOC();
-}
+        const targetItem = this.quizData.find(i => i.id === id);
+        if (!targetItem) return;
 
-movePageById(id, direction) {
-    const index = this.quizData.findIndex(i => i.id === id);
-    if (index !== -1) this.movePage(index, direction);
-}
+        // Clean up previous classes
+        li.classList.remove('drag-over-top', 'drag-over-bottom', 'drag-over-folder');
 
-toggleFolder(id) {
-    const folder = this.quizData.find(s => s.id === id);
-    if (folder && folder.type === 'folder') {
-        folder.isCollapsed = !folder.isCollapsed;
-        this.saveData();
-        this.renderTOC();
-    }
-}
+        const rect = li.getBoundingClientRect();
+        const relativeY = e.clientY - rect.top;
+        const height = rect.height;
 
-toggleItemPool(id) {
-    const item = this.quizData.find(s => s.id === id);
-    if (!item) return;
-
-    const newState = !item.isInPool;
-
-    // Recursive function to apply state to descendants
-    const applyRecursive = (parentId, state) => {
-        this.quizData.forEach(child => {
-            if (child.parentId === parentId) {
-                child.isInPool = state;
-                if (child.type === 'folder') {
-                    applyRecursive(child.id, state);
-                }
+        if (targetItem.type === 'folder') {
+            if (relativeY < height * 0.25) {
+                li.classList.add('drag-over-top');
+                this.dropPosition = 'above';
+            } else if (relativeY > height * 0.75) {
+                li.classList.add('drag-over-bottom');
+                this.dropPosition = 'below';
+            } else {
+                li.classList.add('drag-over-folder');
+                this.dropPosition = 'inside';
             }
-        });
-    };
-
-    item.isInPool = newState;
-    if (item.type === 'folder') {
-        applyRecursive(item.id, newState);
+        } else {
+            if (relativeY < height / 2) {
+                li.classList.add('drag-over-top');
+                this.dropPosition = 'above';
+            } else {
+                li.classList.add('drag-over-bottom');
+                this.dropPosition = 'below';
+            }
+        }
     }
 
-    this.saveData();
-    this.renderTOC();
-}
-
-clearAllPoolSelections() {
-    if (!confirm('特訓対象のチェックをすべて外しますか？')) return;
-    this.quizData.forEach(item => {
-        item.isInPool = false;
-    });
-    this.saveData();
-    this.renderTOC();
-}
-
-selectAllPoolSelections() {
-    if (!confirm('すべての問題を特訓対象に含めますか？')) return;
-    this.quizData.forEach(item => {
-        item.isInPool = true;
-    });
-    this.saveData();
-    this.renderTOC();
-}
-
-isItemSelectedForPool(itemId) {
-    const item = this.quizData.find(i => i.id === itemId);
-    return item ? !!item.isInPool : false;
-}
-
-deleteFolder(id) {
-    if (!this.isEditMode) return;
-    const folder = this.quizData.find(s => s.id === id);
-    if (!folder) return;
-
-    const children = this.quizData.filter(item => item.parentId === id);
-    let msg = `フォルダ「${folder.title}」を削除しますか？`;
-    if (children.length > 0) {
-        msg += `\n\n注意：中身の問題（${children.length}件）は削除されませんが、フォルダから出されます。`;
+    isDescendant(targetId, potentialParentId) {
+        let currentParentId = potentialParentId;
+        while (currentParentId) {
+            if (currentParentId === targetId) return true;
+            const parent = this.quizData.find(i => i.id === currentParentId);
+            currentParentId = parent ? parent.parentId : null;
+        }
+        return false;
     }
 
-    if (confirm(msg)) {
-        // Unparent children
-        children.forEach(child => child.parentId = null);
-        // Remove folder
-        this.quizData = this.quizData.filter(s => s.id !== id);
+    handleDrop(e, id) {
+        if (!this.isEditMode) return;
+        e.preventDefault();
+        const targetItem = this.quizData.find(i => i.id === id);
+        const draggedItem = this.quizData.find(i => i.id === this.draggedItemId);
+
+        if (!draggedItem || !targetItem || draggedItem.id === id) return;
+
+        if (draggedItem.type === 'folder' && this.isDescendant(draggedItem.id, id)) {
+            alert('フォルダを自分自身の子要素に移動することはできません。');
+            return;
+        }
+
+        const data = [...this.quizData];
+        const itemIdx = data.findIndex(i => i.id === this.draggedItemId);
+        if (itemIdx === -1) return;
+        const item = data.splice(itemIdx, 1)[0];
+
+        if (this.dropPosition === 'inside' && targetItem.type === 'folder') {
+            item.parentId = targetItem.id;
+            targetItem.isCollapsed = false;
+            data.push(item);
+        } else {
+            item.parentId = targetItem.parentId;
+            let targetIdx = data.findIndex(d => d.id === id);
+            if (this.dropPosition === 'below') targetIdx++;
+            data.splice(targetIdx, 0, item);
+        }
+
+        this.quizData = data;
         this.saveData();
         this.renderTOC();
     }
-}
 
-addNewFolder(parentId = null) {
-    const title = prompt('フォルダ名:');
-    if (!title) return;
-    const id = 'f-' + Date.now();
-    this.quizData.push({
-        id, title, type: 'folder', parentId: parentId, isCollapsed: false
-    });
-    if (parentId) {
-        const parent = this.quizData.find(p => p.id === parentId);
-        if (parent) parent.isCollapsed = false;
-    }
-    this.saveData();
-    this.renderTOC();
-}
-
-movePage(index, direction) {
-    const itemsAtSameLevel = this.quizData.filter(item => item.parentId === this.quizData[index].parentId);
-    const localIndex = itemsAtSameLevel.findIndex(item => item.id === this.quizData[index].id);
-    const newLocalIndex = localIndex + direction;
-
-    if (newLocalIndex < 0 || newLocalIndex >= itemsAtSameLevel.length) return;
-
-    const targetGlobalIndex = this.quizData.findIndex(item => item.id === itemsAtSameLevel[newLocalIndex].id);
-
-    const temp = this.quizData[index];
-    this.quizData[index] = this.quizData[targetGlobalIndex];
-    this.quizData[targetGlobalIndex] = temp;
-
-    this.saveData();
-    this.renderTOC();
-}
-
-updateActiveTOC(id) {
-    this.tocList.querySelectorAll('li').forEach(li => {
-        const a = li.querySelector('a');
-        const isActive = a && a.getAttribute('href') === `#${id}`;
-        li.classList.toggle('active', isActive);
-    });
-}
-
-addNewPage(parentId = null) {
-    const title = prompt('タイトル:'); if (!title) return;
-    const isMulti = confirm('複数選択（ランキング形式）にしますか？\nOK: 複数選択, キャンセル: 単一選択');
-    const id = 'p-' + Date.now();
-    const cols = isMulti ? [
-        "順位", "【生計維持】", "【生計同一】", "配偶者", "子", "父母", "孫", "祖父母", "兄弟姉妹", "3親等以内", "対象なし"
-    ] : ["項目", "選択1", "選択2"];
-
-    const questions = [];
-    if (isMulti) {
-        for (let i = 1; i <= 6; i++) {
-            questions.push({ id: 'q-' + Date.now() + i, text: `第${i}順位`, answer: [] });
-        }
-    } else {
-        questions.push({ id: 'q-' + Date.now(), text: "新問題", answer: cols[1] });
-    }
-
-    const newPage = {
-        id, title, type: 'page', parentId: parentId, isMultiSelect: isMulti,
-        columns: cols,
-        questions: questions
-    };
-
-    // If current viewing is a folder, maybe add to it? For now, just add to root
-    this.quizData.push(newPage);
-
-    this.isAutoGenerated = false;
-    this.saveData();
-    this.renderTOC();
-    this.loadSet(id);
-
-    // Scroll to the new page in the sidebar
-    setTimeout(() => {
-        const newElem = this.tocList.querySelector(`a[href="#${id}"]`);
-        if (newElem) newElem.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }, 100);
-}
-
-addNewClausePage(parentId = null) {
-    const title = prompt('条文穴埋め問題のタイトル:'); if (!title) return;
-    const id = 'p-' + Date.now();
-    const newPage = {
-        id, title, type: 'clause', parentId: parentId,
-        text: 'ここに条文を入力してください。[[キーワード]]のように囲むとそこが穴埋めになります。',
-        dummies: ''
-    };
-    this.quizData.push(newPage);
-    this.saveData();
-    this.renderTOC();
-    this.loadSet(id);
-
-    setTimeout(() => {
-        const newElem = this.tocList.querySelector(`a[href="#${id}"]`);
-        if (newElem) newElem.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }, 100);
-}
-
-addNewRow() {
-    if (this.isAutoGenerated) return;
-    const set = this.quizData.find(s => s.id === this.currentSetId);
-    set.questions.push({
-        id: 'q-' + Date.now(),
-        text: "新問題...",
-        memo: "",
-        answer: set.isMultiSelect ? [] : set.columns[1]
-    });
-    this.saveData();
-    this.renderTable();
-}
-addNewColumn() { if (this.isAutoGenerated) return; const set = this.quizData.find(s => s.id === this.currentSetId); const name = prompt('列名:'); if (!name) return; set.columns.push(name); this.saveData(); this.renderTable(); }
-
-deleteCurrentPage() {
-    if (this.quizData.length <= 1 || this.isAutoGenerated) return;
-    const set = this.quizData.find(s => s.id === this.currentSetId);
-    if (!set || set.type === 'folder') {
-        alert('フォルダを削除する場合は、サイドバーの「×」ボタンを使用してください。');
-        return;
-    }
-
-    if (confirm(`このページ（${set.title}）の全問題データを削除しますか？\nこの操作は取り消せません。`)) {
-        // Safety: if this page had children (unlikely but possible), unparent them
-        const children = this.quizData.filter(item => item.parentId === this.currentSetId);
-        children.forEach(c => c.parentId = null);
-
-        this.quizData = this.quizData.filter(s => s.id !== this.currentSetId);
-
-        // Find a valid next item (prefer a page)
-        let nextItem = this.quizData.find(i => i.type === 'page' || i.type === 'clause');
-        if (!nextItem) nextItem = this.quizData[0];
-
-        this.currentSetId = nextItem ? nextItem.id : null;
-        this.saveData();
-        this.migrateData(); // Rescue orphans if any were created
+    handleDragEnd(e) {
+        this.draggedItemId = null;
         this.renderTOC();
-        if (this.currentSetId) this.loadSet(this.currentSetId);
-        else this.renderTable(); // Show empty state
-    }
-}
-
-cloneCurrentPage() {
-    const set = this.quizData.find(s => s.id === this.currentSetId);
-    if (!set || set.type === 'folder') return;
-    const clonedSet = JSON.parse(JSON.stringify(set));
-    const newId = 'p-' + Date.now();
-    clonedSet.id = newId;
-    clonedSet.title = clonedSet.title + '（コピー）';
-
-    // Re-generate question IDs to avoid conflicts and start fresh stats
-    clonedSet.questions.forEach((q, i) => {
-        q.id = 'q-' + Date.now() + '-' + i + '-' + Math.random().toString(36).substr(2, 5);
-    });
-
-    this.quizData.push(clonedSet);
-    this.saveData();
-    this.isAutoGenerated = false;
-    this.renderTOC();
-    this.loadSet(newId);
-}
-
-updateAutoFillShortcutUI() {
-    if (!this.autoFillShortcutBtn) return;
-    const isActive = this.autoFillEnabled;
-    this.autoFillShortcutBtn.classList.toggle('active', isActive);
-    if (isActive) {
-        this.autoFillShortcutBtn.style.background = 'var(--accent)';
-        this.autoFillShortcutBtn.style.color = 'var(--bg-dark)';
-        this.autoFillShortcutBtn.innerHTML = '✨ 自動入力: ON';
-    } else {
-        this.autoFillShortcutBtn.style.background = 'rgba(76, 201, 240, 0.1)';
-        this.autoFillShortcutBtn.style.color = 'var(--accent)';
-        this.autoFillShortcutBtn.innerHTML = '✨ 自動入力: OFF';
-    }
-}
-
-clearData() {
-    const input = prompt('すべての学習データと履歴を完全に削除しますか？\n削除する場合は、確認のため「RESET」と入力してください。\n注：事前に「バックアップ保存」を行うことをお勧めします。');
-    if (input === 'RESET') { localStorage.clear(); window.location.reload(); } else if (input !== null) { alert('入力が正しくないため、削除はキャンセルされました。'); }
-}
-
-// --- Data Management (Export/Import) ---
-
-getTimestamp() {
-    const now = new Date();
-    const pad = (n) => n.toString().padStart(2, '0');
-    return `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
-}
-
-    async exportToJSON() {
-    const fullData = {
-        quizData: this.quizData,
-        history: this.history,
-        questionStats: this.questionStats,
-        exportedAt: new Date().toISOString()
-    };
-    const fileName = `sharo_study_backup_${this.getTimestamp()}.json`;
-    const jsonContent = JSON.stringify(fullData, null, 2);
-
-    // Try File System Access API for folder selection
-    if (window.showSaveFilePicker) {
-        try {
-            const handle = await window.showSaveFilePicker({
-                suggestedName: fileName,
-                types: [{ description: 'JSON File', accept: { 'application/json': ['.json'] } }]
-            });
-            const writable = await handle.createWritable();
-            await writable.write(jsonContent);
-            await writable.close();
-            this.updateDataStatus("JSONを保存しました。");
-            return;
-        } catch (err) {
-            if (err.name === 'AbortError') return;
-            console.error("showSaveFilePicker failed:", err);
-        }
     }
 
-    // Fallback for older browsers
-    const blob = new Blob([jsonContent], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = fileName;
-    a.click();
-    URL.revokeObjectURL(url);
-    this.updateDataStatus("JSON形式でエクスポートしました（ダウンロードフォルダに保存）。");
-}
-
-    async exportToCSV() {
-    // CSV is focused on quiz questions only (for spreadsheet editing)
-    let csv = '\uFEFF'; // UTF-8 BOM
-    csv += 'ページタイトル,ID,問題文,正解(カンマ区切り),解説,選択肢1,選択肢2,選択肢3,選択肢4,選択肢5,選択肢6,選択肢7,選択肢8,選択肢9,選択肢10\n';
-
-    this.quizData.forEach(page => {
-        if (page.type !== 'page' || !page.questions) return;
-        page.questions.forEach(q => {
-            const row = [
-                page.title,
-                q.id,
-                q.text,
-                Array.isArray(q.answer) ? q.answer.join('|') : q.answer,
-                q.memo || '',
-                ...(page.columns.slice(1)) // choice choices
-            ].map(val => `"${(val || "").toString().replace(/"/g, '""')}"`).join(',');
-            csv += row + '\n';
-        });
-    });
-
-    const fileName = `sharo_questions_${this.getTimestamp()}.csv`;
-
-    if (window.showSaveFilePicker) {
-        try {
-            const handle = await window.showSaveFilePicker({
-                suggestedName: fileName,
-                types: [{ description: 'CSV File', accept: { 'text/csv': ['.csv'] } }]
-            });
-            const writable = await handle.createWritable();
-            await writable.write(csv);
-            await writable.close();
-            this.updateDataStatus("CSVを保存しました。");
-            return;
-        } catch (err) {
-            if (err.name === 'AbortError') return;
-            console.error("showSaveFilePicker failed:", err);
-        }
+    movePageById(id, direction) {
+        const index = this.quizData.findIndex(i => i.id === id);
+        if (index !== -1) this.movePage(index, direction);
     }
 
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = fileName;
-    a.click();
-    URL.revokeObjectURL(url);
-    this.updateDataStatus("CSV形式でエクスポートしました（ダウンロードフォルダに保存）。");
-}
-
-handleFileImport(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-        const content = event.target.result;
-        if (file.name.endsWith('.json')) {
-            this.importFromJSON(content);
-        } else if (file.name.endsWith('.csv')) {
-            this.importFromCSV(content);
-        }
-    };
-    reader.readAsText(file);
-}
-
-importFromJSON(jsonString) {
-    try {
-        const data = JSON.parse(jsonString);
-        if (!data.quizData) throw new Error('Invalid backup format');
-
-        if (confirm('現在のデータをすべて上書きして復旧しますか？\n（現在の問題・履歴・統計がすべて消え、ファイルの内容に置き換わります）')) {
-            this.quizData = data.quizData;
-            this.history = data.history || [];
-            this.questionStats = data.questionStats || {};
-
+    toggleFolder(id) {
+        const folder = this.quizData.find(s => s.id === id);
+        if (folder && folder.type === 'folder') {
+            folder.isCollapsed = !folder.isCollapsed;
             this.saveData();
-            this.saveHistory();
-            this.saveQuestionStats();
-
-            alert('データを正常に復元しました。');
-            window.location.reload();
+            this.renderTOC();
         }
-    } catch (err) {
-        console.error(err);
-        alert('ファイルの読み込みに失敗しました。有効なJSONバックアップファイルであることを確認してください。');
     }
-}
 
-importFromCSV(csvString) {
-    try {
-        const lines = csvString.split(/\r?\n/);
-        if (lines.length < 2) return;
+    toggleItemPool(id) {
+        const item = this.quizData.find(s => s.id === id);
+        if (!item) return;
 
-        // Simple CSV parser (not handling all escapes, but works for standard export)
-        const parseCSVLine = (line) => {
-            const parts = [];
-            let current = '';
-            let inQuotes = false;
-            for (let i = 0; i < line.length; i++) {
-                const char = line[i];
-                if (char === '"' && line[i + 1] === '"') { current += '"'; i++; }
-                else if (char === '"') inQuotes = !inQuotes;
-                else if (char === ',' && !inQuotes) { parts.push(current); current = ''; }
-                else current += char;
-            }
-            parts.push(current);
-            return parts;
+        const newState = !item.isInPool;
+
+        // Recursive function to apply state to descendants
+        const applyRecursive = (parentId, state) => {
+            this.quizData.forEach(child => {
+                if (child.parentId === parentId) {
+                    child.isInPool = state;
+                    if (child.type === 'folder') {
+                        applyRecursive(child.id, state);
+                    }
+                }
+            });
         };
 
-        const header = parseCSVLine(lines[0]);
-        const newPages = new Map();
-
-        for (let i = 1; i < lines.length; i++) {
-            if (!lines[i].trim()) continue;
-            const row = parseCSVLine(lines[i]);
-            const pageTitle = row[0];
-            const id = row[1] || ('q-' + Math.random().toString(36).substr(2, 9));
-            const text = row[2];
-            const answerRaw = row[3];
-            const choices = row.slice(4).filter(c => c !== undefined && c !== "");
-
-            if (!pageTitle || !text) continue;
-
-            if (!newPages.has(pageTitle)) {
-                newPages.set(pageTitle, {
-                    id: 'p-' + Date.now() + Math.random().toString(36).substr(2, 5),
-                    title: pageTitle,
-                    type: 'page',
-                    parentId: null,
-                    isCollapsed: false,
-                    columns: ["項目", ...choices],
-                    questions: [],
-                    isMultiSelect: answerRaw.includes('|')
-                });
-            }
-
-            const page = newPages.get(pageTitle);
-            page.questions.push({
-                id: id,
-                text: text,
-                answer: page.isMultiSelect ? answerRaw.split('|') : answerRaw,
-                isInPool: true
-            });
+        item.isInPool = newState;
+        if (item.type === 'folder') {
+            applyRecursive(item.id, newState);
         }
 
-        if (confirm(`CSVから ${newPages.size} ページの問題を取り込みますか？\n既存のページは維持され、末尾に追加されます。`)) {
-            this.quizData.push(...Array.from(newPages.values()));
+        this.saveData();
+        this.renderTOC();
+    }
+
+    clearAllPoolSelections() {
+        if (!confirm('特訓対象のチェックをすべて外しますか？')) return;
+        this.quizData.forEach(item => {
+            item.isInPool = false;
+        });
+        this.saveData();
+        this.renderTOC();
+    }
+
+    selectAllPoolSelections() {
+        if (!confirm('すべての問題を特訓対象に含めますか？')) return;
+        this.quizData.forEach(item => {
+            item.isInPool = true;
+        });
+        this.saveData();
+        this.renderTOC();
+    }
+
+    isItemSelectedForPool(itemId) {
+        const item = this.quizData.find(i => i.id === itemId);
+        return item ? !!item.isInPool : false;
+    }
+
+    deleteFolder(id) {
+        if (!this.isEditMode) return;
+        const folder = this.quizData.find(s => s.id === id);
+        if (!folder) return;
+
+        const children = this.quizData.filter(item => item.parentId === id);
+        let msg = `フォルダ「${folder.title}」を削除しますか？`;
+        if (children.length > 0) {
+            msg += `\n\n注意：中身の問題（${children.length}件）は削除されませんが、フォルダから出されます。`;
+        }
+
+        if (confirm(msg)) {
+            // Unparent children
+            children.forEach(child => child.parentId = null);
+            // Remove folder
+            this.quizData = this.quizData.filter(s => s.id !== id);
             this.saveData();
-            alert('CSVからデータを正常に取り込みました。');
             this.renderTOC();
-            this.loadSet(this.currentSetId);
         }
-    } catch (err) {
-        console.error(err);
-        alert('CSVの解析に失敗しました。');
     }
-}
 
-updateDataStatus(msg) {
-    if (this.dataStatusMsg) {
-        this.dataStatusMsg.textContent = `${msg} (${new Date().toLocaleTimeString()})`;
-        this.dataStatusMsg.style.color = 'var(--success)';
+    addNewFolder(parentId = null) {
+        const title = prompt('フォルダ名:');
+        if (!title) return;
+        const id = 'f-' + Date.now();
+        this.quizData.push({
+            id, title, type: 'folder', parentId: parentId, isCollapsed: false
+        });
+        if (parentId) {
+            const parent = this.quizData.find(p => p.id === parentId);
+            if (parent) parent.isCollapsed = false;
+        }
+        this.saveData();
+        this.renderTOC();
+    }
+
+    movePage(index, direction) {
+        const itemsAtSameLevel = this.quizData.filter(item => item.parentId === this.quizData[index].parentId);
+        const localIndex = itemsAtSameLevel.findIndex(item => item.id === this.quizData[index].id);
+        const newLocalIndex = localIndex + direction;
+
+        if (newLocalIndex < 0 || newLocalIndex >= itemsAtSameLevel.length) return;
+
+        const targetGlobalIndex = this.quizData.findIndex(item => item.id === itemsAtSameLevel[newLocalIndex].id);
+
+        const temp = this.quizData[index];
+        this.quizData[index] = this.quizData[targetGlobalIndex];
+        this.quizData[targetGlobalIndex] = temp;
+
+        this.saveData();
+        this.renderTOC();
+    }
+
+    updateActiveTOC(id) {
+        this.tocList.querySelectorAll('li').forEach(li => {
+            const a = li.querySelector('a');
+            const isActive = a && a.getAttribute('href') === `#${id}`;
+            li.classList.toggle('active', isActive);
+        });
+    }
+
+    addNewPage(parentId = null) {
+        const title = prompt('タイトル:'); if (!title) return;
+        const isMulti = confirm('複数選択（ランキング形式）にしますか？\nOK: 複数選択, キャンセル: 単一選択');
+        const id = 'p-' + Date.now();
+        const cols = isMulti ? [
+            "順位", "【生計維持】", "【生計同一】", "配偶者", "子", "父母", "孫", "祖父母", "兄弟姉妹", "3親等以内", "対象なし"
+        ] : ["項目", "選択1", "選択2"];
+
+        const questions = [];
+        if (isMulti) {
+            for (let i = 1; i <= 6; i++) {
+                questions.push({ id: 'q-' + Date.now() + i, text: `第${i}順位`, answer: [] });
+            }
+        } else {
+            questions.push({ id: 'q-' + Date.now(), text: "新問題", answer: cols[1] });
+        }
+
+        const newPage = {
+            id, title, type: 'page', parentId: parentId, isMultiSelect: isMulti,
+            columns: cols,
+            questions: questions
+        };
+
+        // If current viewing is a folder, maybe add to it? For now, just add to root
+        this.quizData.push(newPage);
+
+        this.isAutoGenerated = false;
+        this.saveData();
+        this.renderTOC();
+        this.loadSet(id);
+
+        // Scroll to the new page in the sidebar
         setTimeout(() => {
-            this.dataStatusMsg.style.color = 'var(--text-secondary)';
-        }, 5000);
-    }
-    // Save export timestamp for reminder
-    if (msg.includes("エクスポート")) {
-        localStorage.setItem('sharo_last_export_at', new Date().toISOString());
-        this.checkBackupFrequency();
-    }
-}
-
-// --- Automatic Recovery and Protection ---
-
-checkAndOfferRecovery(manual = false) {
-    const backupStr = localStorage.getItem('sharo_auto_backup');
-    if (!backupStr) {
-        if (manual) alert('内部バックアップが見つかりません。');
-        return;
+            const newElem = this.tocList.querySelector(`a[href="#${id}"]`);
+            if (newElem) newElem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
     }
 
-    try {
-        const backup = JSON.parse(backupStr);
-        const isMainEmpty = (this.quizData.length <= DEFAULT_QUIZ_DATA.length && this.history.length === 0);
+    addNewClausePage(parentId = null) {
+        const title = prompt('条文穴埋め問題のタイトル:'); if (!title) return;
+        const id = 'p-' + Date.now();
+        const newPage = {
+            id, title, type: 'clause', parentId: parentId,
+            text: 'ここに条文を入力してください。[[キーワード]]のように囲むとそこが穴埋めになります。',
+            dummies: ''
+        };
+        this.quizData.push(newPage);
+        this.saveData();
+        this.renderTOC();
+        this.loadSet(id);
 
-        if (manual || isMainEmpty) {
-            const date = new Date(backup.savedAt).toLocaleString();
-            const msg = manual
-                ? `内部バックアップ（保存日時: ${date}）からデータを復元しますか？\n現在編集中の内容は上書きされます。`
-                : `【データ復旧の案内】\nメインデータが初期状態のようですが、内部バックアップ（保存日時: ${date}）が見つかりました。\n以前の状態を復元しますか？`;
+        setTimeout(() => {
+            const newElem = this.tocList.querySelector(`a[href="#${id}"]`);
+            if (newElem) newElem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
+    }
 
-            if (confirm(msg)) {
-                this.quizData = backup.quizData;
-                this.history = backup.history || [];
-                this.questionStats = backup.questionStats || {};
+    addNewRow() {
+        if (this.isAutoGenerated) return;
+        const set = this.quizData.find(s => s.id === this.currentSetId);
+        set.questions.push({
+            id: 'q-' + Date.now(),
+            text: "新問題...",
+            memo: "",
+            answer: set.isMultiSelect ? [] : set.columns[1]
+        });
+        this.saveData();
+        this.renderTable();
+    }
+    addNewColumn() { if (this.isAutoGenerated) return; const set = this.quizData.find(s => s.id === this.currentSetId); const name = prompt('列名:'); if (!name) return; set.columns.push(name); this.saveData(); this.renderTable(); }
+
+    deleteCurrentPage() {
+        if (this.quizData.length <= 1 || this.isAutoGenerated) return;
+        const set = this.quizData.find(s => s.id === this.currentSetId);
+        if (!set || set.type === 'folder') {
+            alert('フォルダを削除する場合は、サイドバーの「×」ボタンを使用してください。');
+            return;
+        }
+
+        if (confirm(`このページ（${set.title}）の全問題データを削除しますか？\nこの操作は取り消せません。`)) {
+            // Safety: if this page had children (unlikely but possible), unparent them
+            const children = this.quizData.filter(item => item.parentId === this.currentSetId);
+            children.forEach(c => c.parentId = null);
+
+            this.quizData = this.quizData.filter(s => s.id !== this.currentSetId);
+
+            // Find a valid next item (prefer a page)
+            let nextItem = this.quizData.find(i => i.type === 'page' || i.type === 'clause');
+            if (!nextItem) nextItem = this.quizData[0];
+
+            this.currentSetId = nextItem ? nextItem.id : null;
+            this.saveData();
+            this.migrateData(); // Rescue orphans if any were created
+            this.renderTOC();
+            if (this.currentSetId) this.loadSet(this.currentSetId);
+            else this.renderTable(); // Show empty state
+        }
+    }
+
+    cloneCurrentPage() {
+        const set = this.quizData.find(s => s.id === this.currentSetId);
+        if (!set || set.type === 'folder') return;
+        const clonedSet = JSON.parse(JSON.stringify(set));
+        const newId = 'p-' + Date.now();
+        clonedSet.id = newId;
+        clonedSet.title = clonedSet.title + '（コピー）';
+
+        // Re-generate question IDs to avoid conflicts and start fresh stats
+        clonedSet.questions.forEach((q, i) => {
+            q.id = 'q-' + Date.now() + '-' + i + '-' + Math.random().toString(36).substr(2, 5);
+        });
+
+        this.quizData.push(clonedSet);
+        this.saveData();
+        this.isAutoGenerated = false;
+        this.renderTOC();
+        this.loadSet(newId);
+    }
+
+    updateAutoFillShortcutUI() {
+        if (!this.autoFillShortcutBtn) return;
+        const isActive = this.autoFillEnabled;
+        this.autoFillShortcutBtn.classList.toggle('active', isActive);
+        if (isActive) {
+            this.autoFillShortcutBtn.style.background = 'var(--accent)';
+            this.autoFillShortcutBtn.style.color = 'var(--bg-dark)';
+            this.autoFillShortcutBtn.innerHTML = '✨ 自動入力: ON';
+        } else {
+            this.autoFillShortcutBtn.style.background = 'rgba(76, 201, 240, 0.1)';
+            this.autoFillShortcutBtn.style.color = 'var(--accent)';
+            this.autoFillShortcutBtn.innerHTML = '✨ 自動入力: OFF';
+        }
+    }
+
+    clearData() {
+        const input = prompt('すべての学習データと履歴を完全に削除しますか？\n削除する場合は、確認のため「RESET」と入力してください。\n注：事前に「バックアップ保存」を行うことをお勧めします。');
+        if (input === 'RESET') { localStorage.clear(); window.location.reload(); } else if (input !== null) { alert('入力が正しくないため、削除はキャンセルされました。'); }
+    }
+
+    // --- Data Management (Export/Import) ---
+
+    getTimestamp() {
+        const now = new Date();
+        const pad = (n) => n.toString().padStart(2, '0');
+        return `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+    }
+
+    async exportToJSON() {
+        const fullData = {
+            quizData: this.quizData,
+            history: this.history,
+            questionStats: this.questionStats,
+            exportedAt: new Date().toISOString()
+        };
+        const fileName = `sharo_study_backup_${this.getTimestamp()}.json`;
+        const jsonContent = JSON.stringify(fullData, null, 2);
+
+        // Try File System Access API for folder selection
+        if (window.showSaveFilePicker) {
+            try {
+                const handle = await window.showSaveFilePicker({
+                    suggestedName: fileName,
+                    types: [{ description: 'JSON File', accept: { 'application/json': ['.json'] } }]
+                });
+                const writable = await handle.createWritable();
+                await writable.write(jsonContent);
+                await writable.close();
+                this.updateDataStatus("JSONを保存しました。");
+                return;
+            } catch (err) {
+                if (err.name === 'AbortError') return;
+                console.error("showSaveFilePicker failed:", err);
+            }
+        }
+
+        // Fallback for older browsers
+        const blob = new Blob([jsonContent], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        a.click();
+        URL.revokeObjectURL(url);
+        this.updateDataStatus("JSON形式でエクスポートしました（ダウンロードフォルダに保存）。");
+    }
+
+    async exportToCSV() {
+        // CSV is focused on quiz questions only (for spreadsheet editing)
+        let csv = '\uFEFF'; // UTF-8 BOM
+        csv += 'ページタイトル,ID,問題文,正解(カンマ区切り),解説,選択肢1,選択肢2,選択肢3,選択肢4,選択肢5,選択肢6,選択肢7,選択肢8,選択肢9,選択肢10\n';
+
+        this.quizData.forEach(page => {
+            if (page.type !== 'page' || !page.questions) return;
+            page.questions.forEach(q => {
+                const row = [
+                    page.title,
+                    q.id,
+                    q.text,
+                    Array.isArray(q.answer) ? q.answer.join('|') : q.answer,
+                    q.memo || '',
+                    ...(page.columns.slice(1)) // choice choices
+                ].map(val => `"${(val || "").toString().replace(/"/g, '""')}"`).join(',');
+                csv += row + '\n';
+            });
+        });
+
+        const fileName = `sharo_questions_${this.getTimestamp()}.csv`;
+
+        if (window.showSaveFilePicker) {
+            try {
+                const handle = await window.showSaveFilePicker({
+                    suggestedName: fileName,
+                    types: [{ description: 'CSV File', accept: { 'text/csv': ['.csv'] } }]
+                });
+                const writable = await handle.createWritable();
+                await writable.write(csv);
+                await writable.close();
+                this.updateDataStatus("CSVを保存しました。");
+                return;
+            } catch (err) {
+                if (err.name === 'AbortError') return;
+                console.error("showSaveFilePicker failed:", err);
+            }
+        }
+
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        a.click();
+        URL.revokeObjectURL(url);
+        this.updateDataStatus("CSV形式でエクスポートしました（ダウンロードフォルダに保存）。");
+    }
+
+    handleFileImport(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const content = event.target.result;
+            if (file.name.endsWith('.json')) {
+                this.importFromJSON(content);
+            } else if (file.name.endsWith('.csv')) {
+                this.importFromCSV(content);
+            }
+        };
+        reader.readAsText(file);
+    }
+
+    importFromJSON(jsonString) {
+        try {
+            const data = JSON.parse(jsonString);
+            if (!data.quizData) throw new Error('Invalid backup format');
+
+            if (confirm('現在のデータをすべて上書きして復旧しますか？\n（現在の問題・履歴・統計がすべて消え、ファイルの内容に置き換わります）')) {
+                this.quizData = data.quizData;
+                this.history = data.history || [];
+                this.questionStats = data.questionStats || {};
+
                 this.saveData();
                 this.saveHistory();
                 this.saveQuestionStats();
+
                 alert('データを正常に復元しました。');
                 window.location.reload();
             }
+        } catch (err) {
+            console.error(err);
+            alert('ファイルの読み込みに失敗しました。有効なJSONバックアップファイルであることを確認してください。');
         }
-    } catch (e) {
-        console.error("Backup parse error", e);
-    }
-}
-
-checkBackupFrequency() {
-    const lastExport = localStorage.getItem('sharo_last_export_at');
-    if (!lastExport) return;
-
-    const hoursSince = (Date.now() - new Date(lastExport).getTime()) / (1000 * 60 * 60);
-    if (hoursSince > 24) {
-        const reminderArea = document.getElementById('backup-reminder');
-        if (reminderArea) {
-            reminderArea.style.display = 'block';
-            reminderArea.innerHTML = `⚠️ 最終エクスポートから24時間以上経過しています。大切なデータを守るため、<span style="color:var(--accent); cursor:pointer; text-decoration:underline;" onclick="app.exportToJSON()">JSONバックアップの保存</span>をお勧めします。`;
-        }
-    } else {
-        const reminderArea = document.getElementById('backup-reminder');
-        if (reminderArea) reminderArea.style.display = 'none';
-    }
-}
-
-setupQuestionObserver() {
-    if (this.questionObserver) this.questionObserver.disconnect();
-
-    const options = {
-        root: null,
-        rootMargin: '-5% 0px -20% 0px',
-        threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
-    };
-
-    this.questionObserver = new IntersectionObserver(() => {
-        this.activateFirstVisibleBank();
-    }, options);
-
-    const targets = document.querySelectorAll('#quiz-table tr, .auto-gen-table tr');
-    targets.forEach(t => {
-        if (t.dataset.keywords) {
-            this.questionObserver.observe(t);
-        }
-    });
-
-    // Fallback: also update on scroll for smoother experience
-    if (this._scrollHandler) window.removeEventListener('scroll', this._scrollHandler);
-    this._scrollHandler = () => this.activateFirstVisibleBank();
-    window.addEventListener('scroll', this._scrollHandler, { passive: true });
-
-    this.activateFirstVisibleBank();
-    setTimeout(() => this.activateFirstVisibleBank(), 300);
-}
-
-activateFirstVisibleBank() {
-    if (this.isEditMode || this.isChecked) {
-        if (this.globalKeywordBank) {
-            this.globalKeywordBank.classList.add('hidden');
-            this.globalKeywordBank.classList.remove('active-bank');
-        }
-        this._currentActiveRowId = null;
-        return;
     }
 
-    const targets = Array.from(document.querySelectorAll('#quiz-table tr, .auto-gen-table tr')).filter(r => r.dataset.keywords);
+    importFromCSV(csvString) {
+        try {
+            const lines = csvString.split(/\r?\n/);
+            if (lines.length < 2) return;
 
-    const isSingleClause = !this.clauseDisplay.classList.contains('hidden');
-    const isHome = this.homeDashboard && !this.homeDashboard.classList.contains('hidden');
+            // Simple CSV parser (not handling all escapes, but works for standard export)
+            const parseCSVLine = (line) => {
+                const parts = [];
+                let current = '';
+                let inQuotes = false;
+                for (let i = 0; i < line.length; i++) {
+                    const char = line[i];
+                    if (char === '"' && line[i + 1] === '"') { current += '"'; i++; }
+                    else if (char === '"') inQuotes = !inQuotes;
+                    else if (char === ',' && !inQuotes) { parts.push(current); current = ''; }
+                    else current += char;
+                }
+                parts.push(current);
+                return parts;
+            };
 
-    if (targets.length === 0) {
-        if (!isSingleClause || isHome) {
-            if (this.globalKeywordBank) {
-                this.globalKeywordBank.classList.add('hidden');
-                this.globalKeywordBank.classList.remove('active-bank');
+            const header = parseCSVLine(lines[0]);
+            const newPages = new Map();
+
+            for (let i = 1; i < lines.length; i++) {
+                if (!lines[i].trim()) continue;
+                const row = parseCSVLine(lines[i]);
+                const pageTitle = row[0];
+                const id = row[1] || ('q-' + Math.random().toString(36).substr(2, 9));
+                const text = row[2];
+                const answerRaw = row[3];
+                const choices = row.slice(4).filter(c => c !== undefined && c !== "");
+
+                if (!pageTitle || !text) continue;
+
+                if (!newPages.has(pageTitle)) {
+                    newPages.set(pageTitle, {
+                        id: 'p-' + Date.now() + Math.random().toString(36).substr(2, 5),
+                        title: pageTitle,
+                        type: 'page',
+                        parentId: null,
+                        isCollapsed: false,
+                        columns: ["項目", ...choices],
+                        questions: [],
+                        isMultiSelect: answerRaw.includes('|')
+                    });
+                }
+
+                const page = newPages.get(pageTitle);
+                page.questions.push({
+                    id: id,
+                    text: text,
+                    answer: page.isMultiSelect ? answerRaw.split('|') : answerRaw,
+                    isInPool: true
+                });
             }
-            this._currentActiveRowId = null;
+
+            if (confirm(`CSVから ${newPages.size} ページの問題を取り込みますか？\n既存のページは維持され、末尾に追加されます。`)) {
+                this.quizData.push(...Array.from(newPages.values()));
+                this.saveData();
+                alert('CSVからデータを正常に取り込みました。');
+                this.renderTOC();
+                this.loadSet(this.currentSetId);
+            }
+        } catch (err) {
+            console.error(err);
+            alert('CSVの解析に失敗しました。');
         }
-        return;
     }
 
-    // 画面上部から40%の位置を「切り替えの閾値」とする
-    const focusThreshold = window.innerHeight * 0.4;
-    let bestRow = null;
+    updateDataStatus(msg) {
+        if (this.dataStatusMsg) {
+            this.dataStatusMsg.textContent = `${msg} (${new Date().toLocaleTimeString()})`;
+            this.dataStatusMsg.style.color = 'var(--success)';
+            setTimeout(() => {
+                this.dataStatusMsg.style.color = 'var(--text-secondary)';
+            }, 5000);
+        }
+        // Save export timestamp for reminder
+        if (msg.includes("エクスポート")) {
+            localStorage.setItem('sharo_last_export_at', new Date().toISOString());
+            this.checkBackupFrequency();
+        }
+    }
 
-    // ビューポート内にあるターゲットを取得
-    const visibleTargets = targets.filter(tr => {
-        const rect = tr.getBoundingClientRect();
-        return rect.top < window.innerHeight && rect.bottom > 0;
-    });
+    // --- Automatic Recovery and Protection ---
 
-    if (visibleTargets.length > 0) {
-        // 「現在の行」の底辺が閾値より下にある限り、その行を優先する（上から順に探す）
-        bestRow = visibleTargets.find(tr => {
-            const rect = tr.getBoundingClientRect();
-            return rect.bottom > focusThreshold;
+    checkAndOfferRecovery(manual = false) {
+        const backupStr = localStorage.getItem('sharo_auto_backup');
+        if (!backupStr) {
+            if (manual) alert('内部バックアップが見つかりません。');
+            return;
+        }
+
+        try {
+            const backup = JSON.parse(backupStr);
+            const isMainEmpty = (this.quizData.length <= DEFAULT_QUIZ_DATA.length && this.history.length === 0);
+
+            if (manual || isMainEmpty) {
+                const date = new Date(backup.savedAt).toLocaleString();
+                const msg = manual
+                    ? `内部バックアップ（保存日時: ${date}）からデータを復元しますか？\n現在編集中の内容は上書きされます。`
+                    : `【データ復旧の案内】\nメインデータが初期状態のようですが、内部バックアップ（保存日時: ${date}）が見つかりました。\n以前の状態を復元しますか？`;
+
+                if (confirm(msg)) {
+                    this.quizData = backup.quizData;
+                    this.history = backup.history || [];
+                    this.questionStats = backup.questionStats || {};
+                    this.saveData();
+                    this.saveHistory();
+                    this.saveQuestionStats();
+                    alert('データを正常に復元しました。');
+                    window.location.reload();
+                }
+            }
+        } catch (e) {
+            console.error("Backup parse error", e);
+        }
+    }
+
+    checkBackupFrequency() {
+        const lastExport = localStorage.getItem('sharo_last_export_at');
+        if (!lastExport) return;
+
+        const hoursSince = (Date.now() - new Date(lastExport).getTime()) / (1000 * 60 * 60);
+        if (hoursSince > 24) {
+            const reminderArea = document.getElementById('backup-reminder');
+            if (reminderArea) {
+                reminderArea.style.display = 'block';
+                reminderArea.innerHTML = `⚠️ 最終エクスポートから24時間以上経過しています。大切なデータを守るため、<span style="color:var(--accent); cursor:pointer; text-decoration:underline;" onclick="app.exportToJSON()">JSONバックアップの保存</span>をお勧めします。`;
+            }
+        } else {
+            const reminderArea = document.getElementById('backup-reminder');
+            if (reminderArea) reminderArea.style.display = 'none';
+        }
+    }
+
+    setupQuestionObserver() {
+        if (this.questionObserver) this.questionObserver.disconnect();
+
+        const options = {
+            root: null,
+            rootMargin: '-5% 0px -20% 0px',
+            threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+        };
+
+        this.questionObserver = new IntersectionObserver(() => {
+            this.activateFirstVisibleBank();
+        }, options);
+
+        const targets = document.querySelectorAll('#quiz-table tr, .auto-gen-table tr');
+        targets.forEach(t => {
+            if (t.dataset.keywords) {
+                this.questionObserver.observe(t);
+            }
         });
 
-        // すべてが閾値より上に行った場合は、一番下の可視行を選択
-        if (!bestRow) bestRow = visibleTargets[visibleTargets.length - 1];
+        // Fallback: also update on scroll for smoother experience
+        if (this._scrollHandler) window.removeEventListener('scroll', this._scrollHandler);
+        this._scrollHandler = () => this.activateFirstVisibleBank();
+        window.addEventListener('scroll', this._scrollHandler, { passive: true });
+
+        this.activateFirstVisibleBank();
+        setTimeout(() => this.activateFirstVisibleBank(), 300);
     }
 
-    // 選択された行があっても、画面外（極端に下など）すぎる場合は非表示
-    if (bestRow) {
-        const rect = bestRow.getBoundingClientRect();
-        if (rect.top > window.innerHeight * 0.9) bestRow = null;
-    }
-
-    if (bestRow) {
-        if (this._currentActiveRowId !== bestRow.id) {
-            this._currentActiveRowId = bestRow.id;
-            this.updateGlobalKeywordBank(bestRow);
-        }
-    } else {
-        if (this._currentActiveRowId !== null) {
-            this._currentActiveRowId = null;
+    activateFirstVisibleBank() {
+        if (this.isEditMode || this.isChecked) {
             if (this.globalKeywordBank) {
                 this.globalKeywordBank.classList.add('hidden');
                 this.globalKeywordBank.classList.remove('active-bank');
             }
+            this._currentActiveRowId = null;
+            return;
         }
-    }
-}
 
-updateGlobalKeywordBank(row) {
-    if (!this.globalKeywordBank) return;
+        const targets = Array.from(document.querySelectorAll('#quiz-table tr, .auto-gen-table tr')).filter(r => r.dataset.keywords);
 
-    // Hide bank if we are in "isChecked" mode or Edit mode
-    if (this.isChecked || this.isEditMode || !row || !row.dataset.keywords) {
-        this.globalKeywordBank.classList.add('hidden');
-        this.globalKeywordBank.classList.remove('active-bank');
-        this._currentActiveRowId = null;
-        return;
-    }
+        const isSingleClause = !this.clauseDisplay.classList.contains('hidden');
+        const isHome = this.homeDashboard && !this.homeDashboard.classList.contains('hidden');
 
-    const qid = row.dataset.qid;
-    const allOptions = JSON.parse(row.dataset.keywords);
-    const requiredCounts = JSON.parse(row.dataset.requiredCounts);
-
-    const cacheKey = `bank-${qid}`;
-    if (!this.shuffledCache[cacheKey]) this.shuffledCache[cacheKey] = allOptions.sort(() => Math.random() - 0.5);
-
-    const usedCounts = {};
-    Object.keys(this.userAnswers).forEach(key => {
-        if (key.startsWith(`${qid}-`)) {
-            const ans = this.userAnswers[key];
-            usedCounts[ans] = (usedCounts[ans] || 0) + 1;
-        }
-    });
-    const topAns = this.userAnswers[qid];
-    if (topAns) {
-        if (Array.isArray(topAns)) topAns.forEach(a => usedCounts[a] = (usedCounts[a] || 0) + 1);
-        else usedCounts[topAns] = (usedCounts[topAns] || 0) + 1;
-    }
-
-    this.globalKeywordBank.innerHTML = '';
-    this.globalKeywordBank.classList.remove('hidden');
-    this.globalKeywordBank.classList.add('active-bank');
-    this.globalKeywordBank.classList.toggle('minimized', this.isBankMinimized);
-
-    // Add Header for minimization
-    const bankHeader = document.createElement('div');
-    bankHeader.className = 'keyword-bank-header';
-
-    const titleSpan = document.createElement('span');
-    titleSpan.className = 'bank-title';
-    titleSpan.textContent = this.isBankMinimized ? '選択肢バンク (最小化中)' : '選択肢バンク';
-
-    const toggleBtn = document.createElement('button');
-    toggleBtn.className = 'bank-toggle-btn';
-    toggleBtn.textContent = this.isBankMinimized ? '▲ 展開する' : '▼ 最小化する';
-    toggleBtn.onclick = (e) => {
-        e.stopPropagation();
-        this.isBankMinimized = !this.isBankMinimized;
-        this.updateGlobalKeywordBank(row);
-    };
-
-    bankHeader.appendChild(titleSpan);
-    bankHeader.appendChild(toggleBtn);
-    this.globalKeywordBank.appendChild(bankHeader);
-
-    if (this.isBankMinimized) return;
-
-    this.shuffledCache[cacheKey].forEach(word => {
-        const req = requiredCounts[word] || 0;
-        const used = usedCounts[word] || 0;
-        const isUsed = req > 0 ? (used >= req) : (used > 0);
-
-        const card = document.createElement('div'); card.className = `keyword-card ${isUsed ? 'used' : ''}`;
-        if (req > 1 && !isUsed) {
-            card.innerHTML = `${word} <span class="keyword-count-badge">${req - used}</span>`;
-        } else {
-            card.textContent = word;
-        }
-        if (this.selectedKeyword === word) card.classList.add('selected');
-
-        card.draggable = !isUsed;
-        card.onclick = (e) => {
-            if (isUsed) return;
-            if (this.selectedKeyword === word) {
-                this.selectedKeyword = null;
-            } else {
-                this.selectedKeyword = word;
+        if (targets.length === 0) {
+            if (!isSingleClause || isHome) {
+                if (this.globalKeywordBank) {
+                    this.globalKeywordBank.classList.add('hidden');
+                    this.globalKeywordBank.classList.remove('active-bank');
+                }
+                this._currentActiveRowId = null;
             }
-            this.updateGlobalKeywordBank(row);
-        };
-        card.ondragstart = (e) => {
-            if (isUsed) return;
-            e.dataTransfer.setData('text/plain', word);
-            card.classList.add('dragging');
-            // Store active qid globally for drop handling if needed
-            this.activeDragQid = qid;
-        };
-        card.ondragend = () => card.classList.remove('dragging');
-        this.globalKeywordBank.appendChild(card);
-    });
-}
+            return;
+        }
 
-// --- GitHub Sync Methods ---
+        // 画面上部から40%の位置を「切り替えの閾値」とする
+        const focusThreshold = window.innerHeight * 0.4;
+        let bestRow = null;
 
-loadGitHubConfig() {
-    const config = JSON.parse(localStorage.getItem('sharoGitHubConfig') || '{}');
-    if (this.ghTokenInput) this.ghTokenInput.value = config.token || '';
-    if (this.ghRepoInput) this.ghRepoInput.value = config.repo || '';
-    if (this.ghPathInput) this.ghPathInput.value = config.path || 'data/sharo_study_sync.json';
-    this.updateGitHubStatus();
-}
+        // ビューポート内にあるターゲットを取得
+        const visibleTargets = targets.filter(tr => {
+            const rect = tr.getBoundingClientRect();
+            return rect.top < window.innerHeight && rect.bottom > 0;
+        });
 
-saveGitHubConfig() {
-    const config = {
-        token: this.ghTokenInput.value.trim(),
-        repo: this.ghRepoInput.value.trim(),
-        path: this.ghPathInput.value.trim()
-    };
-    localStorage.setItem('sharoGitHubConfig', JSON.stringify(config));
-    alert('GitHubの設定を保存しました。');
-    this.updateGitHubStatus();
-}
+        if (visibleTargets.length > 0) {
+            // 「現在の行」の底辺が閾値より下にある限り、その行を優先する（上から順に探す）
+            bestRow = visibleTargets.find(tr => {
+                const rect = tr.getBoundingClientRect();
+                return rect.bottom > focusThreshold;
+            });
 
-updateGitHubStatus(msg = null) {
-    if (!this.ghSyncStatus) return;
-    const config = JSON.parse(localStorage.getItem('sharoGitHubConfig') || '{}');
-    if (!config.token || !config.repo) {
-        this.ghSyncStatus.textContent = '未連携';
-        this.ghSyncStatus.className = 'github-connect-status';
-        return;
-    }
-    this.ghSyncStatus.textContent = msg || '連携済み（同期ボタンを押してください）';
-    this.ghSyncStatus.className = 'github-connect-status synced';
-}
+            // すべてが閾値より上に行った場合は、一番下の可視行を選択
+            if (!bestRow) bestRow = visibleTargets[visibleTargets.length - 1];
+        }
 
-    async syncWithGitHub() {
-    const config = JSON.parse(localStorage.getItem('sharoGitHubConfig') || '{}');
-    if (!config.token || !config.repo) {
-        alert('GitHubの設定（トークンとリポジトリ）を先に保存してください。');
-        return;
-    }
+        // 選択された行があっても、画面外（極端に下など）すぎる場合は非表示
+        if (bestRow) {
+            const rect = bestRow.getBoundingClientRect();
+            if (rect.top > window.innerHeight * 0.9) bestRow = null;
+        }
 
-    if (this.ghSyncNowBtn) {
-        this.ghSyncNowBtn.disabled = true;
-        this.ghSyncNowBtn.textContent = '同期中...';
-    }
-    if (this.sidebarGhSyncBtn) {
-        this.sidebarGhSyncBtn.disabled = true;
-        this.sidebarGhSyncBtn.textContent = '同期中...';
-    }
-    this.updateGitHubStatus('同期中...');
-    console.log('Starting GitHub Sync...');
-
-    try {
-        // 1. Fetch remote data
-        const remote = await this.fetchFromGitHub(config);
-        let localData = {
-            quizData: this.quizData,
-            questionStats: this.questionStats,
-            history: this.history,
-            lastModified: parseInt(localStorage.getItem('sharoLastModified') || '0')
-        };
-
-        if (remote) {
-            // 2. Conflict handling: simple timestamp check
-            if (remote.lastModified > localData.lastModified) {
-                if (confirm(`GitHub上に新しいデータが見つかりました（${new Date(remote.lastModified).toLocaleString()}）。上書きしますか？`)) {
-                    this.quizData = remote.quizData;
-                    this.questionStats = remote.questionStats;
-                    this.history = remote.history;
-                    this.saveData();
-                    this.saveQuestionStats();
-                    this.saveHistory();
-                    localStorage.setItem('sharoLastModified', remote.lastModified);
-                    alert('リモートのデータを読み込みました。');
-                    location.reload(); // Reload to refresh everything
-                    return;
+        if (bestRow) {
+            if (this._currentActiveRowId !== bestRow.id) {
+                this._currentActiveRowId = bestRow.id;
+                this.updateGlobalKeywordBank(bestRow);
+            }
+        } else {
+            if (this._currentActiveRowId !== null) {
+                this._currentActiveRowId = null;
+                if (this.globalKeywordBank) {
+                    this.globalKeywordBank.classList.add('hidden');
+                    this.globalKeywordBank.classList.remove('active-bank');
                 }
             }
         }
+    }
 
-        // 3. Push local data (if remote is older or user chose to push)
-        localData.lastModified = Date.now();
-        await this.pushToGitHub(config, localData);
-        localStorage.setItem('sharoLastModified', localData.lastModified);
+    updateGlobalKeywordBank(row) {
+        if (!this.globalKeywordBank) return;
 
-        this.updateGitHubStatus(`同期完了 (${new Date().toLocaleTimeString()})`);
-        alert('GitHubへの同期が完了しました。');
-    } catch (error) {
-        console.error('GitHub Sync Error Details:', {
-            message: error.message,
-            stack: error.stack,
-            config_path: config.path,
-            config_repo: config.repo
+        // Hide bank if we are in "isChecked" mode or Edit mode
+        if (this.isChecked || this.isEditMode || !row || !row.dataset.keywords) {
+            this.globalKeywordBank.classList.add('hidden');
+            this.globalKeywordBank.classList.remove('active-bank');
+            this._currentActiveRowId = null;
+            return;
+        }
+
+        const qid = row.dataset.qid;
+        const allOptions = JSON.parse(row.dataset.keywords);
+        const requiredCounts = JSON.parse(row.dataset.requiredCounts);
+
+        const cacheKey = `bank-${qid}`;
+        if (!this.shuffledCache[cacheKey]) this.shuffledCache[cacheKey] = allOptions.sort(() => Math.random() - 0.5);
+
+        const usedCounts = {};
+        Object.keys(this.userAnswers).forEach(key => {
+            if (key.startsWith(`${qid}-`)) {
+                const ans = this.userAnswers[key];
+                usedCounts[ans] = (usedCounts[ans] || 0) + 1;
+            }
         });
-        alert('同期に失敗しました: ' + error.message + '\n\n※1MBを超える巨大なファイルやGitHubの権限、リポジトリ名の設定が正しいかご確認ください。');
-        this.updateGitHubStatus('同期失敗');
-    } finally {
+        const topAns = this.userAnswers[qid];
+        if (topAns) {
+            if (Array.isArray(topAns)) topAns.forEach(a => usedCounts[a] = (usedCounts[a] || 0) + 1);
+            else usedCounts[topAns] = (usedCounts[topAns] || 0) + 1;
+        }
+
+        this.globalKeywordBank.innerHTML = '';
+        this.globalKeywordBank.classList.remove('hidden');
+        this.globalKeywordBank.classList.add('active-bank');
+        this.globalKeywordBank.classList.toggle('minimized', this.isBankMinimized);
+
+        // Add Header for minimization
+        const bankHeader = document.createElement('div');
+        bankHeader.className = 'keyword-bank-header';
+
+        const titleSpan = document.createElement('span');
+        titleSpan.className = 'bank-title';
+        titleSpan.textContent = this.isBankMinimized ? '選択肢バンク (最小化中)' : '選択肢バンク';
+
+        const toggleBtn = document.createElement('button');
+        toggleBtn.className = 'bank-toggle-btn';
+        toggleBtn.textContent = this.isBankMinimized ? '▲ 展開する' : '▼ 最小化する';
+        toggleBtn.onclick = (e) => {
+            e.stopPropagation();
+            this.isBankMinimized = !this.isBankMinimized;
+            this.updateGlobalKeywordBank(row);
+        };
+
+        bankHeader.appendChild(titleSpan);
+        bankHeader.appendChild(toggleBtn);
+        this.globalKeywordBank.appendChild(bankHeader);
+
+        if (this.isBankMinimized) return;
+
+        this.shuffledCache[cacheKey].forEach(word => {
+            const req = requiredCounts[word] || 0;
+            const used = usedCounts[word] || 0;
+            const isUsed = req > 0 ? (used >= req) : (used > 0);
+
+            const card = document.createElement('div'); card.className = `keyword-card ${isUsed ? 'used' : ''}`;
+            if (req > 1 && !isUsed) {
+                card.innerHTML = `${word} <span class="keyword-count-badge">${req - used}</span>`;
+            } else {
+                card.textContent = word;
+            }
+            if (this.selectedKeyword === word) card.classList.add('selected');
+
+            card.draggable = !isUsed;
+            card.onclick = (e) => {
+                if (isUsed) return;
+                if (this.selectedKeyword === word) {
+                    this.selectedKeyword = null;
+                } else {
+                    this.selectedKeyword = word;
+                }
+                this.updateGlobalKeywordBank(row);
+            };
+            card.ondragstart = (e) => {
+                if (isUsed) return;
+                e.dataTransfer.setData('text/plain', word);
+                card.classList.add('dragging');
+                // Store active qid globally for drop handling if needed
+                this.activeDragQid = qid;
+            };
+            card.ondragend = () => card.classList.remove('dragging');
+            this.globalKeywordBank.appendChild(card);
+        });
+    }
+
+    // --- GitHub Sync Methods ---
+
+    loadGitHubConfig() {
+        const config = JSON.parse(localStorage.getItem('sharoGitHubConfig') || '{}');
+        if (this.ghTokenInput) this.ghTokenInput.value = config.token || '';
+        if (this.ghRepoInput) this.ghRepoInput.value = config.repo || '';
+        if (this.ghPathInput) this.ghPathInput.value = config.path || 'data/sharo_study_sync.json';
+        this.updateGitHubStatus();
+    }
+
+    saveGitHubConfig() {
+        const config = {
+            token: this.ghTokenInput.value.trim(),
+            repo: this.ghRepoInput.value.trim(),
+            path: this.ghPathInput.value.trim()
+        };
+        localStorage.setItem('sharoGitHubConfig', JSON.stringify(config));
+        alert('GitHubの設定を保存しました。');
+        this.updateGitHubStatus();
+    }
+
+    updateGitHubStatus(msg = null) {
+        if (!this.ghSyncStatus) return;
+        const config = JSON.parse(localStorage.getItem('sharoGitHubConfig') || '{}');
+        if (!config.token || !config.repo) {
+            this.ghSyncStatus.textContent = '未連携';
+            this.ghSyncStatus.className = 'github-connect-status';
+            return;
+        }
+        this.ghSyncStatus.textContent = msg || '連携済み（同期ボタンを押してください）';
+        this.ghSyncStatus.className = 'github-connect-status synced';
+    }
+
+    async syncWithGitHub() {
+        const config = JSON.parse(localStorage.getItem('sharoGitHubConfig') || '{}');
+        if (!config.token || !config.repo) {
+            alert('GitHubの設定（トークンとリポジトリ）を先に保存してください。');
+            return;
+        }
+
         if (this.ghSyncNowBtn) {
-            this.ghSyncNowBtn.disabled = false;
-            this.ghSyncNowBtn.textContent = '今すぐ同期（アップロード＆ダウンロード）';
+            this.ghSyncNowBtn.disabled = true;
+            this.ghSyncNowBtn.textContent = '同期中...';
         }
         if (this.sidebarGhSyncBtn) {
-            this.sidebarGhSyncBtn.disabled = false;
-            this.sidebarGhSyncBtn.textContent = '今すぐ同期';
+            this.sidebarGhSyncBtn.disabled = true;
+            this.sidebarGhSyncBtn.textContent = '同期中...';
+        }
+        this.updateGitHubStatus('同期中...');
+        console.log('Starting GitHub Sync...');
+
+        try {
+            // 1. Fetch remote data
+            const remote = await this.fetchFromGitHub(config);
+            let localData = {
+                quizData: this.quizData,
+                questionStats: this.questionStats,
+                history: this.history,
+                lastModified: parseInt(localStorage.getItem('sharoLastModified') || '0')
+            };
+
+            if (remote) {
+                // 2. Conflict handling: simple timestamp check
+                if (remote.lastModified > localData.lastModified) {
+                    if (confirm(`GitHub上に新しいデータが見つかりました（${new Date(remote.lastModified).toLocaleString()}）。上書きしますか？`)) {
+                        this.quizData = remote.quizData;
+                        this.questionStats = remote.questionStats;
+                        this.history = remote.history;
+                        this.saveData();
+                        this.saveQuestionStats();
+                        this.saveHistory();
+                        localStorage.setItem('sharoLastModified', remote.lastModified);
+                        alert('リモートのデータを読み込みました。');
+                        location.reload(); // Reload to refresh everything
+                        return;
+                    }
+                }
+            }
+
+            // 3. Push local data (if remote is older or user chose to push)
+            localData.lastModified = Date.now();
+            await this.pushToGitHub(config, localData);
+            localStorage.setItem('sharoLastModified', localData.lastModified);
+
+            this.updateGitHubStatus(`同期完了 (${new Date().toLocaleTimeString()})`);
+            alert('GitHubへの同期が完了しました。');
+        } catch (error) {
+            console.error('GitHub Sync Error Details:', {
+                message: error.message,
+                stack: error.stack,
+                config_path: config.path,
+                config_repo: config.repo
+            });
+            alert('同期に失敗しました: ' + error.message + '\n\n※1MBを超える巨大なファイルやGitHubの権限、リポジトリ名の設定が正しいかご確認ください。');
+            this.updateGitHubStatus('同期失敗');
+        } finally {
+            if (this.ghSyncNowBtn) {
+                this.ghSyncNowBtn.disabled = false;
+                this.ghSyncNowBtn.textContent = '今すぐ同期（アップロード＆ダウンロード）';
+            }
+            if (this.sidebarGhSyncBtn) {
+                this.sidebarGhSyncBtn.disabled = false;
+                this.sidebarGhSyncBtn.textContent = '今すぐ同期';
+            }
         }
     }
-}
 
     async fetchFromGitHub(config) {
-    const url = `https://api.github.com/repos/${config.repo}/contents/${config.path}`;
-    const headers = {
-        'Authorization': config.token.startsWith('ghp_') ? `token ${config.token}` : `Bearer ${config.token}`
-    };
+        const url = `https://api.github.com/repos/${config.repo}/contents/${config.path}`;
+        const headers = {
+            'Authorization': config.token.startsWith('ghp_') ? `token ${config.token}` : `Bearer ${config.token}`
+        };
 
-    // 1. Get SHA via HEAD request (bypasses 1MB body limit)
-    const headResponse = await fetch(url, { method: 'HEAD', headers });
-    if (headResponse.status === 404) return null;
-    if (!headResponse.ok) throw new Error(`Metadata check failed: ${headResponse.status}`);
+        // 1. Get SHA via HEAD request (bypasses 1MB body limit)
+        const headResponse = await fetch(url, { method: 'HEAD', headers });
+        if (headResponse.status === 404) return null;
+        if (!headResponse.ok) throw new Error(`Metadata check failed: ${headResponse.status}`);
 
-    // GitHub ETag for blobs/contents is the SHA
-    const etag = headResponse.headers.get('ETag');
-    this._ghFileSha = etag ? etag.replace(/"/g, '') : null;
+        // GitHub ETag for blobs/contents is the SHA
+        const etag = headResponse.headers.get('ETag');
+        this._ghFileSha = etag ? etag.replace(/"/g, '') : null;
 
-    // 2. Fetch content via Raw media type (handles up to 100MB)
-    const rawResponse = await fetch(url, {
-        headers: { ...headers, 'Accept': 'application/vnd.github.v3.raw' }
-    });
-
-    if (!rawResponse.ok) {
-        throw new Error(`Content fetch failed: ${rawResponse.status}`);
-    }
-
-    const content = await rawResponse.text();
-    if (!content) return null;
-
-    try {
-        return JSON.parse(content);
-    } catch (e) {
-        console.error('JSON Parse Error. Raw content start:', content.substring(0, 100));
-        throw new Error('リモートのJSONファイルが壊れているか、空です。');
-    }
-}
-
-    async pushToGitHub(config, data) {
-    this.pruneData();
-    const url = `https://api.github.com/repos/${config.repo}/contents/${config.path}`;
-    const content = this.utf8_to_b64_encode(JSON.stringify(data));
-
-    // Need current SHA to update existing file
-    if (!this._ghFileSha) {
-        const headResponse = await fetch(url, {
-            method: 'HEAD',
-            headers: { 'Authorization': config.token.startsWith('ghp_') ? `token ${config.token}` : `Bearer ${config.token}` }
+        // 2. Fetch content via Raw media type (handles up to 100MB)
+        const rawResponse = await fetch(url, {
+            headers: { ...headers, 'Accept': 'application/vnd.github.v3.raw' }
         });
-        if (headResponse.ok) {
-            const etag = headResponse.headers.get('ETag');
-            this._ghFileSha = etag ? etag.replace(/"/g, '') : null;
+
+        if (!rawResponse.ok) {
+            throw new Error(`Content fetch failed: ${rawResponse.status}`);
+        }
+
+        const content = await rawResponse.text();
+        if (!content) return null;
+
+        try {
+            return JSON.parse(content);
+        } catch (e) {
+            console.error('JSON Parse Error. Raw content start:', content.substring(0, 100));
+            throw new Error('リモートのJSONファイルが壊れているか、空です。');
         }
     }
 
-    const body = {
-        message: 'Sync sharo study data',
-        content: content,
-        sha: this._ghFileSha
-    };
+    async pushToGitHub(config, data) {
+        this.pruneData();
+        const url = `https://api.github.com/repos/${config.repo}/contents/${config.path}`;
+        const content = this.utf8_to_b64_encode(JSON.stringify(data));
 
-    const response = await fetch(url, {
-        method: 'PUT',
-        headers: {
-            'Authorization': config.token.startsWith('ghp_') ? `token ${config.token}` : `Bearer ${config.token}`,
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(body)
-    });
+        // Need current SHA to update existing file
+        if (!this._ghFileSha) {
+            const headResponse = await fetch(url, {
+                method: 'HEAD',
+                headers: { 'Authorization': config.token.startsWith('ghp_') ? `token ${config.token}` : `Bearer ${config.token}` }
+            });
+            if (headResponse.ok) {
+                const etag = headResponse.headers.get('ETag');
+                this._ghFileSha = etag ? etag.replace(/"/g, '') : null;
+            }
+        }
 
-    if (!response.ok) {
-        const err = await response.json();
-        throw new Error(err.message || 'Push failed');
+        const body = {
+            message: 'Sync sharo study data',
+            content: content,
+            sha: this._ghFileSha
+        };
+
+        const response = await fetch(url, {
+            method: 'PUT',
+            headers: {
+                'Authorization': config.token.startsWith('ghp_') ? `token ${config.token}` : `Bearer ${config.token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(body)
+        });
+
+        if (!response.ok) {
+            const err = await response.json();
+            throw new Error(err.message || 'Push failed');
+        }
+
+        const resData = await response.json();
+        this._ghFileSha = resData.content.sha;
     }
 
-    const resData = await response.json();
-    this._ghFileSha = resData.content.sha;
-}
+    // Helper for Unicode-safe Base64
+    utf8_to_b64_encode(str) {
+        return btoa(unescape(encodeURIComponent(str)));
+    }
 
-// Helper for Unicode-safe Base64
-utf8_to_b64_encode(str) {
-    return btoa(unescape(encodeURIComponent(str)));
-}
-
-utf8_to_b64_decode(str) {
-    // GitHub API base64 can contain newlines
-    const cleanStr = str.replace(/\n/g, '');
-    return decodeURIComponent(escape(atob(cleanStr)));
-}
+    utf8_to_b64_decode(str) {
+        // GitHub API base64 can contain newlines
+        const cleanStr = str.replace(/\n/g, '');
+        return decodeURIComponent(escape(atob(cleanStr)));
+    }
 }
 let app;
 document.addEventListener('DOMContentLoaded', () => {
