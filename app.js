@@ -839,6 +839,7 @@ class QuizApp {
         if (!set || set.type === 'folder') return;
 
         if (set.type === 'clause') {
+            const keywordData = this.extractKeywords(set.text);
             keywordData.forEach((kw, idx) => {
                 const statKey = this.getBlankStatKey(set.id, idx);
                 if (this.shouldAutoFill(statKey, kw.text)) {
