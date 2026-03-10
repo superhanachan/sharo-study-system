@@ -752,81 +752,24 @@ class QuizApp {
         return type === 'clause' ? `clause-summary-${baseId}` : baseId;
     }
 
-    getStreakCount(statKey, expectedText = null) {
+    getStreakCount(statKey) {
         if (!statKey) return 0;
 
-        const getRecentStreak = (key) => {
-            const stat = this.questionStats[key];
-            if (!stat || !stat.recent || !Array.isArray(stat.recent)) return 0;
-            let streak = 0;
-            for (let i = stat.recent.length - 1; i >= 0; i--) {
-                if (Number(stat.recent[i]) === 1) streak++;
-                else break;
-            }
-            return streak;
-        };
-
-        // 1. Precise match (Normalized)
-        let streak = getRecentStreak(statKey);
-
-        // 2. Exact text match (Strongest recovery for legacy/moved data)
-        if (streak === 0 && expectedText) {
-            const searchText = expectedText.trim();
-            for (const key in this.questionStats) {
-                const stat = this.questionStats[key];
-                // Check if stat content matches "穴埋め: WORD" or just "WORD"
-                if (stat && (stat.text === `穴埋め: ${searchText}` || stat.text === searchText)) {
-                    const legacyStreak = getRecentStreak(key);
-                    if (legacyStreak > streak) streak = legacyStreak;
-                }
-            }
-        }
-
-        if (streak > 0) return streak;
-
-        // 3. Fuzzy match for Legacy Data (handle cases where IDs had srs- or weak- prefixes)
-        if (statKey.startsWith('clause-')) {
-            const parts = statKey.split('-');
-            if (parts.length >= 3) {
-                const idx = parts[parts.length - 1];
-                const baseId = parts.slice(1, -1).join('-');
-
-                for (const key in this.questionStats) {
-                    if (key.startsWith('clause-') && key.includes(baseId) && key.endsWith('-' + idx)) {
-                        const legacyStreak = getRecentStreak(key);
-                        if (legacyStreak > streak) streak = legacyStreak;
-                    }
-                }
-            }
-        }
-
-        if (streak > 0) return streak;
-
-        // 4. Fallback: If no individual streak, check clause summary
-        if (statKey.startsWith('clause-') && !statKey.startsWith('clause-summary-')) {
-            const parts = statKey.split('-');
-            if (parts.length >= 3) {
-                const baseId = parts.slice(1, -1).join('-');
-                streak = getRecentStreak(`clause-summary-${baseId}`);
-
-                if (streak === 0) {
-                    for (const key in this.questionStats) {
-                        if (key.startsWith('clause-summary-') && key.includes(baseId)) {
-                            const legacyStreak = getRecentStreak(key);
-                            if (legacyStreak > streak) streak = legacyStreak;
-                        }
-                    }
-                }
-            }
+        const stat = this.questionStats[statKey];
+        if (!stat || !stat.recent || !Array.isArray(stat.recent)) return 0;
+        let streak = 0;
+        for (let i = stat.recent.length - 1; i >= 0; i--) {
+            if (Number(stat.recent[i]) === 1) streak++;
+            else break;
         }
         return streak;
     }
 
-    shouldAutoFill(statKey, expectedText = null) {
+    shouldAutoFill(statKey) {
         if (!this.autoFillEnabled) return false;
 
-        // Use the same robust streak calculation as the Mastery Board
-        const streak = this.getStreakCount(statKey, expectedText);
+        // Strictly per-id streak check
+        const streak = this.getStreakCount(statKey);
         const threshold = Math.max(1, this.autoFillThreshold);
 
         return streak >= threshold;
@@ -842,7 +785,7 @@ class QuizApp {
             const keywordData = this.extractKeywords(set.text);
             keywordData.forEach((kw, idx) => {
                 const statKey = this.getBlankStatKey(set.id, idx);
-                if (this.shouldAutoFill(statKey, kw.text)) {
+                if (this.shouldAutoFill(statKey)) {
                     this.userAnswers[`${set.id}-${idx}`] = kw.text;
                 }
             });
@@ -854,7 +797,7 @@ class QuizApp {
                         const cellKey = `${q.id}-${idx}`;
                         if (this.userAnswers[cellKey]) return;
                         const statKey = this.getBlankStatKey(q.id, idx);
-                        if (this.shouldAutoFill(statKey, kw.text)) {
+                        if (this.shouldAutoFill(statKey)) {
                             this.userAnswers[cellKey] = kw.text;
                         }
                     });
@@ -1696,8 +1639,8 @@ class QuizApp {
                 const savedAnswer = this.userAnswers[`${set.id}-${currentIdx}`];
                 blank.dataset.answer = kwInfo.text; // Store correct answer for peek
 
-                // Add streak count to data attribute (always show, even if 0)
-                const streak = this.getStreakCount(statKey, kwInfo.text);
+                // Add streak count to data attribute (always show, strictly per ID)
+                const streak = this.getStreakCount(statKey);
                 blank.dataset.streak = streak;
 
                 if (savedAnswer) {
@@ -1781,8 +1724,8 @@ class QuizApp {
                     input.classList.add('auto-filled');
                 }
 
-                // Add streak count to data attribute (always show, even if 0)
-                const streak = this.getStreakCount(statKey, kwInfo.text);
+                // Add streak count to data attribute (always show, strictly per ID)
+                const streak = this.getStreakCount(statKey);
                 wrapper.dataset.streak = streak;
 
                 const savedAnswer = this.userAnswers[`${set.id}-${currentIdx}`] || '';
@@ -2771,8 +2714,8 @@ class QuizApp {
                             blank.innerHTML = '&nbsp;&nbsp;&nbsp;&nbsp;';
                         }
 
-                        // Add streak count to data attribute for table blanks (always show)
-                        const streak = this.getStreakCount(statKey, kwInfo.text);
+                        // Add streak count to data attribute for table blanks (strictly per ID)
+                        const streak = this.getStreakCount(statKey);
                         blank.dataset.streak = streak;
 
                         if (!this.isChecked) {
@@ -2876,8 +2819,8 @@ class QuizApp {
                         const wrapper = document.createElement('span');
                         wrapper.className = 'clause-input-wrapper';
 
-                        // Add streak count to data attribute for wrapper (always show)
-                        const streak = this.getStreakCount(statKey, kwInfo.text);
+                        // Add streak count to data attribute for wrapper (strictly per ID)
+                        const streak = this.getStreakCount(statKey);
                         wrapper.dataset.streak = streak;
 
                         wrapper.appendChild(input);
