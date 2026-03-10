@@ -657,16 +657,16 @@ class QuizApp {
 
     extractKeywords(text) {
         if (!text) return [];
-        const keywordData = [];
-        const parts = text.split(/(\[\[.*?\]\]|［［.*?］］|\(\(.*?\)\)|（（.*?））)/g);
-        parts.forEach(part => {
-            if ((part.startsWith('[[') && part.endsWith(']]')) || (part.startsWith('［［') && part.endsWith('］］'))) {
-                keywordData.push({ text: part.substring(2, part.length - 2), type: 'drag' });
-            } else if ((part.startsWith('((') && part.endsWith('))')) || (part.startsWith('（（') && part.endsWith('））'))) {
-                keywordData.push({ text: part.substring(2, part.length - 2), type: 'input' });
-            }
-        });
-        return keywordData;
+        const result = [];
+        const regex = /\[\[(.*?)\]\]|［［(.*?)］］|\(\((.*?)\)\)|（（(.*?)））/g;
+        let match;
+        while ((match = regex.exec(text)) !== null) {
+            result.push({
+                text: match[1] || match[2] || match[3] || match[4],
+                type: (match[1] || match[2]) ? 'drag' : 'input'
+            });
+        }
+        return result;
     }
 
     normalizeInput(str) {
@@ -711,10 +711,11 @@ class QuizApp {
     }
 
     getQuestionBaseId(id) {
-        if (!id) return '';
-        let baseId = id.toString();
-        // Remove known prefixes recursively
-        const prefixes = ['weak', 'rare', 'random', 'srs-clause', 'srs-page', 'clause-weak', 'auto'];
+        if (id === undefined || id === null) return '';
+        const idStr = String(id);
+        let baseId = idStr;
+
+        const prefixes = ['weak', 'rare', 'random', 'srs-clause', 'srs-page', 'clause-weak', 'auto', 'srs'];
         let matched = true;
         while (matched) {
             matched = false;
@@ -728,24 +729,12 @@ class QuizApp {
         return baseId;
     }
 
+
     getBlankStatKey(qId, idx) {
         const baseId = this.getQuestionBaseId(qId);
         return `clause-${baseId}-${idx}`;
     }
 
-    extractKeywords(text) {
-        if (!text) return [];
-        const result = [];
-        const regex = /\[\[(.*?)\]\]|［［(.*?)］］|\(\((.*?)\)\)|（（(.*?)））/g;
-        let match;
-        while ((match = regex.exec(text)) !== null) {
-            result.push({
-                text: match[1] || match[2] || match[3] || match[4],
-                type: (match[1] || match[2]) ? 'drag' : 'input'
-            });
-        }
-        return result;
-    }
 
     getSummaryStatKey(qId, type) {
         const baseId = this.getQuestionBaseId(qId);
@@ -1608,18 +1597,19 @@ class QuizApp {
         let blankIndex = 0;
 
         // Use placeholder strategy for blanks
+        const sanitizedId = String(set.id).replace(/[^a-zA-Z0-9]/g, '-');
         const finalHtml = htmlContent.replace(/\[\[(.*?)\]\]|［［(.*?)］］|\(\((.*?)\)\)|（（(.*?)））/g, (match, p1, p2, p3, p4) => {
             const keyword = p1 || p2 || p3 || p4;
             const type = (p1 || p2) ? 'drag' : 'input';
             keywords.push({ text: keyword, type: type });
-            return `<span id="placeholder-${set.id.replace(/[^a-zA-Z0-9]/g, '-')}-${blankIndex++}"></span>`;
+            return `<span id="placeholder-${sanitizedId}-${blankIndex++}"></span>`;
         });
 
         clauseText.innerHTML = finalHtml;
 
         // Replace placeholders with real interactive blanks
         for (let i = 0; i < blankIndex; i++) {
-            const placeholder = clauseText.querySelector(`#placeholder-${set.id.replace(/[^a-zA-Z0-9]/g, '-')}-${i}`);
+            const placeholder = clauseText.querySelector(`#placeholder-${sanitizedId}-${i}`);
             if (!placeholder) continue;
 
             const kwInfo = keywords[i];
