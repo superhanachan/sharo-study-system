@@ -1726,7 +1726,6 @@ class QuizApp {
 
                 // Add streak count to data attribute (always show, strictly per ID)
                 const streak = this.getStreakCount(statKey);
-                wrapper.dataset.streak = streak;
 
                 const savedAnswer = this.userAnswers[`${set.id}-${currentIdx}`] || '';
                 input.value = savedAnswer;
@@ -1767,8 +1766,8 @@ class QuizApp {
                 wrapper.className = 'clause-input-wrapper';
                 wrapper.appendChild(input);
 
-                // Add streak count to data attribute for wrapper
-                if (streak > 0) wrapper.dataset.streak = streak;
+                // Add streak count to data attribute for wrapper (always show)
+                wrapper.dataset.streak = streak;
 
                 // Input labels title only
                 input.title = `本来の答え: ${kwInfo.text}`;
