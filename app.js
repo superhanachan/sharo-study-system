@@ -822,34 +822,14 @@ class QuizApp {
         return streak;
     }
 
-    shouldAutoFill(statKey) {
+    shouldAutoFill(statKey, expectedText = null) {
         if (!this.autoFillEnabled) return false;
-        let stat = this.questionStats[statKey];
 
-        // Fallback: If specific stat is missing or hasn't reached threshold, check parent summary
-        if (!stat) {
-            if (statKey.startsWith('clause-summary-')) {
-                stat = this.questionStats[statKey.replace('clause-summary-', '')];
-            } else if (statKey.startsWith('clause-')) {
-                // Extract base ID from clause-BASE-IDX
-                const parts = statKey.split('-');
-                if (parts.length >= 3) {
-                    const baseId = parts.slice(1, -1).join('-');
-                    stat = this.questionStats[`clause-summary-${baseId}`];
-                }
-            } else {
-                stat = this.questionStats[`clause-summary-${statKey}`];
-            }
-        }
-
-        if (this.autoFillThreshold <= 0) return true;
-        if (!stat || !stat.recent || stat.recent.length === 0) return false;
-
+        // Use the same robust streak calculation as the Mastery Board
+        const streak = this.getStreakCount(statKey, expectedText);
         const threshold = Math.max(1, this.autoFillThreshold);
-        const recent = stat.recent || [];
-        if (recent.length < threshold) return false;
-        const lastN = recent.slice(-threshold);
-        return lastN.length === threshold && lastN.every(r => r === 1);
+
+        return streak >= threshold;
     }
 
     applyAutoFill() {
@@ -859,10 +839,9 @@ class QuizApp {
         if (!set || set.type === 'folder') return;
 
         if (set.type === 'clause') {
-            const keywordData = this.extractKeywords(set.text);
             keywordData.forEach((kw, idx) => {
                 const statKey = this.getBlankStatKey(set.id, idx);
-                if (this.shouldAutoFill(statKey)) {
+                if (this.shouldAutoFill(statKey, kw.text)) {
                     this.userAnswers[`${set.id}-${idx}`] = kw.text;
                 }
             });
@@ -874,7 +853,7 @@ class QuizApp {
                         const cellKey = `${q.id}-${idx}`;
                         if (this.userAnswers[cellKey]) return;
                         const statKey = this.getBlankStatKey(q.id, idx);
-                        if (this.shouldAutoFill(statKey)) {
+                        if (this.shouldAutoFill(statKey, kw.text)) {
                             this.userAnswers[cellKey] = kw.text;
                         }
                     });
