@@ -1730,6 +1730,11 @@ class QuizApp {
 
                 const savedAnswer = this.userAnswers[`${set.id}-${currentIdx}`];
                 blank.dataset.answer = kwInfo.text; // Store correct answer for peek
+
+                // Add streak count to data attribute
+                const streak = this.getStreakCount(statKey, kwInfo.text);
+                if (streak > 0) blank.dataset.streak = streak;
+
                 if (savedAnswer) {
                     blank.textContent = savedAnswer;
                     blank.classList.add('filled');
@@ -1811,6 +1816,10 @@ class QuizApp {
                     input.classList.add('auto-filled');
                 }
 
+                // Add streak count to data attribute
+                const streak = this.getStreakCount(statKey, kwInfo.text);
+                if (streak > 0) input.dataset.streak = streak;
+
                 const savedAnswer = this.userAnswers[`${set.id}-${currentIdx}`] || '';
                 input.value = savedAnswer;
 
@@ -1849,6 +1858,9 @@ class QuizApp {
                 const wrapper = document.createElement('span');
                 wrapper.className = 'clause-input-wrapper';
                 wrapper.appendChild(input);
+
+                // Add streak count to data attribute for wrapper
+                if (streak > 0) wrapper.dataset.streak = streak;
 
                 // Input labels title only
                 input.title = `本来の答え: ${kwInfo.text}`;
@@ -2794,6 +2806,10 @@ class QuizApp {
                             blank.innerHTML = '&nbsp;&nbsp;&nbsp;&nbsp;';
                         }
 
+                        // Add streak count to data attribute for table blanks
+                        const streak = this.getStreakCount(statKey, kwInfo.text);
+                        if (streak > 0) blank.dataset.streak = streak;
+
                         if (!this.isChecked) {
                             blank.ondragover = (e) => { e.preventDefault(); blank.classList.add('drag-over'); };
                             blank.ondragleave = () => blank.classList.remove('drag-over');
@@ -2865,10 +2881,6 @@ class QuizApp {
                         input.value = savedAnswer;
                         if (savedAnswer) input.classList.add('filled');
 
-                        const peek = document.createElement('span');
-                        peek.className = 'peek-answer';
-                        peek.textContent = `(${kwInfo.text})`;
-
                         if (!this.isChecked) {
                             input.oninput = () => {
                                 const val = input.value;
@@ -2898,10 +2910,19 @@ class QuizApp {
 
                         const wrapper = document.createElement('span');
                         wrapper.className = 'clause-input-wrapper';
+
+                        // Add streak count to data attribute for wrapper
+                        const streak = this.getStreakCount(statKey, kwInfo.text);
+                        if (streak > 0) wrapper.dataset.streak = streak;
+
                         wrapper.appendChild(input);
 
                         // Label title only
                         input.title = `本来の答え: ${kwInfo.text}`;
+
+                        const peek = document.createElement('span');
+                        peek.className = 'peek-answer';
+                        peek.textContent = `(${kwInfo.text})`;
 
                         placeholder.replaceWith(wrapper, peek);
                     }
