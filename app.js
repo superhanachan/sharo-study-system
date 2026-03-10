@@ -870,45 +870,10 @@ class QuizApp {
     }
 
     renderMasteryBoard(set, keywordData) {
-        if (!this.masteryBoard) return;
-        this.masteryBoard.innerHTML = '';
-
-        // Show all keywords, including those with 0 streak
-        const streaks = keywordData.map((kw, idx) => {
-            const targetId = kw.qId || set.id;
-            const targetIdx = kw.qIdx !== undefined ? kw.qIdx : idx;
-            const statKey = this.getBlankStatKey(targetId, targetIdx);
-            return { text: kw.text, streak: this.getStreakCount(statKey, kw.text) };
-        });
-
-        if (streaks.length === 0) {
+        if (this.masteryBoard) {
             this.masteryBoard.classList.add('hidden');
-            return;
+            this.masteryBoard.innerHTML = '';
         }
-
-        this.masteryBoard.classList.remove('hidden');
-
-        const title = document.createElement('div');
-        title.className = 'board-title';
-        title.innerHTML = '🎯 各キーワードの習得状況';
-        this.masteryBoard.appendChild(title);
-
-        const list = document.createElement('div');
-        list.className = 'mastery-list';
-        streaks.forEach((item, i) => {
-            const card = document.createElement('div');
-            card.className = 'mastery-card';
-            if (item.streak >= 5) card.classList.add('mastered');
-            else if (item.streak === 0) card.classList.add('new-item');
-
-            card.innerHTML = `
-                <span class="kw-index">${i + 1}</span>
-                <span class="kw-text">${item.text}</span>
-                <span class="streak-val">${item.streak > 0 ? '🔥' + item.streak : '0回'}</span>
-            `;
-            list.appendChild(card);
-        });
-        this.masteryBoard.appendChild(list);
     }
 
     showSRSDetail(statKey) {

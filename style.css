@@ -2836,21 +2836,23 @@ body.answers-revealed .clause-input-blank {
 .clause-input-wrapper[data-streak]::after {
     content: '🔥' attr(data-streak);
     position: absolute;
-    top: -12px;
-    right: -8px;
-    font-size: 0.7rem;
-    font-weight: 900;
+    top: -20px;
+    /* Move higher to avoid overlap */
+    right: -15px;
+    /* Move further right */
+    font-size: 0.65rem;
+    /* Slightly smaller footprint */
+    font-weight: 800;
     color: #ff9f43;
-    background: rgba(15, 15, 25, 0.95);
-    padding: 1px 6px;
-    border-radius: 6px;
-    border: 1px solid rgba(255, 159, 67, 0.6);
+    background: rgba(20, 22, 35, 0.9);
+    padding: 0 5px;
+    border-radius: 5px;
+    border: 1px solid rgba(255, 159, 67, 0.4);
     white-space: nowrap;
     z-index: 1000;
     pointer-events: none;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
-    text-shadow: 0 0 5px rgba(255, 159, 67, 0.3);
-    line-height: 1.4;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    line-height: 1.5;
     transform: translateY(0);
     animation: badgeFloat 2s ease-in-out infinite;
 }
