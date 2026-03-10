@@ -1816,6 +1816,8 @@ tr {
     color: var(--accent);
     font-size: 1.4rem;
     /* Adjusted to match larger cards */
+    position: relative;
+    overflow: visible !important;
 }
 
 .clause-blank.drag-over {
@@ -2359,6 +2361,132 @@ tr {
 .clause-input-blank:disabled {
     opacity: 1;
     cursor: default;
+}
+
+.clause-input-wrapper {
+    position: relative;
+    display: inline-flex;
+    vertical-align: middle;
+    margin: 0 4px;
+    overflow: visible !important;
+}
+
+/* Mastery Status Board */
+.mastery-board {
+    margin: 1.5rem auto;
+    width: calc(100% - 1rem);
+    max-width: 2000px;
+    background: rgba(30, 32, 45, 0.4);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    padding: 1.5rem;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.mastery-board.hidden {
+    display: none;
+}
+
+.mastery-board .board-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.mastery-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.mastery-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--glass-border);
+    padding: 0.6rem 1.2rem;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: var(--transition);
+}
+
+.mastery-card:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+.mastery-card.mastered {
+    border-color: var(--success);
+    background: rgba(74, 222, 128, 0.1);
+}
+
+.mastery-card.new-item {
+    border-style: dashed;
+    opacity: 0.8;
+}
+
+.mastery-card .kw-index {
+    font-size: 0.75rem;
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-secondary);
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-family: monospace;
+}
+
+.mastery-card .kw-text {
+    font-size: 0.95rem;
+    color: var(--text-primary);
+}
+
+.mastery-card .streak-val {
+    font-weight: 900;
+    color: #ff4d6d;
+    background: rgba(255, 77, 109, 0.1);
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    min-width: 35px;
+    text-align: center;
+}
+
+.mastery-card.new-item .streak-val {
+    color: var(--text-secondary);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.mastery-card.mastered .streak-val {
+    color: var(--success);
+    background: rgba(74, 222, 128, 0.1);
+}
+
+@keyframes badgePop {
+    from {
+        transform: scale(0);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.table-clause-wrapper .streak-badge {
+    top: -10px;
+    right: -10px;
+    min-width: 18px;
+    height: 18px;
+    font-size: 0.7rem;
 }
 
 /* Removed redundant .page-tag */

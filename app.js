@@ -250,6 +250,7 @@ class QuizApp {
         this.resetWrongBtn = document.getElementById('reset-wrong-btn');
         this.resetAllBtn = document.getElementById('reset-all-btn');
         this.peekAnswersBtn = document.getElementById('peek-answers-btn');
+        this.masteryBoard = document.getElementById('mastery-board');
         this.autoFillShortcutBtn = document.getElementById('auto-fill-shortcut-btn-sidebar');
 
         this.homeBtn = document.getElementById('home-btn');
@@ -710,8 +711,21 @@ class QuizApp {
     }
 
     getQuestionBaseId(id) {
-        if (!id) return null;
-        return id.replace(/^(weak|rare|random|srs-clause|srs-page)-/, '');
+        if (!id) return '';
+        let baseId = id.toString();
+        // Remove known prefixes recursively
+        const prefixes = ['weak', 'rare', 'random', 'srs-clause', 'srs-page', 'clause-weak', 'auto'];
+        let matched = true;
+        while (matched) {
+            matched = false;
+            for (const p of prefixes) {
+                if (baseId.startsWith(p + '-')) {
+                    baseId = baseId.substring(p.length + 1);
+                    matched = true;
+                }
+            }
+        }
+        return baseId;
     }
 
     getBlankStatKey(qId, idx) {
@@ -719,9 +733,93 @@ class QuizApp {
         return `clause-${baseId}-${idx}`;
     }
 
+    extractKeywords(text) {
+        if (!text) return [];
+        const result = [];
+        const regex = /\[\[(.*?)\]\]|［［(.*?)］］|\(\((.*?)\)\)|（（(.*?)））/g;
+        let match;
+        while ((match = regex.exec(text)) !== null) {
+            result.push({
+                text: match[1] || match[2] || match[3] || match[4],
+                type: (match[1] || match[2]) ? 'drag' : 'input'
+            });
+        }
+        return result;
+    }
+
     getSummaryStatKey(qId, type) {
         const baseId = this.getQuestionBaseId(qId);
         return type === 'clause' ? `clause-summary-${baseId}` : baseId;
+    }
+
+    getStreakCount(statKey, expectedText = null) {
+        if (!statKey) return 0;
+
+        const getRecentStreak = (key) => {
+            const stat = this.questionStats[key];
+            if (!stat || !stat.recent || !Array.isArray(stat.recent)) return 0;
+            let streak = 0;
+            for (let i = stat.recent.length - 1; i >= 0; i--) {
+                if (Number(stat.recent[i]) === 1) streak++;
+                else break;
+            }
+            return streak;
+        };
+
+        // 1. Precise match (Normalized)
+        let streak = getRecentStreak(statKey);
+
+        // 2. Exact text match (Strongest recovery for legacy/moved data)
+        if (streak === 0 && expectedText) {
+            const searchText = expectedText.trim();
+            for (const key in this.questionStats) {
+                const stat = this.questionStats[key];
+                // Check if stat content matches "穴埋め: WORD" or just "WORD"
+                if (stat && (stat.text === `穴埋め: ${searchText}` || stat.text === searchText)) {
+                    const legacyStreak = getRecentStreak(key);
+                    if (legacyStreak > streak) streak = legacyStreak;
+                }
+            }
+        }
+
+        if (streak > 0) return streak;
+
+        // 3. Fuzzy match for Legacy Data (handle cases where IDs had srs- or weak- prefixes)
+        if (statKey.startsWith('clause-')) {
+            const parts = statKey.split('-');
+            if (parts.length >= 3) {
+                const idx = parts[parts.length - 1];
+                const baseId = parts.slice(1, -1).join('-');
+
+                for (const key in this.questionStats) {
+                    if (key.startsWith('clause-') && key.includes(baseId) && key.endsWith('-' + idx)) {
+                        const legacyStreak = getRecentStreak(key);
+                        if (legacyStreak > streak) streak = legacyStreak;
+                    }
+                }
+            }
+        }
+
+        if (streak > 0) return streak;
+
+        // 4. Fallback: If no individual streak, check clause summary
+        if (statKey.startsWith('clause-') && !statKey.startsWith('clause-summary-')) {
+            const parts = statKey.split('-');
+            if (parts.length >= 3) {
+                const baseId = parts.slice(1, -1).join('-');
+                streak = getRecentStreak(`clause-summary-${baseId}`);
+
+                if (streak === 0) {
+                    for (const key in this.questionStats) {
+                        if (key.startsWith('clause-summary-') && key.includes(baseId)) {
+                            const legacyStreak = getRecentStreak(key);
+                            if (legacyStreak > streak) streak = legacyStreak;
+                        }
+                    }
+                }
+            }
+        }
+        return streak;
     }
 
     shouldAutoFill(statKey) {
@@ -789,6 +887,48 @@ class QuizApp {
                 }
             });
         }
+    }
+
+    renderMasteryBoard(set, keywordData) {
+        if (!this.masteryBoard) return;
+        this.masteryBoard.innerHTML = '';
+
+        // Show all keywords, including those with 0 streak
+        const streaks = keywordData.map((kw, idx) => {
+            const targetId = kw.qId || set.id;
+            const targetIdx = kw.qIdx !== undefined ? kw.qIdx : idx;
+            const statKey = this.getBlankStatKey(targetId, targetIdx);
+            return { text: kw.text, streak: this.getStreakCount(statKey, kw.text) };
+        });
+
+        if (streaks.length === 0) {
+            this.masteryBoard.classList.add('hidden');
+            return;
+        }
+
+        this.masteryBoard.classList.remove('hidden');
+
+        const title = document.createElement('div');
+        title.className = 'board-title';
+        title.innerHTML = '🎯 各キーワードの習得状況';
+        this.masteryBoard.appendChild(title);
+
+        const list = document.createElement('div');
+        list.className = 'mastery-list';
+        streaks.forEach((item, i) => {
+            const card = document.createElement('div');
+            card.className = 'mastery-card';
+            if (item.streak >= 5) card.classList.add('mastered');
+            else if (item.streak === 0) card.classList.add('new-item');
+
+            card.innerHTML = `
+                <span class="kw-index">${i + 1}</span>
+                <span class="kw-text">${item.text}</span>
+                <span class="streak-val">${item.streak > 0 ? '🔥' + item.streak : '0回'}</span>
+            `;
+            list.appendChild(card);
+        });
+        this.masteryBoard.appendChild(list);
     }
 
     showSRSDetail(statKey) {
@@ -1123,7 +1263,7 @@ class QuizApp {
                 else allBlanksCorrect = false;
 
                 // Detailed stat per blank
-                const statKey = this.getBlankStatKey(set.id, idx);
+                const statKey = this.getBlankStatKey(this.getQuestionBaseId(set.id), idx);
                 if (!this.questionStats[statKey]) {
                     this.questionStats[statKey] = {
                         correct: 0, total: 0, recent: [],
@@ -1143,7 +1283,7 @@ class QuizApp {
 
 
             // Summary stat for the whole clause
-            const summaryKey = this.getSummaryStatKey(set.id, 'clause');
+            const summaryKey = this.getSummaryStatKey(this.getQuestionBaseId(set.id), 'clause');
             if (!this.questionStats[summaryKey]) {
                 this.questionStats[summaryKey] = {
                     correct: 0, total: 0, recent: [],
@@ -1189,7 +1329,7 @@ class QuizApp {
                         if (isKwCorrect) rowCorrectBlanks++;
 
                         // Detailed stat per blank (Added for auto-fill support in review mode)
-                        const bStatKey = this.getBlankStatKey(q.id, idx);
+                        const bStatKey = this.getBlankStatKey(this.getQuestionBaseId(q.id), idx);
                         if (!this.questionStats[bStatKey]) {
                             this.questionStats[bStatKey] = {
                                 correct: 0, total: 0, recent: [],
@@ -1226,7 +1366,8 @@ class QuizApp {
                     if (isCorrect) correctCount++;
                 }
 
-                const statKey = this.getSummaryStatKey(q.id, q.type === 'clause' ? 'clause' : 'page');
+                const normalizedQId = this.getQuestionBaseId(q.id);
+                const statKey = this.getSummaryStatKey(normalizedQId, q.type === 'clause' ? 'clause' : 'page');
                 if (!this.questionStats[statKey]) {
                     this.questionStats[statKey] = {
                         correct: 0, total: 0, recent: [],
@@ -1276,6 +1417,20 @@ class QuizApp {
         if (this.history.length > 50) this.history.pop();
         this.saveHistory(); this.saveQuestionStats(); this.renderTable();
         this.updateDashboard();
+
+        if (set.type === 'clause') {
+            const kw = this.extractKeywords(set.text).map((k, i) => ({ ...k, qId: set.id, qIdx: i }));
+            this.renderMasteryBoard(set, kw);
+        } else if (set.questions) {
+            const allKw = [];
+            set.questions.forEach(q => {
+                if (q.type === 'clause' || /\[\[|［［|\(\(|（（/.test(q.text || '')) {
+                    const kw = this.extractKeywords(q.text);
+                    kw.forEach((k, qIdx) => allKw.push({ ...k, qId: q.id, qIdx: qIdx }));
+                }
+            });
+            this.renderMasteryBoard(set, allKw);
+        }
     }
 
     renderStats() {
@@ -1446,6 +1601,11 @@ class QuizApp {
             this.clauseDisplay.innerHTML = '';
             this.clauseDisplay.classList.remove('hidden');
         }
+
+        // Add Mastery Board display
+        const kw = this.extractKeywords(set.text);
+        const mappedKw = kw.map((k, idx) => ({ ...k, qId: set.id, qIdx: idx }));
+        this.renderMasteryBoard(set, mappedKw);
 
         if (this.isEditMode) {
             // Only set value if not focused to avoid cursor jumping
@@ -1637,7 +1797,10 @@ class QuizApp {
                             this.renderClauseView(set);
                         }
                     };
-                } else {
+                }
+
+                if (this.isChecked) {
+                    const savedAnswer = this.userAnswers[`${set.id}-${currentIdx}`];
                     const isCorrect = savedAnswer === kwInfo.text;
                     blank.classList.add(isCorrect ? 'correct' : 'wrong');
                     if (!isCorrect) {
@@ -1647,6 +1810,9 @@ class QuizApp {
                         blank.appendChild(reveal);
                     }
                 }
+
+                blank.title = `本来の答え: ${kwInfo.text}`;
+
                 const peek = document.createElement('span');
                 peek.className = 'peek-answer';
                 peek.textContent = `(${kwInfo.text})`;
@@ -1699,7 +1865,15 @@ class QuizApp {
                         placeholder.parentNode.insertBefore(tip, placeholder.nextSibling);
                     }
                 }
-                placeholder.replaceWith(input, peek);
+
+                const wrapper = document.createElement('span');
+                wrapper.className = 'clause-input-wrapper';
+                wrapper.appendChild(input);
+
+                // Input labels title only
+                input.title = `本来の答え: ${kwInfo.text}`;
+
+                placeholder.replaceWith(wrapper, peek);
             }
         }
 
@@ -2404,6 +2578,18 @@ class QuizApp {
             if (this.tableControls) this.tableControls.classList.toggle('hidden', !this.isEditMode);
         }
 
+        // Show Mastery Board for table/page view
+        const allKw = [];
+        if (set.questions) {
+            set.questions.forEach(q => {
+                if (q.type === 'clause' || /\[\[|［［|\(\(|（（/.test(q.text || '')) {
+                    const kw = this.extractKeywords(q.text);
+                    kw.forEach((k, qIdx) => allKw.push({ ...k, qId: q.id, qIdx: qIdx }));
+                }
+            });
+        }
+        this.renderMasteryBoard(set, allKw);
+
         this.tableWrapper.innerHTML = '';
 
         if (this.isAutoGenerated) {
@@ -2679,6 +2865,9 @@ class QuizApp {
                                 blank.appendChild(reveal);
                             }
                         }
+
+                        blank.title = `本来の答え: ${kwInfo.text}`;
+
                         const peek = document.createElement('span');
                         peek.className = 'peek-answer';
                         peek.textContent = `(${kwInfo.text})`;
@@ -2726,7 +2915,15 @@ class QuizApp {
                                 placeholder.parentNode.insertBefore(tip, placeholder.nextSibling);
                             }
                         }
-                        placeholder.replaceWith(input, peek);
+
+                        const wrapper = document.createElement('span');
+                        wrapper.className = 'clause-input-wrapper';
+                        wrapper.appendChild(input);
+
+                        // Label title only
+                        input.title = `本来の答え: ${kwInfo.text}`;
+
+                        placeholder.replaceWith(wrapper, peek);
                     }
                 });
                 wrapper.appendChild(cText);
