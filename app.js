@@ -1696,9 +1696,9 @@ class QuizApp {
                 const savedAnswer = this.userAnswers[`${set.id}-${currentIdx}`];
                 blank.dataset.answer = kwInfo.text; // Store correct answer for peek
 
-                // Add streak count to data attribute
+                // Add streak count to data attribute (always show, even if 0)
                 const streak = this.getStreakCount(statKey, kwInfo.text);
-                if (streak > 0) blank.dataset.streak = streak;
+                blank.dataset.streak = streak;
 
                 if (savedAnswer) {
                     blank.textContent = savedAnswer;
@@ -1781,9 +1781,9 @@ class QuizApp {
                     input.classList.add('auto-filled');
                 }
 
-                // Add streak count to data attribute
+                // Add streak count to data attribute (always show, even if 0)
                 const streak = this.getStreakCount(statKey, kwInfo.text);
-                if (streak > 0) input.dataset.streak = streak;
+                wrapper.dataset.streak = streak;
 
                 const savedAnswer = this.userAnswers[`${set.id}-${currentIdx}`] || '';
                 input.value = savedAnswer;
@@ -2771,9 +2771,9 @@ class QuizApp {
                             blank.innerHTML = '&nbsp;&nbsp;&nbsp;&nbsp;';
                         }
 
-                        // Add streak count to data attribute for table blanks
+                        // Add streak count to data attribute for table blanks (always show)
                         const streak = this.getStreakCount(statKey, kwInfo.text);
-                        if (streak > 0) blank.dataset.streak = streak;
+                        blank.dataset.streak = streak;
 
                         if (!this.isChecked) {
                             blank.ondragover = (e) => { e.preventDefault(); blank.classList.add('drag-over'); };
@@ -2876,9 +2876,9 @@ class QuizApp {
                         const wrapper = document.createElement('span');
                         wrapper.className = 'clause-input-wrapper';
 
-                        // Add streak count to data attribute for wrapper
+                        // Add streak count to data attribute for wrapper (always show)
                         const streak = this.getStreakCount(statKey, kwInfo.text);
-                        if (streak > 0) wrapper.dataset.streak = streak;
+                        wrapper.dataset.streak = streak;
 
                         wrapper.appendChild(input);
 
