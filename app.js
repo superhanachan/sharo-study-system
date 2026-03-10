@@ -373,9 +373,26 @@ class QuizApp {
         }
         if (this.autoFillShortcutBtn) {
             this.autoFillShortcutBtn.addEventListener('click', () => {
-                this.autoFillEnabled = !this.autoFillEnabled;
+                const thresholds = [1, 2, 3, 5, 10];
+                if (!this.autoFillEnabled) {
+                    this.autoFillEnabled = true;
+                    this.autoFillThreshold = 1;
+                } else {
+                    const idx = thresholds.indexOf(this.autoFillThreshold);
+                    if (idx !== -1 && idx < thresholds.length - 1) {
+                        this.autoFillThreshold = thresholds[idx + 1];
+                    } else {
+                        this.autoFillEnabled = false;
+                        this.autoFillThreshold = 5; // default for next toggle on
+                    }
+                }
+
                 localStorage.setItem('sharoAutoFillEnabled', JSON.stringify(this.autoFillEnabled));
+                localStorage.setItem('sharoAutoFillThreshold', this.autoFillThreshold);
+
                 if (this.autoFillToggle) this.autoFillToggle.checked = this.autoFillEnabled;
+                if (this.autoFillThresholdInput) this.autoFillThresholdInput.value = this.autoFillThreshold;
+
                 this.updateAutoFillShortcutUI();
                 this.resetQuiz(); // Refresh current queston/page with new auto-fill state
             });
@@ -3417,7 +3434,7 @@ class QuizApp {
         if (isActive) {
             this.autoFillShortcutBtn.style.background = 'var(--accent)';
             this.autoFillShortcutBtn.style.color = 'var(--bg-dark)';
-            this.autoFillShortcutBtn.innerHTML = '✨ 自動入力: ON';
+            this.autoFillShortcutBtn.innerHTML = `✨ 自動入力: ${this.autoFillThreshold}回`;
         } else {
             this.autoFillShortcutBtn.style.background = 'rgba(76, 201, 240, 0.1)';
             this.autoFillShortcutBtn.style.color = 'var(--accent)';
