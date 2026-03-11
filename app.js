@@ -1030,6 +1030,7 @@ class QuizApp {
         this.updateTitleEditability();
 
         this.resetQuiz();
+        this.applyAutoFill(); // Double-ensure after reset
         this.renderTable();
         this.updateActiveTOC(id);
         this.updateDashboard();
@@ -1952,11 +1953,12 @@ class QuizApp {
         buildInfo.style.borderRadius = '50px';
         buildInfo.style.fontWeight = 'bold';
         buildInfo.style.boxShadow = '0 0 10px rgba(247, 37, 133, 0.5)';
-        buildInfo.textContent = 'BUILD: 2026-03-11 17:35 (VERIFIED)';
+        const autoFillStatus = this.autoFillEnabled ? `ON(${this.autoFillThreshold}🔥)` : 'OFF';
+        buildInfo.textContent = `BUILD: 2026-03-11 17:50 (VERIFIED) [AUTO:${autoFillStatus}]`;
         if (this.homeDashboard && !document.getElementById('build-info')) {
             this.homeDashboard.insertBefore(buildInfo, this.homeDashboard.firstChild);
         } else if (document.getElementById('build-info')) {
-            document.getElementById('build-info').textContent = 'BUILD: 2026-03-11 17:35 (VERIFIED)';
+            document.getElementById('build-info').textContent = `BUILD: 2026-03-11 17:50 (VERIFIED) [AUTO:${autoFillStatus}]`;
         }
 
         // Overall Mastery (Mt. Fuji)
