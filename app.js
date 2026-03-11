@@ -1764,7 +1764,7 @@ class QuizApp {
                     }
                 }
 
-                blank.title = `本来の答え: ${kwInfo.text}`;
+
 
                 const peek = document.createElement('span');
                 peek.className = 'peek-answer';
@@ -1830,7 +1830,7 @@ class QuizApp {
                 wrapper.dataset.streak = streak;
 
                 // Input labels title only
-                input.title = `本来の答え: ${kwInfo.text}`;
+
 
                 placeholder.replaceWith(wrapper, peek);
             }
@@ -2829,7 +2829,7 @@ class QuizApp {
                             }
                         }
 
-                        blank.title = `本来の答え: ${kwInfo.text}`;
+
 
                         const peek = document.createElement('span');
                         peek.className = 'peek-answer';
@@ -2885,7 +2885,7 @@ class QuizApp {
                         wrapper.appendChild(input);
 
                         // Label title only
-                        input.title = `本来の答え: ${kwInfo.text}`;
+
 
                         const peek = document.createElement('span');
                         peek.className = 'peek-answer';
