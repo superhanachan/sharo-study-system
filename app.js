@@ -748,7 +748,7 @@ class QuizApp {
         const idStr = String(id);
         let baseId = idStr;
 
-        const prefixes = ['weak', 'rare', 'random', 'srs-clause', 'srs-page', 'clause-weak', 'auto', 'srs'];
+        const prefixes = ['weak', 'rare', 'random', 'srs-clause', 'srs-page', 'clause-weak', 'auto', 'srs', 'clause-summary'];
         let matched = true;
         while (matched) {
             matched = false;
@@ -1942,17 +1942,21 @@ class QuizApp {
         // Build Info (Visual confirmation for the user)
         const buildInfo = document.getElementById('build-info') || document.createElement('div');
         buildInfo.id = 'build-info';
-        buildInfo.style.fontSize = '0.7rem';
-        buildInfo.style.opacity = '0.4';
-        buildInfo.style.marginTop = '1rem';
+        buildInfo.style.fontSize = '0.75rem';
+        buildInfo.style.opacity = '1';
+        buildInfo.style.marginBottom = '1rem';
         buildInfo.style.textAlign = 'center';
-        buildInfo.textContent = 'Build: 2026-03-11 17:10 (CRITICAL FIX)';
-        buildInfo.style.background = 'rgba(255, 255, 255, 0.1)';
-        buildInfo.style.padding = '4px 10px';
-        buildInfo.style.borderRadius = '20px';
-        buildInfo.style.display = 'inline-block';
+        buildInfo.style.color = '#fff';
+        buildInfo.style.background = '#f72585';
+        buildInfo.style.padding = '4px 12px';
+        buildInfo.style.borderRadius = '50px';
+        buildInfo.style.fontWeight = 'bold';
+        buildInfo.style.boxShadow = '0 0 10px rgba(247, 37, 133, 0.5)';
+        buildInfo.textContent = 'BUILD: 2026-03-11 17:25 (VERIFIED)';
         if (this.homeDashboard && !document.getElementById('build-info')) {
             this.homeDashboard.insertBefore(buildInfo, this.homeDashboard.firstChild);
+        } else if (document.getElementById('build-info')) {
+            document.getElementById('build-info').textContent = 'BUILD: 2026-03-11 17:25 (VERIFIED)';
         }
 
         // Overall Mastery (Mt. Fuji)
