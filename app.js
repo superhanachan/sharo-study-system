@@ -70,6 +70,11 @@ class QuizApp {
         const storedThreshold = localStorage.getItem('sharoAutoFillThreshold');
         this.autoFillThreshold = storedThreshold !== null ? parseInt(storedThreshold) : 5;
 
+        const storedIgnore = localStorage.getItem('sharoAutoFillIgnoreStats');
+        this.autoFillIgnoreStats = storedIgnore !== null ? JSON.parse(storedIgnore) : true;
+
+        this.autoFilledAnswers = new Set();
+
         this.migrateData();
         this.cacheDOM();
         this.bindEvents();
@@ -331,6 +336,7 @@ class QuizApp {
         // Auto-fill UI
         this.autoFillToggle = document.getElementById('auto-fill-toggle');
         this.autoFillThresholdInput = document.getElementById('auto-fill-threshold');
+        this.autoFillIgnoreStatsToggle = document.getElementById('auto-fill-ignore-stats');
     }
 
     bindEvents() {
@@ -575,6 +581,13 @@ class QuizApp {
                 this.resetQuiz(); // Refresh current question/page
             };
         }
+        if (this.autoFillIgnoreStatsToggle) {
+            this.autoFillIgnoreStatsToggle.onchange = () => {
+                this.autoFillIgnoreStats = this.autoFillIgnoreStatsToggle.checked;
+                localStorage.setItem('sharoAutoFillIgnoreStats', JSON.stringify(this.autoFillIgnoreStats));
+                this.resetQuiz(); // Refresh
+            };
+        }
 
         // Recovery button for internal backup
         const forceRestoreBtn = document.getElementById('force-restore-internal-btn');
@@ -601,6 +614,7 @@ class QuizApp {
         // Initialize auto-fill UI
         if (this.autoFillToggle) this.autoFillToggle.checked = this.autoFillEnabled;
         if (this.autoFillThresholdInput) this.autoFillThresholdInput.value = this.autoFillThreshold;
+        if (this.autoFillIgnoreStatsToggle) this.autoFillIgnoreStatsToggle.checked = this.autoFillIgnoreStats;
     }
 
     loadData() { const saved = localStorage.getItem('sharoQuizData'); return saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(DEFAULT_QUIZ_DATA)); }
@@ -794,7 +808,9 @@ class QuizApp {
             keywordData.forEach((kw, idx) => {
                 const statKey = this.getBlankStatKey(set.id, idx);
                 if (this.shouldAutoFill(statKey)) {
-                    this.userAnswers[`${set.id}-${idx}`] = kw.text;
+                    const key = `${set.id}-${idx}`;
+                    this.userAnswers[key] = kw.text;
+                    this.autoFilledAnswers.add(key);
                 }
             });
         } else if (set.questions) {
@@ -807,6 +823,7 @@ class QuizApp {
                         const statKey = this.getBlankStatKey(q.id, idx);
                         if (this.shouldAutoFill(statKey)) {
                             this.userAnswers[cellKey] = kw.text;
+                            this.autoFilledAnswers.add(cellKey);
                         }
                     });
                 } else {
@@ -814,6 +831,7 @@ class QuizApp {
                     const statKey = this.getSummaryStatKey(q.id, 'page');
                     if (this.shouldAutoFill(statKey)) {
                         this.userAnswers[q.id] = q.answer;
+                        this.autoFilledAnswers.add(q.id);
                     }
                 }
             });
@@ -1039,6 +1057,7 @@ class QuizApp {
     resetQuiz() {
         this.isChecked = false;
         this.userAnswers = {};
+        this.autoFilledAnswers.clear();
         document.body.classList.remove('answers-revealed');
         if (this.peekAnswersBtn) {
             this.peekAnswersBtn.innerHTML = '👁️ 答えを表示する';
@@ -1080,6 +1099,7 @@ class QuizApp {
 
                 if (!isCorrect) {
                     delete this.userAnswers[key];
+                    this.autoFilledAnswers.delete(key);
                 }
             });
         } else {
@@ -1102,7 +1122,10 @@ class QuizApp {
                             const isCorrect = kwInfo.type === 'drag'
                                 ? val === kwInfo.text
                                 : this.normalizeInput(val) === this.normalizeInput(kwInfo.text);
-                            if (!isCorrect) delete this.userAnswers[key];
+                            if (!isCorrect) {
+                                delete this.userAnswers[key];
+                                this.autoFilledAnswers.delete(key);
+                            }
                         }
                     });
                 } else {
@@ -1116,7 +1139,10 @@ class QuizApp {
                     } else {
                         isAllCorrect = userAnswer === q.answer;
                     }
-                    if (!isAllCorrect) delete this.userAnswers[q.id];
+                    if (!isAllCorrect) {
+                        delete this.userAnswers[q.id];
+                        this.autoFilledAnswers.delete(q.id);
+                    }
                 }
             });
         }
@@ -1169,6 +1195,7 @@ class QuizApp {
         itemsWithStreaks.forEach(item => {
             if (item.streak === minStreak) {
                 delete this.userAnswers[item.userId];
+                this.autoFilledAnswers.delete(item.userId);
             }
         });
 
@@ -1195,21 +1222,30 @@ class QuizApp {
 
             let allBlanksCorrect = true;
             keywordData.forEach((kwInfo, idx) => {
-                const userAnswer = (this.userAnswers[`${set.id}-${idx}`] || "").toString();
+                const key = `${set.id}-${idx}`;
+                const userAnswer = (this.userAnswers[key] || "").toString();
+                const isAutoFilled = this.autoFillIgnoreStats && this.autoFilledAnswers.has(key);
+
                 if (!userAnswer && kwInfo.type === 'drag') {
                     allBlanksCorrect = false;
                     return;
                 }
-                answeredCount++;
+
+                if (!isAutoFilled) answeredCount++;
 
                 const isCorrect = kwInfo.type === 'drag'
                     ? userAnswer === kwInfo.text
                     : this.normalizeInput(userAnswer) === this.normalizeInput(kwInfo.text);
 
-                if (isCorrect) correctCount++;
-                else allBlanksCorrect = false;
+                if (isCorrect) {
+                    if (!isAutoFilled) correctCount++;
+                } else {
+                    allBlanksCorrect = false;
+                }
 
                 // Detailed stat per blank
+                if (isAutoFilled) return; // Skip updating stats if auto-filled
+
                 const statKey = this.getBlankStatKey(this.getQuestionBaseId(set.id), idx);
                 if (!this.questionStats[statKey]) {
                     this.questionStats[statKey] = {
@@ -1230,22 +1266,25 @@ class QuizApp {
 
 
             // Summary stat for the whole clause
-            const summaryKey = this.getSummaryStatKey(this.getQuestionBaseId(set.id), 'clause');
-            if (!this.questionStats[summaryKey]) {
-                this.questionStats[summaryKey] = {
-                    correct: 0, total: 0, recent: [],
-                    page: set.title, pageId: set.id,
-                    text: `条文全体: ${set.title}`
-                };
+            // Skip summary update if all blanks were auto-filled
+            if (answeredCount > 0) {
+                const summaryKey = this.getSummaryStatKey(this.getQuestionBaseId(set.id), 'clause');
+                if (!this.questionStats[summaryKey]) {
+                    this.questionStats[summaryKey] = {
+                        correct: 0, total: 0, recent: [],
+                        page: set.title, pageId: set.id,
+                        text: `条文全体: ${set.title}`
+                    };
+                }
+                const summaryStat = this.questionStats[summaryKey];
+                summaryStat.total++;
+                if (allBlanksCorrect) summaryStat.correct++;
+                if (!summaryStat.recent) summaryStat.recent = [];
+                summaryStat.recent.push(allBlanksCorrect ? 1 : 0);
+                if (summaryStat.recent.length > 5) summaryStat.recent.shift();
+                summaryStat.text = `条文全体: ${set.title}`; summaryStat.page = set.title;
+                this.updateSRS(summaryStat, allBlanksCorrect);
             }
-            const summaryStat = this.questionStats[summaryKey];
-            summaryStat.total++;
-            if (allBlanksCorrect) summaryStat.correct++;
-            if (!summaryStat.recent) summaryStat.recent = [];
-            summaryStat.recent.push(allBlanksCorrect ? 1 : 0);
-            if (summaryStat.recent.length > 5) summaryStat.recent.shift();
-            summaryStat.text = `条文全体: ${set.title}`; summaryStat.page = set.title;
-            this.updateSRS(summaryStat, allBlanksCorrect);
         } else {
             set.questions.forEach((q) => {
                 let isCorrect = false;
@@ -1267,13 +1306,21 @@ class QuizApp {
                     let rowCorrectBlanks = 0;
                     let rowAnsweredBlanks = 0;
                     keywordData.forEach((kwInfo, idx) => {
-                        const val = this.userAnswers[`${q.id}-${idx}`];
+                        const key = `${q.id}-${idx}`;
+                        const val = this.userAnswers[key];
+                        const isAutoFilled = this.autoFillIgnoreStats && this.autoFilledAnswers.has(key);
+
                         if (!val) return; // Skip empty answers for both drag and input types
-                        rowAnsweredBlanks++;
+
+                        if (!isAutoFilled) rowAnsweredBlanks++;
                         const isKwCorrect = kwInfo.type === 'drag'
                             ? val === kwInfo.text
                             : this.normalizeInput(val) === this.normalizeInput(kwInfo.text);
-                        if (isKwCorrect) rowCorrectBlanks++;
+                        if (isKwCorrect) {
+                            if (!isAutoFilled) rowCorrectBlanks++;
+                        }
+
+                        if (isAutoFilled) return; // Skip stat update if auto-filled
 
                         // Detailed stat per blank (Added for auto-fill support in review mode)
                         const bStatKey = this.getBlankStatKey(this.getQuestionBaseId(q.id), idx);
@@ -1297,20 +1344,36 @@ class QuizApp {
                     answeredCount += rowAnsweredBlanks;
                     correctCount += rowCorrectBlanks;
                     // For the overall row status/stat, consider it correct only if all blanks are correct
+                    // IF NO BLANKS WERE MANUALLY ANSWERED, skip summary update for this row
+                    if (rowAnsweredBlanks === 0) {
+                        return; // Skip persistent stat update for this row
+                    }
                     isCorrect = (keywordData.length > 0 && rowAnsweredBlanks === keywordData.length && rowCorrectBlanks === keywordData.length);
                 } else {
-                    if (!userAnswer || (Array.isArray(userAnswer) && userAnswer.length === 0)) return;
-                    answeredCount++;
+                    const key = q.id;
+                    const userAnswer = this.userAnswers[key];
+                    const isAutoFilled = this.autoFillIgnoreStats && this.autoFilledAnswers.has(key);
 
-                    const isMulti = this.isAutoGenerated ? q.isMultiSelect : set.isMultiSelect;
-                    if (isMulti) {
-                        const correctSet = new Set(q.answer);
-                        const userSet = new Set(userAnswer);
-                        isCorrect = (correctSet.size === userSet.size && [...correctSet].every(item => userSet.has(item)));
+                    if (!userAnswer || (Array.isArray(userAnswer) && userAnswer.length === 0)) {
+                        // If auto-filled, we skip return but it won't count toward statistics below
                     } else {
-                        isCorrect = userAnswer === q.answer;
+                        if (!isAutoFilled) answeredCount++;
+
+                        const isMulti = this.isAutoGenerated ? q.isMultiSelect : set.isMultiSelect;
+                        if (isMulti) {
+                            const correctSet = new Set(q.answer);
+                            const userSet = new Set(userAnswer);
+                            isCorrect = (correctSet.size === userSet.size && [...correctSet].every(item => userSet.has(item)));
+                        } else {
+                            isCorrect = userAnswer === q.answer;
+                        }
+                        if (isCorrect) {
+                            if (!isAutoFilled) correctCount++;
+                        }
                     }
-                    if (isCorrect) correctCount++;
+
+                    if (isAutoFilled) return; // Skip persistent stat update if auto-filled
+                    if (!userAnswer || (Array.isArray(userAnswer) && userAnswer.length === 0)) return;
                 }
 
                 const normalizedQId = this.getQuestionBaseId(q.id);
@@ -1353,16 +1416,22 @@ class QuizApp {
         }
 
         this.scoreDisplay.textContent = `正解数: ${correctCount} / ${answeredCount} (合計: ${totalItems})`;
-        this.history.unshift({
-            timestamp: new Date().toLocaleString(),
-            isoDate: new Date().toISOString(),
-            page: set.title,
-            pageId: set.id,
-            score: `${correctCount} / ${answeredCount}`,
-            accuracy: answeredCount > 0 ? Math.round((correctCount / answeredCount) * 100) : 0
-        });
-        if (this.history.length > 50) this.history.pop();
-        this.saveHistory(); this.saveQuestionStats(); this.renderTable();
+
+        // Only add to history if the user manually answered at least one question
+        if (answeredCount > 0) {
+            this.history.unshift({
+                timestamp: new Date().toLocaleString(),
+                isoDate: new Date().toISOString(),
+                page: set.title,
+                pageId: set.id,
+                score: `${correctCount} / ${answeredCount}`,
+                accuracy: answeredCount > 0 ? Math.round((correctCount / answeredCount) * 100) : 0
+            });
+            if (this.history.length > 50) this.history.pop();
+            this.saveHistory();
+        }
+
+        this.saveQuestionStats(); this.renderTable();
         this.updateDashboard();
 
         if (set.type === 'clause') {
@@ -1694,6 +1763,7 @@ class QuizApp {
                 const autoFilled = !this.isChecked && !this.userAnswers[`${set.id}-${currentIdx}`] && this.shouldAutoFill(statKey);
                 if (autoFilled) {
                     this.userAnswers[`${set.id}-${currentIdx}`] = kwInfo.text;
+                    this.autoFilledAnswers.add(`${set.id}-${currentIdx}`);
                 }
 
                 const savedAnswer = this.userAnswers[`${set.id}-${currentIdx}`];
@@ -1720,6 +1790,7 @@ class QuizApp {
                         const text = e.dataTransfer.getData('text/plain');
                         if (text) {
                             this.userAnswers[`${set.id}-${currentIdx}`] = text;
+                            this.autoFilledAnswers.delete(`${set.id}-${currentIdx}`);
                             // Auto-fill other blanks with same correct answer
                             keywords.forEach((otherKw, j) => {
                                 if (otherKw.text === kwInfo.text) this.userAnswers[`${set.id}-${j}`] = text;
@@ -1732,6 +1803,7 @@ class QuizApp {
                             // Click-to-Fill logic
                             const val = this.selectedKeyword;
                             this.userAnswers[`${set.id}-${currentIdx}`] = val;
+                            this.autoFilledAnswers.delete(`${set.id}-${currentIdx}`);
                             // Auto-fill other blanks with same correct answer
                             keywords.forEach((otherKw, j) => {
                                 if (otherKw.text === kwInfo.text) this.userAnswers[`${set.id}-${j}`] = val;
@@ -1781,6 +1853,7 @@ class QuizApp {
                 const autoFilled = !this.isChecked && !this.userAnswers[`${set.id}-${currentIdx}`] && this.shouldAutoFill(statKey);
                 if (autoFilled) {
                     this.userAnswers[`${set.id}-${currentIdx}`] = kwInfo.text;
+                    this.autoFilledAnswers.add(`${set.id}-${currentIdx}`);
                     input.classList.add('auto-filled');
                 }
 
@@ -2757,6 +2830,7 @@ class QuizApp {
 
                     if (shouldFill && !isAlreadyFilled && !this.isChecked) {
                         this.userAnswers[`${q.id}-${currentBlankIdx}`] = kwInfo.text;
+                        this.autoFilledAnswers.add(`${q.id}-${currentBlankIdx}`);
                     }
 
                     const savedAnswer = this.userAnswers[`${q.id}-${currentBlankIdx}`];
@@ -2785,6 +2859,7 @@ class QuizApp {
                                 const text = e.dataTransfer.getData('text/plain');
                                 if (text) {
                                     this.userAnswers[`${q.id}-${currentBlankIdx}`] = text;
+                                    this.autoFilledAnswers.delete(`${q.id}-${currentBlankIdx}`);
                                     // Auto-fill other blanks with same correct answer
                                     rowKeywords.forEach((otherKw, j) => {
                                         if (otherKw.text === kwInfo.text) this.userAnswers[`${q.id}-${j}`] = text;
@@ -2799,6 +2874,7 @@ class QuizApp {
                                     // Click-to-Fill logic
                                     const val = this.selectedKeyword;
                                     this.userAnswers[`${q.id}-${currentBlankIdx}`] = val;
+                                    this.autoFilledAnswers.delete(`${q.id}-${currentBlankIdx}`);
                                     // Auto-fill other blanks with same correct answer
                                     rowKeywords.forEach((otherKw, j) => {
                                         if (otherKw.text === kwInfo.text) this.userAnswers[`${q.id}-${j}`] = val;
@@ -2944,6 +3020,7 @@ class QuizApp {
                 const autoStatKey = this.getSummaryStatKey(q.id, 'page');
                 if (!this.isChecked && !this.userAnswers[q.id] && this.shouldAutoFill(autoStatKey)) {
                     this.userAnswers[q.id] = q.answer;
+                    this.autoFilledAnswers.add(q.id);
                 }
 
                 if (isAuto && q._autoKeywords && !this.isChecked) {
@@ -2993,7 +3070,9 @@ class QuizApp {
                             if (isAuto && q._autoKeywords && isGenericCol) {
                                 if (isQMulti) this.userAnswers[q.id] = [];
                                 else delete this.userAnswers[q.id];
+                                this.autoFilledAnswers.delete(q.id);
                             } else {
+                                this.autoFilledAnswers.delete(q.id);
                                 if (isQMulti) {
                                     if (!Array.isArray(this.userAnswers[q.id])) this.userAnswers[q.id] = [];
                                     if (this.userAnswers[q.id].includes(colLabel)) this.userAnswers[q.id] = this.userAnswers[q.id].filter(a => a !== colLabel);
