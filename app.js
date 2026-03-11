@@ -1952,6 +1952,7 @@ class QuizApp {
         }
 
         // Overall Mastery (Mt. Fuji)
+        const allStats = Object.values(this.questionStats);
 
         // Better total questions calculation (flatten all)
         const getFlatTotal = (list) => {
