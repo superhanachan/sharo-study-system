@@ -1946,7 +1946,7 @@ class QuizApp {
         buildInfo.style.opacity = '0.4';
         buildInfo.style.marginTop = '1rem';
         buildInfo.style.textAlign = 'center';
-        buildInfo.textContent = 'Build: 2026-03-11 16:50';
+        buildInfo.textContent = 'Build: 2026-03-11 17:00 (FIXED)';
         if (this.homeDashboard && !document.getElementById('build-info')) {
             this.homeDashboard.appendChild(buildInfo);
         }
