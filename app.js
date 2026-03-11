@@ -806,7 +806,8 @@ class QuizApp {
         if (set.type === 'clause') {
             const keywordData = this.extractKeywords(set.text);
             keywordData.forEach((kw, idx) => {
-                const statKey = this.getBlankStatKey(set.id, idx);
+                const baseId = this.getQuestionBaseId(set.id);
+                const statKey = this.getBlankStatKey(baseId, idx);
                 if (this.shouldAutoFill(statKey)) {
                     const key = `${set.id}-${idx}`;
                     this.userAnswers[key] = kw.text;
@@ -815,12 +816,13 @@ class QuizApp {
             });
         } else if (set.questions) {
             set.questions.forEach(q => {
+                const baseId = this.getQuestionBaseId(q.id);
                 if (q.type === 'clause' || /\[\[|［［|\(\(|（（/.test(q.text)) {
                     const keywordData = this.extractKeywords(q.text);
                     keywordData.forEach((kw, idx) => {
                         const cellKey = `${q.id}-${idx}`;
                         if (this.userAnswers[cellKey]) return;
-                        const statKey = this.getBlankStatKey(q.id, idx);
+                        const statKey = this.getBlankStatKey(baseId, idx);
                         if (this.shouldAutoFill(statKey)) {
                             this.userAnswers[cellKey] = kw.text;
                             this.autoFilledAnswers.add(cellKey);
@@ -828,7 +830,7 @@ class QuizApp {
                     });
                 } else {
                     if (this.userAnswers[q.id]) return;
-                    const statKey = this.getSummaryStatKey(q.id, 'page');
+                    const statKey = this.getSummaryStatKey(baseId, 'page');
                     if (this.shouldAutoFill(statKey)) {
                         this.userAnswers[q.id] = q.answer;
                         this.autoFilledAnswers.add(q.id);
@@ -1221,10 +1223,12 @@ class QuizApp {
             });
 
             let allBlanksCorrect = true;
+            let hasAnyAutoFill = false;
             keywordData.forEach((kwInfo, idx) => {
                 const key = `${set.id}-${idx}`;
                 const userAnswer = (this.userAnswers[key] || "").toString();
                 const isAutoFilled = this.autoFillIgnoreStats && this.autoFilledAnswers.has(key);
+                if (isAutoFilled) hasAnyAutoFill = true;
 
                 if (!userAnswer && kwInfo.type === 'drag') {
                     allBlanksCorrect = false;
@@ -1266,8 +1270,8 @@ class QuizApp {
 
 
             // Summary stat for the whole clause
-            // Skip summary update if all blanks were auto-filled
-            if (answeredCount > 0) {
+            // Skip summary update if all blanks were auto-filled OR if any blank was auto-filled (to freeze streak)
+            if (answeredCount > 0 && !hasAnyAutoFill) {
                 const summaryKey = this.getSummaryStatKey(this.getQuestionBaseId(set.id), 'clause');
                 if (!this.questionStats[summaryKey]) {
                     this.questionStats[summaryKey] = {
@@ -1305,10 +1309,12 @@ class QuizApp {
 
                     let rowCorrectBlanks = 0;
                     let rowAnsweredBlanks = 0;
+                    let rowAutoFilledCount = 0;
                     keywordData.forEach((kwInfo, idx) => {
                         const key = `${q.id}-${idx}`;
                         const val = this.userAnswers[key];
                         const isAutoFilled = this.autoFillIgnoreStats && this.autoFilledAnswers.has(key);
+                        if (isAutoFilled) rowAutoFilledCount++;
 
                         if (!val) return; // Skip empty answers for both drag and input types
 
@@ -1343,9 +1349,9 @@ class QuizApp {
 
                     answeredCount += rowAnsweredBlanks;
                     correctCount += rowCorrectBlanks;
-                    // For the overall row status/stat, consider it correct only if all blanks are correct
-                    // IF NO BLANKS WERE MANUALLY ANSWERED, skip summary update for this row
-                    if (rowAnsweredBlanks === 0) {
+                    // For the overall row status/stat, consider it correct only if ALL blanks are correct
+                    // IF ANY BLANKS WERE AUTO-FILLED OR NO BLANKS WERE MANUALLY ANSWERED, skip summary update for this row
+                    if (rowAnsweredBlanks === 0 || rowAutoFilledCount > 0) {
                         return; // Skip persistent stat update for this row
                     }
                     isCorrect = (keywordData.length > 0 && rowAnsweredBlanks === keywordData.length && rowCorrectBlanks === keywordData.length);
@@ -1759,7 +1765,8 @@ class QuizApp {
                 blank.className = 'clause-blank';
                 blank.id = `blank-${currentIdx}`;
 
-                const statKey = this.getBlankStatKey(set.id, currentIdx);
+                const baseId = this.getQuestionBaseId(set.id);
+                const statKey = this.getBlankStatKey(baseId, currentIdx);
                 const autoFilled = !this.isChecked && !this.userAnswers[`${set.id}-${currentIdx}`] && this.shouldAutoFill(statKey);
                 if (autoFilled) {
                     this.userAnswers[`${set.id}-${currentIdx}`] = kwInfo.text;
@@ -1776,7 +1783,7 @@ class QuizApp {
                 if (savedAnswer) {
                     blank.textContent = savedAnswer;
                     blank.classList.add('filled');
-                    if (autoFilled) blank.classList.add('auto-filled');
+                    if (this.autoFilledAnswers.has(`${set.id}-${currentIdx}`)) blank.classList.add('auto-filled');
                 } else {
                     blank.innerHTML = '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
                 }
@@ -1849,13 +1856,15 @@ class QuizApp {
                 input.className = 'clause-input-blank';
                 input.id = `input-${currentIdx}`;
 
-                const statKey = this.getBlankStatKey(set.id, currentIdx);
+                const baseId = this.getQuestionBaseId(set.id);
+                const statKey = this.getBlankStatKey(baseId, currentIdx);
                 const autoFilled = !this.isChecked && !this.userAnswers[`${set.id}-${currentIdx}`] && this.shouldAutoFill(statKey);
                 if (autoFilled) {
                     this.userAnswers[`${set.id}-${currentIdx}`] = kwInfo.text;
                     this.autoFilledAnswers.add(`${set.id}-${currentIdx}`);
-                    input.classList.add('auto-filled');
                 }
+
+                if (this.autoFilledAnswers.has(`${set.id}-${currentIdx}`)) input.classList.add('auto-filled');
 
                 // Add streak count to data attribute (always show, strictly per ID)
                 const streak = this.getStreakCount(statKey);
@@ -1870,12 +1879,14 @@ class QuizApp {
                 if (!this.isChecked) {
                     input.oninput = () => {
                         const val = input.value;
-                        const normVal = this.normalizeInput(val);
                         this.userAnswers[`${set.id}-${currentIdx}`] = val;
+                        this.autoFilledAnswers.delete(`${set.id}-${currentIdx}`);
+                        const normVal = this.normalizeInput(val);
                         // Auto-fill other input blanks with same correct answer (matching normalized text)
                         keywords.forEach((otherKw, j) => {
                             if (otherKw.type === 'input' && this.normalizeInput(otherKw.text) === this.normalizeInput(kwInfo.text)) {
                                 this.userAnswers[`${set.id}-${j}`] = val;
+                                this.autoFilledAnswers.delete(`${set.id}-${j}`);
                                 const otherInput = clauseText.querySelector(`#input-${j}`);
                                 if (otherInput && otherInput !== input) {
                                     otherInput.value = val;
@@ -2823,7 +2834,8 @@ class QuizApp {
                 placeholders.forEach((placeholder) => {
                     const currentBlankIdx = parseInt(placeholder.dataset.idx);
                     const kwInfo = rowKeywords[currentBlankIdx];
-                    const statKey = this.getBlankStatKey(q.id, currentBlankIdx);
+                    const baseId = this.getQuestionBaseId(q.id);
+                    const statKey = this.getBlankStatKey(baseId, currentBlankIdx);
 
                     const shouldFill = this.shouldAutoFill(statKey);
                     const isAlreadyFilled = !!this.userAnswers[`${q.id}-${currentBlankIdx}`];
@@ -2834,7 +2846,7 @@ class QuizApp {
                     }
 
                     const savedAnswer = this.userAnswers[`${q.id}-${currentBlankIdx}`];
-                    const isAutoFilled = shouldFill && savedAnswer === kwInfo.text;
+                    const isAutoFilled = this.autoFilledAnswers.has(`${q.id}-${currentBlankIdx}`);
 
                     if (kwInfo.type === 'drag') {
                         const blank = document.createElement('div');
@@ -2928,10 +2940,12 @@ class QuizApp {
                             input.oninput = () => {
                                 const val = input.value;
                                 this.userAnswers[`${q.id}-${currentBlankIdx}`] = val;
+                                this.autoFilledAnswers.delete(`${q.id}-${currentBlankIdx}`);
                                 // Auto-fill other input blanks with same correct answer (matching normalized text)
                                 rowKeywords.forEach((otherKw, j) => {
                                     if (otherKw.type === 'input' && this.normalizeInput(otherKw.text) === this.normalizeInput(kwInfo.text)) {
                                         this.userAnswers[`${q.id}-${j}`] = val;
+                                        this.autoFilledAnswers.delete(`${q.id}-${j}`);
                                         const otherInput = cText.querySelector(`.clause-input-blank[data-blank-idx="${j}"]`);
                                         if (otherInput && otherInput !== input) {
                                             otherInput.value = val;
@@ -3017,7 +3031,8 @@ class QuizApp {
 
             if (q.type !== 'clause') {
                 // Auto-fill logic for standard selection questions
-                const autoStatKey = this.getSummaryStatKey(q.id, 'page');
+                const baseId = this.getQuestionBaseId(q.id);
+                const autoStatKey = this.getSummaryStatKey(baseId, 'page');
                 if (!this.isChecked && !this.userAnswers[q.id] && this.shouldAutoFill(autoStatKey)) {
                     this.userAnswers[q.id] = q.answer;
                     this.autoFilledAnswers.add(q.id);
