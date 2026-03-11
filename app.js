@@ -1150,6 +1150,7 @@ class QuizApp {
         }
 
         this.isChecked = false; // Return to answering mode
+        this.applyAutoFill();
         this.renderTable();
     }
 
@@ -1205,6 +1206,7 @@ class QuizApp {
         });
 
         this.isChecked = false; // Return to answering mode
+        this.applyAutoFill();
         this.renderTable();
     }
 
