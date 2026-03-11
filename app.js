@@ -1946,9 +1946,13 @@ class QuizApp {
         buildInfo.style.opacity = '0.4';
         buildInfo.style.marginTop = '1rem';
         buildInfo.style.textAlign = 'center';
-        buildInfo.textContent = 'Build: 2026-03-11 17:00 (FIXED)';
+        buildInfo.textContent = 'Build: 2026-03-11 17:10 (CRITICAL FIX)';
+        buildInfo.style.background = 'rgba(255, 255, 255, 0.1)';
+        buildInfo.style.padding = '4px 10px';
+        buildInfo.style.borderRadius = '20px';
+        buildInfo.style.display = 'inline-block';
         if (this.homeDashboard && !document.getElementById('build-info')) {
-            this.homeDashboard.appendChild(buildInfo);
+            this.homeDashboard.insertBefore(buildInfo, this.homeDashboard.firstChild);
         }
 
         // Overall Mastery (Mt. Fuji)
