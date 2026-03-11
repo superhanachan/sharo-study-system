@@ -1163,7 +1163,8 @@ class QuizApp {
             const keywordData = this.extractKeywords(set.text);
             keywordData.forEach((kwInfo, idx) => {
                 const userId = `${set.id}-${idx}`;
-                const statKey = this.getBlankStatKey(set.id, idx);
+                const baseId = this.getQuestionBaseId(set.id);
+                const statKey = this.getBlankStatKey(baseId, idx);
                 itemsToEvaluate.push({ userId, statKey });
             });
         } else {
@@ -1172,12 +1173,14 @@ class QuizApp {
                     const keywordData = this.extractKeywords(q.text);
                     keywordData.forEach((kwInfo, idx) => {
                         const userId = `${q.id}-${idx}`;
-                        const statKey = this.getBlankStatKey(q.id, idx);
+                        const baseId = this.getQuestionBaseId(q.id);
+                        const statKey = this.getBlankStatKey(baseId, idx);
                         itemsToEvaluate.push({ userId, statKey });
                     });
                 } else {
                     const userId = q.id;
-                    const statKey = this.getSummaryStatKey(q.id, 'page');
+                    const baseId = this.getQuestionBaseId(q.id);
+                    const statKey = this.getSummaryStatKey(baseId, 'page');
                     itemsToEvaluate.push({ userId, statKey });
                 }
             });
@@ -1767,11 +1770,7 @@ class QuizApp {
 
                 const baseId = this.getQuestionBaseId(set.id);
                 const statKey = this.getBlankStatKey(baseId, currentIdx);
-                const autoFilled = !this.isChecked && !this.userAnswers[`${set.id}-${currentIdx}`] && this.shouldAutoFill(statKey);
-                if (autoFilled) {
-                    this.userAnswers[`${set.id}-${currentIdx}`] = kwInfo.text;
-                    this.autoFilledAnswers.add(`${set.id}-${currentIdx}`);
-                }
+                const isAutoFilledAttempt = this.autoFilledAnswers.has(`${set.id}-${currentIdx}`);
 
                 const savedAnswer = this.userAnswers[`${set.id}-${currentIdx}`];
                 blank.dataset.answer = kwInfo.text; // Store correct answer for peek
@@ -1783,7 +1782,7 @@ class QuizApp {
                 if (savedAnswer) {
                     blank.textContent = savedAnswer;
                     blank.classList.add('filled');
-                    if (this.autoFilledAnswers.has(`${set.id}-${currentIdx}`)) blank.classList.add('auto-filled');
+                    if (isAutoFilledAttempt) blank.classList.add('auto-filled');
                 } else {
                     blank.innerHTML = '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
                 }
@@ -1858,13 +1857,8 @@ class QuizApp {
 
                 const baseId = this.getQuestionBaseId(set.id);
                 const statKey = this.getBlankStatKey(baseId, currentIdx);
-                const autoFilled = !this.isChecked && !this.userAnswers[`${set.id}-${currentIdx}`] && this.shouldAutoFill(statKey);
-                if (autoFilled) {
-                    this.userAnswers[`${set.id}-${currentIdx}`] = kwInfo.text;
-                    this.autoFilledAnswers.add(`${set.id}-${currentIdx}`);
-                }
-
-                if (this.autoFilledAnswers.has(`${set.id}-${currentIdx}`)) input.classList.add('auto-filled');
+                const isAutoFilled = this.autoFilledAnswers.has(`${set.id}-${currentIdx}`);
+                if (isAutoFilled) input.classList.add('auto-filled');
 
                 // Add streak count to data attribute (always show, strictly per ID)
                 const streak = this.getStreakCount(statKey);
@@ -2836,15 +2830,6 @@ class QuizApp {
                     const kwInfo = rowKeywords[currentBlankIdx];
                     const baseId = this.getQuestionBaseId(q.id);
                     const statKey = this.getBlankStatKey(baseId, currentBlankIdx);
-
-                    const shouldFill = this.shouldAutoFill(statKey);
-                    const isAlreadyFilled = !!this.userAnswers[`${q.id}-${currentBlankIdx}`];
-
-                    if (shouldFill && !isAlreadyFilled && !this.isChecked) {
-                        this.userAnswers[`${q.id}-${currentBlankIdx}`] = kwInfo.text;
-                        this.autoFilledAnswers.add(`${q.id}-${currentBlankIdx}`);
-                    }
-
                     const savedAnswer = this.userAnswers[`${q.id}-${currentBlankIdx}`];
                     const isAutoFilled = this.autoFilledAnswers.has(`${q.id}-${currentBlankIdx}`);
 
@@ -3032,10 +3017,9 @@ class QuizApp {
             if (q.type !== 'clause') {
                 // Auto-fill logic for standard selection questions
                 const baseId = this.getQuestionBaseId(q.id);
-                const autoStatKey = this.getSummaryStatKey(baseId, 'page');
-                if (!this.isChecked && !this.userAnswers[q.id] && this.shouldAutoFill(autoStatKey)) {
-                    this.userAnswers[q.id] = q.answer;
-                    this.autoFilledAnswers.add(q.id);
+                const isAutoFilled = this.autoFilledAnswers.has(q.id);
+                if (isAutoFilled) {
+                    // Answer already set by applyAutoFill
                 }
 
                 if (isAuto && q._autoKeywords && !this.isChecked) {
@@ -3067,8 +3051,10 @@ class QuizApp {
                         const userAnswer = this.userAnswers[q.id];
                         const isSelected = isQMulti ? (Array.isArray(userAnswer) && userAnswer.includes(colLabel)) : (userAnswer === colLabel);
 
-                        const autoStatKey = this.getSummaryStatKey(q.id, 'page');
-                        const isAutoFilledAttempt = !this.isChecked && this.shouldAutoFill(autoStatKey);
+                        const baseId = this.getQuestionBaseId(q.id);
+                        const autoStatKey = this.getSummaryStatKey(baseId, 'page');
+                        const isAutoFilled = this.autoFilledAnswers.has(q.id);
+                        const isAutoFilledAttempt = !this.isChecked && isAutoFilled;
 
                         if (this.isChecked) {
                             const isCorrectAnswer = isQMulti ? (Array.isArray(q.answer) && q.answer.includes(colLabel)) : (q.answer === colLabel);
