@@ -74,7 +74,9 @@ class QuizApp {
         const storedIgnore = localStorage.getItem('sharoAutoFillIgnoreStats');
         this.autoFillIgnoreStats = storedIgnore !== null ? JSON.parse(storedIgnore) : true;
 
-        this.autoFilledAnswers = new Set();
+        // Restore auto-filled answer keys from localStorage so they survive page reloads
+        const savedAutoFilled = localStorage.getItem('sharoAutoFilledAnswers');
+        this.autoFilledAnswers = new Set(savedAutoFilled ? JSON.parse(savedAutoFilled) : []);
 
         this.migrateData();
         this.cacheDOM();
@@ -858,6 +860,14 @@ class QuizApp {
                 }
             });
         }
+        // Persist so the set survives page reloads
+        this.saveAutoFilledAnswers();
+    }
+
+    saveAutoFilledAnswers() {
+        try {
+            localStorage.setItem('sharoAutoFilledAnswers', JSON.stringify([...this.autoFilledAnswers]));
+        } catch (e) { /* ignore storage errors */ }
     }
 
     renderMasteryBoard(set, keywordData) {
@@ -1081,6 +1091,7 @@ class QuizApp {
         this.isChecked = false;
         this.userAnswers = {};
         this.autoFilledAnswers.clear();
+        this.saveAutoFilledAnswers(); // Persist cleared state
         document.body.classList.remove('answers-revealed');
         if (this.peekAnswersBtn) {
             this.peekAnswersBtn.innerHTML = '👁️ 答えを表示する';
@@ -1171,6 +1182,7 @@ class QuizApp {
         }
 
         this.isChecked = false; // Return to answering mode
+        this.saveAutoFilledAnswers(); // Persist after reset
         this.applyAutoFill();
         this.renderTable();
     }
@@ -1232,6 +1244,7 @@ class QuizApp {
         });
 
         this.isChecked = false; // Return to answering mode (or stay there)
+        this.saveAutoFilledAnswers(); // Persist after reset
         this.renderTable();
     }
 
@@ -1981,11 +1994,11 @@ class QuizApp {
         buildInfo.style.fontWeight = 'bold';
         buildInfo.style.boxShadow = '0 0 10px rgba(247, 37, 133, 0.5)';
         const autoFillStatus = this.autoFillEnabled ? `ON(${this.autoFillThreshold}🔥)` : 'OFF';
-        buildInfo.textContent = `BUILD: 2026-03-12 16:50 (AUTOFILL STREAK FIX) [AUTO:${autoFillStatus}]`;
+        buildInfo.textContent = `BUILD: 2026-03-12 16:55 (AUTOFILL PERSIST FIX) [AUTO:${autoFillStatus}]`;
         if (this.homeDashboard && !document.getElementById('build-info')) {
             this.homeDashboard.insertBefore(buildInfo, this.homeDashboard.firstChild);
         } else if (document.getElementById('build-info')) {
-            document.getElementById('build-info').textContent = `BUILD: 2026-03-12 16:50 (AUTOFILL STREAK FIX) [AUTO:${autoFillStatus}]`;
+            document.getElementById('build-info').textContent = `BUILD: 2026-03-12 16:55 (AUTOFILL PERSIST FIX) [AUTO:${autoFillStatus}]`;
         }
 
         // Overall Mastery (Mt. Fuji)
