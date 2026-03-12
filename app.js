@@ -322,6 +322,8 @@ class QuizApp {
         this.insertTableBtn = document.getElementById('insert-table-btn');
         this.clearPoolBtn = document.getElementById('clear-pool-btn');
         this.selectAllPoolBtn = document.getElementById('select-all-pool-btn');
+        this.collapseAllBtn = document.getElementById('collapse-all-btn');
+        this.expandAllBtn = document.getElementById('expand-all-btn');
         this.globalKeywordBank = document.getElementById('global-keyword-bank');
 
         // GitHub Sync UI
@@ -359,6 +361,12 @@ class QuizApp {
         }
         if (this.selectAllPoolBtn) {
             this.selectAllPoolBtn.addEventListener('click', () => this.selectAllPoolSelections());
+        }
+        if (this.collapseAllBtn) {
+            this.collapseAllBtn.addEventListener('click', () => this.collapseAllFolders());
+        }
+        if (this.expandAllBtn) {
+            this.expandAllBtn.addEventListener('click', () => this.expandAllFolders());
         }
         if (this.editModeToggle) {
             this.editModeToggle.addEventListener('change', (e) => {
@@ -1958,11 +1966,11 @@ class QuizApp {
         buildInfo.style.fontWeight = 'bold';
         buildInfo.style.boxShadow = '0 0 10px rgba(247, 37, 133, 0.5)';
         const autoFillStatus = this.autoFillEnabled ? `ON(${this.autoFillThreshold}🔥)` : 'OFF';
-        buildInfo.textContent = `BUILD: 2026-03-12 09:45 (SIDEBAR SCROLL FIXED) [AUTO:${autoFillStatus}]`;
+        buildInfo.textContent = `BUILD: 2026-03-12 10:15 (COLLAPSE ALL FOLDERS ADDED) [AUTO:${autoFillStatus}]`;
         if (this.homeDashboard && !document.getElementById('build-info')) {
             this.homeDashboard.insertBefore(buildInfo, this.homeDashboard.firstChild);
         } else if (document.getElementById('build-info')) {
-            document.getElementById('build-info').textContent = `BUILD: 2026-03-12 09:45 (SIDEBAR SCROLL FIXED) [AUTO:${autoFillStatus}]`;
+            document.getElementById('build-info').textContent = `BUILD: 2026-03-12 10:15 (COLLAPSE ALL FOLDERS ADDED) [AUTO:${autoFillStatus}]`;
         }
 
         // Overall Mastery (Mt. Fuji)
@@ -3406,6 +3414,22 @@ class QuizApp {
     isItemSelectedForPool(itemId) {
         const item = this.quizData.find(i => i.id === itemId);
         return item ? !!item.isInPool : false;
+    }
+
+    collapseAllFolders() {
+        this.quizData.forEach(item => {
+            if (item.type === 'folder') item.isCollapsed = true;
+        });
+        this.saveData();
+        this.renderTOC();
+    }
+
+    expandAllFolders() {
+        this.quizData.forEach(item => {
+            if (item.type === 'folder') item.isCollapsed = false;
+        });
+        this.saveData();
+        this.renderTOC();
     }
 
     deleteFolder(id) {

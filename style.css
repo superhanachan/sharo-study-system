@@ -2164,6 +2164,12 @@ tr {
     background: rgba(247, 37, 133, 0.05);
 }
 
+#collapse-all-btn:hover, #expand-all-btn:hover {
+    color: #ffd166; /* Gold for folder actions */
+    border-color: rgba(255, 209, 102, 0.4);
+    background: rgba(255, 209, 102, 0.05);
+}
+
 .sidebar-quick-actions {
     padding: 0.5rem 0.8rem 1rem 0.8rem;
     display: flex;

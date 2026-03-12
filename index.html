@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Outfit:wght@500;700&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=202603120945">
+    <link rel="stylesheet" href="style.css?v=202603121015">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
@@ -39,9 +39,10 @@
                 style="flex: 1; overflow-y: auto; margin-right: -0.5rem; padding-right: 0.5rem;">
                 <nav class="toc-nav">
                     <div class="pool-batch-actions">
-                        <button id="select-all-pool-btn" class="batch-action-btn select-all"><span>✅</span>
-                            全セレクト</button>
-                        <button id="clear-pool-btn" class="batch-action-btn clear-all"><span>❌</span> 全解除</button>
+                        <button id="select-all-pool-btn" class="batch-action-btn select-all" title="すべての項目を特訓対象にする"><span>✅</span> 全選択</button>
+                        <button id="clear-pool-btn" class="batch-action-btn clear-all" title="特訓対象の選択をすべて解除する"><span>❌</span> 全解除</button>
+                        <button id="collapse-all-btn" class="batch-action-btn" title="フォルダを一括してたたむ"><span>📁</span> 全閉</button>
+                        <button id="expand-all-btn" class="batch-action-btn" title="フォルダを一括して開く"><span>📂</span> 全開</button>
                     </div>
                     <div class="sidebar-review-section study-only" id="sidebar-review-section"
                         style="padding: 1rem; background: rgba(255, 255, 255, 0.03); border-radius: 12px; margin-bottom: 1.5rem; border: 1px solid var(--glass-border); flex-direction: column;">
