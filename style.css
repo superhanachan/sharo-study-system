@@ -493,6 +493,9 @@ h2,
 /* Sidebar */
 .sidebar {
     width: 320px;
+    height: 100vh;
+    position: sticky;
+    top: 0;
     background: #1a1c27;
     border-right: 1px solid var(--glass-border);
     display: flex;
@@ -500,6 +503,7 @@ h2,
     transition: var(--transition);
     z-index: 1000;
     flex-shrink: 0;
+    overflow-y: hidden; /* Inner content will scroll */
 }
 
 .sidebar-header {
@@ -514,16 +518,21 @@ h2,
 
 
 
+#quiz-sidebar-content {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
 #quiz-sidebar-content::-webkit-scrollbar {
-    width: 4px;
+    width: 6px;
 }
 
 #quiz-sidebar-content::-webkit-scrollbar-track {
-    background: transparent;
+    background: rgba(255, 255, 255, 0.02);
 }
 
 #quiz-sidebar-content::-webkit-scrollbar-thumb {
-    background: var(--glass-border);
+    background: rgba(255, 255, 255, 0.1);
     border-radius: 10px;
 }
 
