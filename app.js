@@ -84,9 +84,16 @@ class QuizApp {
         }
         window.addEventListener('click', (e) => {
             if (e.target === this.srsModal) this.srsModal.classList.add('hidden');
-            this.hideContextMenu();
+            // Only hide if we clicked outside the context menu
+            if (this.contextMenu && !this.contextMenu.contains(e.target)) {
+                this.hideContextMenu();
+            }
         });
-        window.addEventListener('scroll', () => this.hideContextMenu());
+        window.addEventListener('contextmenu', () => {
+             // Close any existing menu when right-clicking elsewhere
+             // Actually, showContextMenu will handle its own display
+        });
+        window.addEventListener('scroll', () => this.hideContextMenu(), { passive: true });
         window.addEventListener('blur', () => this.hideContextMenu());
 
         // Initial call
@@ -1971,11 +1978,11 @@ class QuizApp {
         buildInfo.style.fontWeight = 'bold';
         buildInfo.style.boxShadow = '0 0 10px rgba(247, 37, 133, 0.5)';
         const autoFillStatus = this.autoFillEnabled ? `ON(${this.autoFillThreshold}🔥)` : 'OFF';
-        buildInfo.textContent = `BUILD: 2026-03-12 10:45 (CONTEXT MENU ADDED) [AUTO:${autoFillStatus}]`;
+        buildInfo.textContent = `BUILD: 2026-03-12 10:55 (CONTEXT MENU FIXED) [AUTO:${autoFillStatus}]`;
         if (this.homeDashboard && !document.getElementById('build-info')) {
             this.homeDashboard.insertBefore(buildInfo, this.homeDashboard.firstChild);
         } else if (document.getElementById('build-info')) {
-            document.getElementById('build-info').textContent = `BUILD: 2026-03-12 10:45 (CONTEXT MENU ADDED) [AUTO:${autoFillStatus}]`;
+            document.getElementById('build-info').textContent = `BUILD: 2026-03-12 10:55 (CONTEXT MENU FIXED) [AUTO:${autoFillStatus}]`;
         }
 
         // Overall Mastery (Mt. Fuji)
@@ -3371,6 +3378,7 @@ class QuizApp {
 
     showContextMenu(e, id) {
         e.preventDefault();
+        e.stopPropagation(); // Prevent bubbling up to window click listener
         this.ctxItemId = id;
         const item = this.quizData.find(s => s.id === id);
         if (!item) return;
