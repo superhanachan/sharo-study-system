@@ -62,6 +62,7 @@ class QuizApp {
         this.questionObserver = null;
         this.isBankMinimized = false; // Persistent state for the session
         this.dailyGoal = 50;
+        this.ctxItemId = null; // Currently targeted item for context menu
 
         // Auto-fill settings
         const storedEnabled = localStorage.getItem('sharoAutoFillEnabled');
@@ -83,7 +84,10 @@ class QuizApp {
         }
         window.addEventListener('click', (e) => {
             if (e.target === this.srsModal) this.srsModal.classList.add('hidden');
+            this.hideContextMenu();
         });
+        window.addEventListener('scroll', () => this.hideContextMenu());
+        window.addEventListener('blur', () => this.hideContextMenu());
 
         // Initial call
         this.init();
@@ -339,6 +343,7 @@ class QuizApp {
         this.autoFillToggle = document.getElementById('auto-fill-toggle');
         this.autoFillThresholdInput = document.getElementById('auto-fill-threshold');
         this.autoFillIgnoreStatsToggle = document.getElementById('auto-fill-ignore-stats');
+        this.contextMenu = document.getElementById('context-menu');
     }
 
     bindEvents() {
@@ -1966,11 +1971,11 @@ class QuizApp {
         buildInfo.style.fontWeight = 'bold';
         buildInfo.style.boxShadow = '0 0 10px rgba(247, 37, 133, 0.5)';
         const autoFillStatus = this.autoFillEnabled ? `ON(${this.autoFillThreshold}🔥)` : 'OFF';
-        buildInfo.textContent = `BUILD: 2026-03-12 10:15 (COLLAPSE ALL FOLDERS ADDED) [AUTO:${autoFillStatus}]`;
+        buildInfo.textContent = `BUILD: 2026-03-12 10:45 (CONTEXT MENU ADDED) [AUTO:${autoFillStatus}]`;
         if (this.homeDashboard && !document.getElementById('build-info')) {
             this.homeDashboard.insertBefore(buildInfo, this.homeDashboard.firstChild);
         } else if (document.getElementById('build-info')) {
-            document.getElementById('build-info').textContent = `BUILD: 2026-03-12 10:15 (COLLAPSE ALL FOLDERS ADDED) [AUTO:${autoFillStatus}]`;
+            document.getElementById('build-info').textContent = `BUILD: 2026-03-12 10:45 (CONTEXT MENU ADDED) [AUTO:${autoFillStatus}]`;
         }
 
         // Overall Mastery (Mt. Fuji)
@@ -3221,6 +3226,7 @@ class QuizApp {
             <li class="${isActive ? 'active' : ''} ${isFolder ? 'type-folder' : 'type-page'}" 
                 style="padding-left: ${indent}px"
                 draggable="${this.isEditMode}" 
+                oncontextmenu="app.showContextMenu(event, '${s.id}')"
                 ondragstart="app.handleDragStart(event, '${s.id}')" 
                 ondragover="app.handleDragOver(event, '${s.id}')" 
                 ondrop="app.handleDrop(event, '${s.id}')" 
@@ -3361,6 +3367,68 @@ class QuizApp {
             this.saveData();
             this.renderTOC();
         }
+    }
+
+    showContextMenu(e, id) {
+        e.preventDefault();
+        this.ctxItemId = id;
+        const item = this.quizData.find(s => s.id === id);
+        if (!item) return;
+
+        this.contextMenu.style.left = `${e.clientX}px`;
+        this.contextMenu.style.top = `${e.clientY}px`;
+        this.contextMenu.classList.remove('hidden');
+
+        // Adjust menu content based on item type (Folder vs Page)
+        const isFolder = item.type === 'folder';
+        const addFolder = document.getElementById('ctx-add-folder');
+        const addPage = document.getElementById('ctx-add-page');
+        const addClause = document.getElementById('ctx-add-clause');
+
+        if (isFolder) {
+            addFolder.textContent = '📁 子フォルダを追加';
+            addPage.textContent = '📄 子ページを追加';
+            addClause.textContent = '🔤 子条文穴埋めを追加';
+        } else {
+            addFolder.textContent = '📁 隣にフォルダを追加';
+            addPage.textContent = '📄 隣にページを追加';
+            addClause.textContent = '🔤 隣に条文穴埋めを追加';
+        }
+
+        // Adjust visibility or content of other items if necessary
+    }
+
+    hideContextMenu() {
+        if (this.contextMenu) this.contextMenu.classList.add('hidden');
+    }
+
+    ctxAction(action) {
+        const id = this.ctxItemId;
+        const item = this.quizData.find(s => s.id === id);
+        if (!item) { this.hideContextMenu(); return; }
+
+        // Folders usually get children, pages get siblings
+        const parentId = item.type === 'folder' ? item.id : item.parentId;
+
+        switch (action) {
+            case 'add-folder': this.addNewFolder(parentId); break;
+            case 'add-page': this.addNewPage(parentId); break;
+            case 'add-clause': this.addNewClausePage(parentId); break;
+            case 'move-up': this.movePageById(id, -1); break;
+            case 'move-down': this.movePageById(id, 1); break;
+            case 'delete':
+                if (item.type === 'folder') this.deleteFolder(id);
+                else {
+                    if (confirm(`このページ（${item.title}）を完全に削除しますか？`)) {
+                        this.quizData = this.quizData.filter(s => s.id !== id);
+                        this.saveData();
+                        this.renderTOC();
+                        if (this.currentSetId === id) this.loadSet(null);
+                    }
+                }
+                break;
+        }
+        this.hideContextMenu();
     }
 
     toggleItemPool(id) {

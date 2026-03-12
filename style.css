@@ -664,12 +664,11 @@ h2,
 }
 
 .edit-mode .reorder-btns {
-    display: flex;
-    opacity: 1;
+    display: none; /* Hide even in edit mode, use context menu */
 }
 
 .item-container:hover .reorder-btns {
-    opacity: 1;
+    display: none; /* Hide on hover too */
 }
 
 .reorder-btn {
