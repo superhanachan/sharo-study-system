@@ -2936,3 +2936,31 @@ body.answers-revealed .clause-input-blank {
     border-top: 1px solid var(--glass-border);
     margin: 0.4rem 0.5rem;
 }
+
+.quiz-table {
+    border-collapse: collapse !important;
+    border-spacing: 0 !important;
+    margin-top: 1rem;
+    margin-bottom: 1.5rem;
+    width: 100%;
+}
+
+.quiz-table td, .quiz-table th {
+    border: 1px solid var(--glass-border) !important;
+    padding: 0.8rem 1rem !important;
+    background: rgba(255, 255, 255, 0.02) !important;
+    vertical-align: middle !important;
+    white-space: pre-wrap !important;
+}
+
+.quiz-table th {
+    background: rgba(67, 97, 238, 0.15) !important;
+    color: var(--accent) !important;
+    font-weight: 600;
+    text-transform: none;
+    letter-spacing: normal;
+}
+
+.quiz-table tr:nth-child(even) td {
+    background: rgba(255, 255, 255, 0.04) !important;
+}

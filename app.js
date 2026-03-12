@@ -436,7 +436,7 @@ class QuizApp {
 
         if (this.insertTableBtn && this.clauseTextEditor) {
             this.insertTableBtn.addEventListener('click', () => {
-                const template = "\n| 項目 | 内容 | 備考 |\n| --- | --- | --- |\n| [[キーワード1]] | 内容1 | 備考1 |\n| [[キーワード2]] | 内容2 | 備考2 |\n";
+                const template = "\n| 項目 | 内容 | 備考 |\n| --- | --- | --- |\n| [[キーワード1]] | 内容1 | 備考1 |\n| [[キーワード2]] | 内容2 | 備考2 |\n| 結合例(横) | > | 備考 |\n| 結合例(縦) | 内容 | 備考 |\n| ^ | 内容 | 備考 |\n";
                 const start = this.clauseTextEditor.selectionStart;
                 const end = this.clauseTextEditor.selectionEnd;
                 const text = this.clauseTextEditor.value;
@@ -1978,11 +1978,11 @@ class QuizApp {
         buildInfo.style.fontWeight = 'bold';
         buildInfo.style.boxShadow = '0 0 10px rgba(247, 37, 133, 0.5)';
         const autoFillStatus = this.autoFillEnabled ? `ON(${this.autoFillThreshold}🔥)` : 'OFF';
-        buildInfo.textContent = `BUILD: 2026-03-12 11:05 (CSS ADDED/MENU FIXED) [AUTO:${autoFillStatus}]`;
+        buildInfo.textContent = `BUILD: 2026-03-12 11:20 (TABLE MERGE SUPPORT) [AUTO:${autoFillStatus}]`;
         if (this.homeDashboard && !document.getElementById('build-info')) {
             this.homeDashboard.insertBefore(buildInfo, this.homeDashboard.firstChild);
         } else if (document.getElementById('build-info')) {
-            document.getElementById('build-info').textContent = `BUILD: 2026-03-12 11:05 (CSS ADDED/MENU FIXED) [AUTO:${autoFillStatus}]`;
+            document.getElementById('build-info').textContent = `BUILD: 2026-03-12 11:20 (TABLE MERGE SUPPORT) [AUTO:${autoFillStatus}]`;
         }
 
         // Overall Mastery (Mt. Fuji)
@@ -2397,27 +2397,83 @@ class QuizApp {
     }
 
     renderTableFromMarkdown(lines) {
-        let tableHtml = '<div class="table-wrapper"><table>';
-        lines.forEach((line, idx) => {
-            const cells = line.split('|').map(c => c.trim()).filter((c, i, arr) => i > 0 && i < arr.length - 1);
-            if (cells.length === 0) return;
-            const tag = (idx === 0) ? 'th' : 'td';
+        const rawGrid = lines.map(line => {
+            return line.split('|')
+                       .map(c => c.trim())
+                       .filter((c, i, arr) => i > 0 && i < arr.length - 1);
+        }).filter(row => row.length > 0);
 
+        if (rawGrid.length === 0) return '';
+
+        const grid = rawGrid.map((row, r) => row.map((cell, c) => ({
+            content: cell,
+            rs: 1,
+            cs: 1,
+            skip: false,
+            isHeader: (r === 0 || row.every(cc => cc === '---' || cc.startsWith(':') || cc.endsWith(':')))
+        })));
+
+        // Skip separator rows (---)
+        const activeGrid = grid.filter(row => !row.every(c => c.content.match(/^[:\-\s]+$/)));
+
+        // Handle Horizontal Merges (colspan)
+        for (let r = 0; r < activeGrid.length; r++) {
+            for (let c = 0; c < activeGrid[r].length; c++) {
+                if (activeGrid[r][c].content === '>') {
+                    let targetC = c - 1;
+                    while (targetC >= 0 && activeGrid[r][targetC].skip) targetC--;
+                    if (targetC >= 0) {
+                        activeGrid[r][targetC].cs++;
+                        activeGrid[r][c].skip = true;
+                    }
+                }
+            }
+        }
+
+        // Handle Vertical Merges (rowspan)
+        for (let r = 0; r < activeGrid.length; r++) {
+            for (let c = 0; c < activeGrid[r].length; c++) {
+                if (activeGrid[r][c].content === '^') {
+                    let targetR = r - 1;
+                    while (targetR >= 0 && (activeGrid[targetR][c].content === '^' || activeGrid[targetR][c].skip)) {
+                        targetR--;
+                    }
+                    
+                    if (targetR >= 0) {
+                        let rootC = c;
+                        while (rootC >= 0 && activeGrid[targetR][rootC].skip) rootC--;
+                        if (rootC >= 0) {
+                            const rootCell = activeGrid[targetR][rootC];
+                            if (rootCell._lastRS === undefined || rootCell._lastRS < r) {
+                                rootCell.rs++;
+                                rootCell._lastRS = r;
+                            }
+                            activeGrid[r][c].skip = true;
+                        }
+                    }
+                }
+            }
+        }
+
+        let tableHtml = '<div class="table-wrapper"><table class="quiz-table">';
+        activeGrid.forEach((row, r) => {
+            if (row.every(c => c.skip)) return;
             tableHtml += '<tr>';
-            cells.forEach(cell => {
-                let content = cell.replace(/_br_/g, '<br>');
-                let style = '';
-
-                // Parse {width} for headers
-                if (idx === 0) {
+            row.forEach((cell, c) => {
+                if (cell.skip) return;
+                const tag = cell.isHeader ? 'th' : 'td';
+                let content = cell.content.replace(/_br_/g, '<br>');
+                let attrs = '';
+                if (cell.rs > 1) attrs += ` rowspan="${cell.rs}"`;
+                if (cell.cs > 1) attrs += ` colspan="${cell.cs}"`;
+                if (cell.isHeader) {
                     const widthMatch = content.match(/\{(.*?)\}/);
                     if (widthMatch) {
-                        style = ` style="width: ${widthMatch[1]}; min-width: ${widthMatch[1]};"`;
+                        attrs += ` style="width: ${widthMatch[1]}; min-width: ${widthMatch[1]};"`;
                         content = content.replace(widthMatch[0], '');
                     }
                 }
-
-                tableHtml += `<${tag}${style}>${content}</${tag}>`;
+                tableHtml += `<${tag}${attrs}>${content}</${tag}>`;
             });
             tableHtml += '</tr>';
         });
