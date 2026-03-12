@@ -1257,7 +1257,8 @@ class QuizApp {
             keywordData.forEach((kwInfo, idx) => {
                 const key = `${set.id}-${idx}`;
                 const userAnswer = (this.userAnswers[key] || "").toString();
-                const isAutoFilled = this.autoFillIgnoreStats && this.autoFilledAnswers.has(key);
+                // Always skip streak count for auto-filled answers, regardless of ignore-stats setting
+                const isAutoFilled = this.autoFilledAnswers.has(key);
                 if (isAutoFilled) hasAnyAutoFill = true;
 
                 if (!userAnswer && kwInfo.type === 'drag') {
@@ -1343,7 +1344,8 @@ class QuizApp {
                     keywordData.forEach((kwInfo, idx) => {
                         const key = `${q.id}-${idx}`;
                         const val = this.userAnswers[key];
-                        const isAutoFilled = this.autoFillIgnoreStats && this.autoFilledAnswers.has(key);
+                        // Always skip streak count for auto-filled answers
+                        const isAutoFilled = this.autoFilledAnswers.has(key);
                         if (isAutoFilled) rowAutoFilledCount++;
 
                         if (!val) return; // Skip empty answers for both drag and input types
@@ -1388,7 +1390,8 @@ class QuizApp {
                 } else {
                     const key = q.id;
                     const userAnswer = this.userAnswers[key];
-                    const isAutoFilled = this.autoFillIgnoreStats && this.autoFilledAnswers.has(key);
+                    // Always skip streak count for auto-filled answers
+                    const isAutoFilled = this.autoFilledAnswers.has(key);
 
                     if (!userAnswer || (Array.isArray(userAnswer) && userAnswer.length === 0)) {
                         // If auto-filled, we skip return but it won't count toward statistics below
@@ -1978,11 +1981,11 @@ class QuizApp {
         buildInfo.style.fontWeight = 'bold';
         buildInfo.style.boxShadow = '0 0 10px rgba(247, 37, 133, 0.5)';
         const autoFillStatus = this.autoFillEnabled ? `ON(${this.autoFillThreshold}🔥)` : 'OFF';
-        buildInfo.textContent = `BUILD: 2026-03-12 11:20 (TABLE MERGE SUPPORT) [AUTO:${autoFillStatus}]`;
+        buildInfo.textContent = `BUILD: 2026-03-12 16:50 (AUTOFILL STREAK FIX) [AUTO:${autoFillStatus}]`;
         if (this.homeDashboard && !document.getElementById('build-info')) {
             this.homeDashboard.insertBefore(buildInfo, this.homeDashboard.firstChild);
         } else if (document.getElementById('build-info')) {
-            document.getElementById('build-info').textContent = `BUILD: 2026-03-12 11:20 (TABLE MERGE SUPPORT) [AUTO:${autoFillStatus}]`;
+            document.getElementById('build-info').textContent = `BUILD: 2026-03-12 16:50 (AUTOFILL STREAK FIX) [AUTO:${autoFillStatus}]`;
         }
 
         // Overall Mastery (Mt. Fuji)
