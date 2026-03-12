@@ -2888,3 +2888,51 @@ body.answers-revealed .clause-input-blank {
     position: relative;
     vertical-align: middle;
 }
+
+/* Context Menu */
+.context-menu {
+    position: fixed;
+    z-index: 5000;
+    background: rgba(20, 22, 30, 0.98);
+    backdrop-filter: blur(15px);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 0.5rem;
+    min-width: 200px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+    animation: menu-pop 0.1s ease-out;
+}
+
+@keyframes menu-pop {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.context-menu-item {
+    padding: 0.7rem 1rem;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    font-weight: 500;
+}
+
+.context-menu-item:hover {
+    background: rgba(67, 97, 238, 0.25);
+    color: var(--accent);
+}
+
+.context-menu-item.danger:hover {
+    background: rgba(247, 37, 133, 0.15);
+    color: #fca5a5;
+}
+
+.context-menu hr {
+    border: none;
+    border-top: 1px solid var(--glass-border);
+    margin: 0.4rem 0.5rem;
+}

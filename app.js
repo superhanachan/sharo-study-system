@@ -82,7 +82,7 @@ class QuizApp {
         if (this.closeModalBtn) {
             this.closeModalBtn.addEventListener('click', () => this.srsModal.classList.add('hidden'));
         }
-        window.addEventListener('click', (e) => {
+        window.addEventListener('mousedown', (e) => {
             if (e.target === this.srsModal) this.srsModal.classList.add('hidden');
             // Only hide if we clicked outside the context menu
             if (this.contextMenu && !this.contextMenu.contains(e.target)) {
@@ -1978,11 +1978,11 @@ class QuizApp {
         buildInfo.style.fontWeight = 'bold';
         buildInfo.style.boxShadow = '0 0 10px rgba(247, 37, 133, 0.5)';
         const autoFillStatus = this.autoFillEnabled ? `ON(${this.autoFillThreshold}🔥)` : 'OFF';
-        buildInfo.textContent = `BUILD: 2026-03-12 10:55 (CONTEXT MENU FIXED) [AUTO:${autoFillStatus}]`;
+        buildInfo.textContent = `BUILD: 2026-03-12 11:05 (CSS ADDED/MENU FIXED) [AUTO:${autoFillStatus}]`;
         if (this.homeDashboard && !document.getElementById('build-info')) {
             this.homeDashboard.insertBefore(buildInfo, this.homeDashboard.firstChild);
         } else if (document.getElementById('build-info')) {
-            document.getElementById('build-info').textContent = `BUILD: 2026-03-12 10:55 (CONTEXT MENU FIXED) [AUTO:${autoFillStatus}]`;
+            document.getElementById('build-info').textContent = `BUILD: 2026-03-12 11:05 (CSS ADDED/MENU FIXED) [AUTO:${autoFillStatus}]`;
         }
 
         // Overall Mastery (Mt. Fuji)
