@@ -109,7 +109,10 @@ class QuizApp {
         const btnAuto = document.getElementById('restore-auto-backup-btn');
         const btnPreSync = document.getElementById('restore-pre-sync-btn');
 
+        const btnForcePushGh = document.getElementById('force-push-gh-btn');
+
         if (btnForceGh) btnForceGh.addEventListener('click', () => this.forceSyncFromGitHub());
+        if (btnForcePushGh) btnForcePushGh.addEventListener('click', () => this.forcePushToGitHub());
         if (btnAuto) btnAuto.addEventListener('click', () => this.restoreFromInternalBackup('sharo_auto_backup'));
         if (btnPreSync) btnPreSync.addEventListener('click', () => this.restoreFromInternalBackup('sharo_pre_sync_backup'));
     }
@@ -137,6 +140,51 @@ class QuizApp {
             location.reload();
         } catch (e) {
             alert('強制復元に失敗しました: ' + e.message);
+        }
+    }
+
+    async forcePushToGitHub() {
+        const config = JSON.parse(localStorage.getItem('sharoGitHubConfig') || '{}');
+        if (!config.repo || !config.token || !config.path) {
+            alert('GitHubの設定が完了していません。');
+            return;
+        }
+
+        const localCount = this.getTotalQuestionCount(this.quizData);
+        if (!confirm(`現在のローカルデータ（${localCount}問）をGitHubへ強制的にバックアップ（上書き保存）します。よろしいですか？`)) return;
+
+        const btn = document.getElementById('force-push-gh-btn');
+        const originalText = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = '保存中...';
+
+        try {
+            // Need to get the latest SHA first to ensure the push works, 
+            // but we don't care about the content.
+            const url = `https://api.github.com/repos/${config.repo}/contents/${config.path}`;
+            const headers = { 'Authorization': config.token.startsWith('ghp_') ? `token ${config.token}` : `Bearer ${config.token}` };
+            
+            const headRes = await fetch(url, { method: 'HEAD', headers });
+            if (headRes.ok) {
+                const etag = headRes.headers.get('ETag');
+                this._ghFileSha = etag ? etag.replace(/"/g, '') : null;
+            }
+
+            const localData = {
+                quizData: this.quizData,
+                questionStats: this.questionStats,
+                history: this.history,
+                lastModified: Date.now()
+            };
+
+            await this.pushToGitHub(config, localData);
+            localStorage.setItem('sharoLastModified', localData.lastModified);
+            alert('GitHubへの強制保存が完了しました。これを復元のベースとして使用できます。');
+        } catch (e) {
+            alert('保存に失敗しました: ' + e.message);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = originalText;
         }
     }
 
