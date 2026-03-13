@@ -101,7 +101,63 @@ class QuizApp {
         // Initial call
         this.init();
         this.updateDashboard();
+        this.initRecoveryButtons();
+    }
 
+    initRecoveryButtons() {
+        const btnForceGh = document.getElementById('force-fetch-gh-btn');
+        const btnAuto = document.getElementById('restore-auto-backup-btn');
+        const btnPreSync = document.getElementById('restore-pre-sync-btn');
+
+        if (btnForceGh) btnForceGh.addEventListener('click', () => this.forceSyncFromGitHub());
+        if (btnAuto) btnAuto.addEventListener('click', () => this.restoreFromInternalBackup('sharo_auto_backup'));
+        if (btnPreSync) btnPreSync.addEventListener('click', () => this.restoreFromInternalBackup('sharo_pre_sync_backup'));
+    }
+
+    async forceSyncFromGitHub() {
+        const config = this.getGitHubConfig();
+        if (!config.repo || !config.token || !config.path) {
+            alert('GitHubの設定が完了していません。');
+            return;
+        }
+        if (!confirm('GitHub上のデータを強制的に読み込み、現在のローカルデータを上書きします。よろしいですか？')) return;
+
+        try {
+            const remote = await this.fetchFromGitHub(config);
+            if (!remote) throw new Error('GitHub上にデータが見つかりませんでした。');
+            
+            this.quizData = remote.quizData;
+            this.questionStats = remote.questionStats;
+            this.history = remote.history;
+            this.saveData();
+            this.saveQuestionStats();
+            this.saveHistory();
+            localStorage.setItem('sharoLastModified', remote.lastModified || Date.now());
+            alert('GitHubからの強制復元が完了しました。');
+            location.reload();
+        } catch (e) {
+            alert('強制復元に失敗しました: ' + e.message);
+        }
+    }
+
+    restoreFromInternalBackup(key) {
+        const saved = localStorage.getItem(key);
+        if (!saved) {
+            alert('バックアップデータが見つかりません。');
+            return;
+        }
+        const data = JSON.parse(saved);
+        const dateStr = data.timestamp ? new Date(data.timestamp).toLocaleString() : '不明';
+        if (!confirm(`バックアップ（${dateStr}）から復元しますか？ 現在のデータは上書きされます。`)) return;
+
+        this.quizData = data.quizData;
+        this.questionStats = data.questionStats;
+        this.history = data.history;
+        this.saveData();
+        this.saveQuestionStats();
+        this.saveHistory();
+        alert('バックアップからの復元が完了しました。');
+        location.reload();
     }
 
     migrateData() {
@@ -653,13 +709,42 @@ class QuizApp {
         this.pruneData();
         const dataStr = JSON.stringify(this.quizData);
         localStorage.setItem('sharoQuizData', dataStr);
-        // Internal Redundancy: Also save to a backup key
+
+        // --- ENHANCED PROTECTION ---
+        const currentBackupStr = localStorage.getItem('sharo_auto_backup');
+        if (currentBackupStr) {
+            try {
+                const currentBackup = JSON.parse(currentBackupStr);
+                const currentQuestionCount = this.getTotalQuestionCount(this.quizData);
+                const backupQuestionCount = this.getTotalQuestionCount(currentBackup.quizData || []);
+
+                // If massive shrinkage detected, don't overwrite the auto-backup.
+                if (backupQuestionCount > 100 && currentQuestionCount < (backupQuestionCount * 0.5)) {
+                    console.warn(`Data shrinkage detected (${currentQuestionCount} vs ${backupQuestionCount}). Skipping sharo_auto_backup update.`);
+                    return;
+                }
+            } catch (e) { console.error(e); }
+        }
+
         localStorage.setItem('sharo_auto_backup', JSON.stringify({
             quizData: this.quizData,
             history: this.history,
             questionStats: this.questionStats,
-            savedAt: new Date().toISOString()
+            timestamp: Date.now()
         }));
+        localStorage.setItem('sharoLastModified', Date.now());
+    }
+
+    getTotalQuestionCount(data) {
+        let count = 0;
+        if (!data) return 0;
+        data.forEach(set => {
+            if (set.type === 'page' || set.type === 'clause') {
+                count += (set.questions || []).length;
+            }
+            if (set.children) count += this.getTotalQuestionCount(set.children);
+        });
+        return count;
     }
     loadHistory() { const saved = localStorage.getItem('sharoQuizHistory'); return saved ? JSON.parse(saved) : []; }
     saveHistory() { localStorage.setItem('sharoQuizHistory', JSON.stringify(this.history)); }
@@ -4309,6 +4394,14 @@ class QuizApp {
         console.log('Starting GitHub Sync...');
 
         try {
+            // 0. Create pre-sync backup
+            localStorage.setItem('sharo_pre_sync_backup', JSON.stringify({
+                quizData: this.quizData,
+                history: this.history,
+                questionStats: this.questionStats,
+                timestamp: Date.now()
+            }));
+
             // 1. Fetch remote data
             const remote = await this.fetchFromGitHub(config);
             let localData = {
@@ -4319,6 +4412,18 @@ class QuizApp {
             };
 
             if (remote) {
+                // --- DATA LOSS GUARD ---
+                const localCount = this.getTotalQuestionCount(this.quizData);
+                const remoteCount = this.getTotalQuestionCount(remote.quizData || []);
+
+                // If remote data has significantly fewer questions, warn the user.
+                if (localCount > 100 && remoteCount < (localCount * 0.7)) {
+                    if (!confirm(`【警告】GitHub上の問題数（${remoteCount}問）が現在のローカル（${localCount}問）より大幅に少ないです。何らかの原因でサーバーのデータが消失している可能性があります。上書きして続行しますか？`)) {
+                        this.updateGitHubStatus('同期中断（データ消失回避）');
+                        return;
+                    }
+                }
+
                 // 2. Conflict handling: simple timestamp check
                 if (remote.lastModified > localData.lastModified) {
                     if (confirm(`GitHub上に新しいデータが見つかりました（${new Date(remote.lastModified).toLocaleString()}）。上書きしますか？`)) {
