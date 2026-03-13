@@ -102,6 +102,7 @@ class QuizApp {
         this.init();
         this.updateDashboard();
         this.initRecoveryButtons();
+        this.updateBuildInfoWithCommitDate();
     }
 
     initRecoveryButtons() {
@@ -2140,11 +2141,14 @@ class QuizApp {
         buildInfo.style.fontWeight = 'bold';
         buildInfo.style.boxShadow = '0 0 10px rgba(247, 37, 133, 0.5)';
         const autoFillStatus = this.autoFillEnabled ? `ON(${this.autoFillThreshold}🔥)` : 'OFF';
-        buildInfo.textContent = `BUILD: 2026-03-12 17:20 (AUTOFILL FINAL FIX) [AUTO:${autoFillStatus}]`;
+        const buildDate = localStorage.getItem('sharoBuildDate') || '2026-03-13 13:00';
+        const buildMsg = `BUILD: ${buildDate} [AUTO:${autoFillStatus}]`;
+
+        buildInfo.textContent = buildMsg;
         if (this.homeDashboard && !document.getElementById('build-info')) {
             this.homeDashboard.insertBefore(buildInfo, this.homeDashboard.firstChild);
         } else if (document.getElementById('build-info')) {
-            document.getElementById('build-info').textContent = `BUILD: 2026-03-12 17:20 (AUTOFILL FINAL FIX) [AUTO:${autoFillStatus}]`;
+            document.getElementById('build-info').textContent = buildMsg;
         }
 
         // Overall Mastery (Mt. Fuji)
@@ -4602,6 +4606,38 @@ class QuizApp {
         // GitHub API base64 can contain newlines
         const cleanStr = str.replace(/\n/g, '');
         return decodeURIComponent(escape(atob(cleanStr)));
+    }
+    async updateBuildInfoWithCommitDate() {
+        const config = JSON.parse(localStorage.getItem('sharoGitHubConfig') || '{}');
+        if (!config.repo) return;
+
+        try {
+            // Fetch the latest commit for this repository to get the "Build" time
+            const response = await fetch(`https://api.github.com/repos/${config.repo}/commits?per_page=1`);
+            if (response.ok) {
+                const commits = await response.json();
+                if (commits && commits.length > 0) {
+                    const commitDate = new Date(commits[0].commit.committer.date);
+                    // Format as YYYY-MM-DD HH:MM
+                    const formattedDate = commitDate.getFullYear() + '-' +
+                        ('0' + (commitDate.getMonth() + 1)).slice(-2) + '-' +
+                        ('0' + commitDate.getDate()).slice(-2) + ' ' +
+                        ('0' + commitDate.getHours()).slice(-2) + ':' +
+                        ('0' + commitDate.getMinutes()).slice(-2);
+                    
+                    localStorage.setItem('sharoBuildDate', formattedDate);
+                    
+                    // Update UI if already rendered
+                    const buildInfo = document.getElementById('build-info');
+                    if (buildInfo) {
+                        const autoFillStatus = this.autoFillEnabled ? `ON(${this.autoFillThreshold}🔥)` : 'OFF';
+                        buildInfo.textContent = `BUILD: ${formattedDate} [AUTO:${autoFillStatus}]`;
+                    }
+                }
+            }
+        } catch (e) {
+            console.warn('Failed to fetch build date:', e);
+        }
     }
 }
 let app;
