@@ -4507,7 +4507,7 @@ class QuizApp {
                 config_path: config.path,
                 config_repo: config.repo
             });
-            alert('同期に失敗しました: ' + error.message + '\n\n※1MBを超える巨大なファイルやGitHubの権限、リポジトリ名の設定が正しいかご確認ください。');
+            alert('同期に失敗しました: ' + error.message + '\n\n※100MBを超える巨大なファイルやGitHubの権限、リポジトリ名の設定が正しいかご確認ください。');
             this.updateGitHubStatus('同期失敗');
         } finally {
             if (this.ghSyncNowBtn) {
