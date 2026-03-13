@@ -115,7 +115,7 @@ class QuizApp {
     }
 
     async forceSyncFromGitHub() {
-        const config = this.getGitHubConfig();
+        const config = JSON.parse(localStorage.getItem('sharoGitHubConfig') || '{}');
         if (!config.repo || !config.token || !config.path) {
             alert('GitHubの設定が完了していません。');
             return;
