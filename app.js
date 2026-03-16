@@ -4442,7 +4442,7 @@ class QuizApp {
         }
 
         // Helper to force browser repaint so status messages actually show up
-        const forceRepaint = () => new Promise(resolve => setTimeout(resolve, 50));
+        const forceRepaint = () => new Promise(resolve => setTimeout(resolve, 100));
 
         if (this.ghSyncNowBtn) {
             this.ghSyncNowBtn.disabled = true;
@@ -4515,7 +4515,12 @@ class QuizApp {
             localStorage.setItem('sharoLastModified', localData.lastModified);
 
             this.updateGitHubStatus(`同期完了 (${new Date().toLocaleTimeString()})`);
-            alert('GitHubへの同期が完了しました。');
+            
+            // Wait slightly before alerting to allow the "同期完了" text to render
+            setTimeout(() => {
+                alert('GitHubへの同期が完了しました。');
+            }, 100);
+            
         } catch (error) {
             console.error('GitHub Sync Error Details:', {
                 message: error.message,
