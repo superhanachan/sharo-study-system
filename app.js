@@ -4441,6 +4441,9 @@ class QuizApp {
             return;
         }
 
+        // Helper to force browser repaint so status messages actually show up
+        const forceRepaint = () => new Promise(resolve => setTimeout(resolve, 50));
+
         if (this.ghSyncNowBtn) {
             this.ghSyncNowBtn.disabled = true;
             this.ghSyncNowBtn.textContent = '同期中...';
@@ -4453,15 +4456,21 @@ class QuizApp {
         console.log('Starting GitHub Sync...');
 
         try {
-            // 0. Create pre-sync backup
-            localStorage.setItem('sharo_pre_sync_backup', JSON.stringify({
-                quizData: this.quizData,
-                history: this.history,
-                questionStats: this.questionStats,
-                timestamp: Date.now()
-            }));
+            // 0. Create pre-sync backup (wrapped in try-catch for iOS 5MB storage limit)
+            try {
+                localStorage.setItem('sharo_pre_sync_backup', JSON.stringify({
+                    quizData: this.quizData,
+                    history: this.history,
+                    questionStats: this.questionStats,
+                    timestamp: Date.now()
+                }));
+            } catch (storageError) {
+                console.warn('Local backup failed due to storage limits. Skipping backup and proceeding with sync.', storageError);
+            }
 
             // 1. Fetch remote data
+            this.updateGitHubStatus('データをダウンロード中...');
+            await forceRepaint();
             const remote = await this.fetchFromGitHub(config);
             let localData = {
                 quizData: this.quizData,
@@ -4502,7 +4511,7 @@ class QuizApp {
 
             // 3. Push local data (if remote is older or user chose to push)
             localData.lastModified = Date.now();
-            await this.pushToGitHub(config, localData);
+            await this.pushToGitHub(config, localData, forceRepaint);
             localStorage.setItem('sharoLastModified', localData.lastModified);
 
             this.updateGitHubStatus(`同期完了 (${new Date().toLocaleTimeString()})`);
@@ -4563,11 +4572,16 @@ class QuizApp {
         }
     }
 
-    async pushToGitHub(config, data) {
+    async pushToGitHub(config, data, forceRepaint = async () => {}) {
         this.pruneData();
         const url = `https://api.github.com/repos/${config.repo}/contents/${config.path}`;
-        const content = this.utf8_to_b64_encode(JSON.stringify(data));
+        
+        this.updateGitHubStatus('データをエンコード中 (数秒かかる場合があります)...');
+        await forceRepaint();
+        const content = await this.utf8_to_b64_encode(JSON.stringify(data));
 
+        this.updateGitHubStatus('GitHubへアップロード中...');
+        await forceRepaint();
         // Need current SHA to update existing file
         if (!this._ghFileSha) {
             const headResponse = await fetch(url, {
@@ -4604,9 +4618,19 @@ class QuizApp {
         this._ghFileSha = resData.content.sha;
     }
 
-    // Helper for Unicode-safe Base64
-    utf8_to_b64_encode(str) {
-        return btoa(unescape(encodeURIComponent(str)));
+    // Helper for Unicode-safe Base64 that prevents memory crashes on iOS
+    async utf8_to_b64_encode(str) {
+        return new Promise((resolve, reject) => {
+            const blob = new Blob([str], { type: 'application/json' });
+            const reader = new FileReader();
+            reader.onload = () => {
+                const dataUrl = reader.result;
+                const base64 = dataUrl.split(',')[1];
+                resolve(base64);
+            };
+            reader.onerror = error => reject(error);
+            reader.readAsDataURL(blob);
+        });
     }
 
     utf8_to_b64_decode(str) {
