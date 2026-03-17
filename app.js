@@ -780,10 +780,10 @@ class QuizApp {
         // Wrap in try-catch: localStorage may throw QuotaExceededError when data is large.
         // The main data (sharoQuizData / sharoQuizHistory / sharoQuestionStats) is already
         // saved above; sharo_auto_backup is supplementary and can be safely skipped.
+        // sharo_auto_backup: history は sharoQuizHistory に独立保存済みのため除外してサイズ削減
         try {
             localStorage.setItem('sharo_auto_backup', JSON.stringify({
                 quizData: this.quizData,
-                history: this.history,
                 questionStats: this.questionStats,
                 timestamp: Date.now()
             }));
@@ -794,7 +794,6 @@ class QuizApp {
                 localStorage.removeItem('sharo_pre_sync_backup');
                 localStorage.setItem('sharo_auto_backup', JSON.stringify({
                     quizData: this.quizData,
-                    history: this.history,
                     questionStats: this.questionStats,
                     timestamp: Date.now()
                 }));
@@ -818,9 +817,28 @@ class QuizApp {
         return count;
     }
     loadHistory() { const saved = localStorage.getItem('sharoQuizHistory'); return saved ? JSON.parse(saved) : []; }
-    saveHistory() { localStorage.setItem('sharoQuizHistory', JSON.stringify(this.history)); }
+    saveHistory() {
+        // 履歴が肥大化しないよう最新500件のみ保持
+        if (this.history.length > 500) this.history = this.history.slice(-500);
+        try {
+            localStorage.setItem('sharoQuizHistory', JSON.stringify(this.history));
+        } catch (e) {
+            console.warn('saveHistory: localStorage 容量超過。古い履歴を削除して再試行します。', e.message);
+            try {
+                this.history = this.history.slice(-200);
+                localStorage.setItem('sharoQuizHistory', JSON.stringify(this.history));
+            } catch (e2) { console.error('saveHistory 失敗:', e2.message); }
+        }
+    }
     loadQuestionStats() { const saved = localStorage.getItem('sharoQuestionStats'); return saved ? JSON.parse(saved) : {}; }
-    saveQuestionStats() { this.pruneData(); localStorage.setItem('sharoQuestionStats', JSON.stringify(this.questionStats)); }
+    saveQuestionStats() {
+        this.pruneData();
+        try {
+            localStorage.setItem('sharoQuestionStats', JSON.stringify(this.questionStats));
+        } catch (e) {
+            console.warn('saveQuestionStats: localStorage 容量超過。', e.message);
+        }
+    }
 
     pruneData() {
         if (!this.quizData || this.quizData.length === 0) return;
@@ -4478,9 +4496,9 @@ class QuizApp {
         try {
             // 0. Create pre-sync backup (wrapped in try-catch for iOS 5MB storage limit)
             try {
+                // history は sharoQuizHistory に独立保存済みのため除外してサイズ削減
                 localStorage.setItem('sharo_pre_sync_backup', JSON.stringify({
                     quizData: this.quizData,
-                    history: this.history,
                     questionStats: this.questionStats,
                     timestamp: Date.now()
                 }));
