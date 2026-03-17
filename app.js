@@ -521,19 +521,42 @@ class QuizApp {
         if (this.deletePageBtn) this.deletePageBtn.addEventListener('click', () => this.deleteCurrentPage());
         if (this.clonePageBtn) this.clonePageBtn.addEventListener('click', () => this.cloneCurrentPage());
 
-        // PDFからのペースト時に改行を自動除去する
+        // PDFからのペースト時に改行を賢く処理する
         if (this.clauseTextEditor) {
             this.clauseTextEditor.addEventListener('paste', (e) => {
                 e.preventDefault();
                 const raw = (e.clipboardData || window.clipboardData).getData('text');
-                // 改行（\r\n, \r, \n）を除去してそのままつなぐ
-                const cleaned = raw.replace(/[\r\n]+/g, '');
+                
+                // 改行を一旦正規化
+                let text = raw.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+                
+                // 1. 各行を処理
+                const lines = text.split('\n');
+                let processed = '';
+                
+                for (let i = 0; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (!line) continue;
+                    
+                    // 行頭が「イ)」「a)」「1)」「(1)」「ア.」などの記号で始まるか判定
+                    const isItemStart = /^[a-z0-9\u3040-\u309F\u30A0-\u30FF一-龠][\).）．]|[0-9]\)|^[（(][0-9イアa-z][）)]/.test(line);
+                    
+                    if (isItemStart && processed !== '') {
+                        // 項目頭なら改行を入れる
+                        processed += '\n' + line;
+                    } else {
+                        // それ以外（続きの文など）なら結合する
+                        processed += (processed === '' ? '' : '') + line;
+                    }
+                }
+                
                 const start = this.clauseTextEditor.selectionStart;
                 const end = this.clauseTextEditor.selectionEnd;
                 const current = this.clauseTextEditor.value;
-                this.clauseTextEditor.value = current.substring(0, start) + cleaned + current.substring(end);
-                // カーソルを挿入テキストの末尾に移動
-                this.clauseTextEditor.selectionStart = this.clauseTextEditor.selectionEnd = start + cleaned.length;
+                this.clauseTextEditor.value = current.substring(0, start) + processed + current.substring(end);
+                
+                // カーソル位置の更新
+                this.clauseTextEditor.selectionStart = this.clauseTextEditor.selectionEnd = start + processed.length;
                 this.clauseTextEditor.dispatchEvent(new Event('input'));
             });
         }
