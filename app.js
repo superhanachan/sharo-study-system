@@ -526,8 +526,8 @@ class QuizApp {
             this.clauseTextEditor.addEventListener('paste', (e) => {
                 e.preventDefault();
                 const raw = (e.clipboardData || window.clipboardData).getData('text');
-                // 改行（\r\n, \r, \n）を半角スペースに変換し、連続スペースも整理
-                const cleaned = raw.replace(/[\r\n]+/g, ' ').replace(/[ \t]{2,}/g, ' ');
+                // 改行（\r\n, \r, \n）を除去してそのままつなぐ
+                const cleaned = raw.replace(/[\r\n]+/g, '');
                 const start = this.clauseTextEditor.selectionStart;
                 const end = this.clauseTextEditor.selectionEnd;
                 const current = this.clauseTextEditor.value;
