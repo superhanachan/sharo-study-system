@@ -521,6 +521,23 @@ class QuizApp {
         if (this.deletePageBtn) this.deletePageBtn.addEventListener('click', () => this.deleteCurrentPage());
         if (this.clonePageBtn) this.clonePageBtn.addEventListener('click', () => this.cloneCurrentPage());
 
+        // PDFからのペースト時に改行を自動除去する
+        if (this.clauseTextEditor) {
+            this.clauseTextEditor.addEventListener('paste', (e) => {
+                e.preventDefault();
+                const raw = (e.clipboardData || window.clipboardData).getData('text');
+                // 改行（\r\n, \r, \n）を半角スペースに変換し、連続スペースも整理
+                const cleaned = raw.replace(/[\r\n]+/g, ' ').replace(/[ \t]{2,}/g, ' ');
+                const start = this.clauseTextEditor.selectionStart;
+                const end = this.clauseTextEditor.selectionEnd;
+                const current = this.clauseTextEditor.value;
+                this.clauseTextEditor.value = current.substring(0, start) + cleaned + current.substring(end);
+                // カーソルを挿入テキストの末尾に移動
+                this.clauseTextEditor.selectionStart = this.clauseTextEditor.selectionEnd = start + cleaned.length;
+                this.clauseTextEditor.dispatchEvent(new Event('input'));
+            });
+        }
+
         if (this.insertTableBtn && this.clauseTextEditor) {
             this.insertTableBtn.addEventListener('click', () => {
                 const template = "\n| 項目 | 内容 | 備考 |\n| --- | --- | --- |\n| [[キーワード1]] | 内容1 | 備考1 |\n| [[キーワード2]] | 内容2 | 備考2 |\n| 結合例(横) | > | 備考 |\n| 結合例(縦) | 内容 | 備考 |\n| ^ | 内容 | 備考 |\n";
