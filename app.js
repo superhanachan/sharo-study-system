@@ -107,15 +107,9 @@ class QuizApp {
 
     initRecoveryButtons() {
         const btnForceGh = document.getElementById('force-fetch-gh-btn');
-        const btnAuto = document.getElementById('restore-auto-backup-btn');
-        const btnPreSync = document.getElementById('restore-pre-sync-btn');
-
         const btnForcePushGh = document.getElementById('force-push-gh-btn');
-
         if (btnForceGh) btnForceGh.addEventListener('click', () => this.forceSyncFromGitHub());
         if (btnForcePushGh) btnForcePushGh.addEventListener('click', () => this.forcePushToGitHub());
-        if (btnAuto) btnAuto.addEventListener('click', () => this.restoreFromInternalBackup('sharo_auto_backup'));
-        if (btnPreSync) btnPreSync.addEventListener('click', () => this.restoreFromInternalBackup('sharo_pre_sync_backup'));
     }
 
     async forceSyncFromGitHub() {
@@ -189,25 +183,6 @@ class QuizApp {
         }
     }
 
-    restoreFromInternalBackup(key) {
-        const saved = localStorage.getItem(key);
-        if (!saved) {
-            alert('バックアップデータが見つかりません。');
-            return;
-        }
-        const data = JSON.parse(saved);
-        const dateStr = data.timestamp ? new Date(data.timestamp).toLocaleString() : '不明';
-        if (!confirm(`バックアップ（${dateStr}）から復元しますか？ 現在のデータは上書きされます。`)) return;
-
-        this.quizData = data.quizData;
-        this.questionStats = data.questionStats;
-        this.history = data.history;
-        this.saveData();
-        this.saveQuestionStats();
-        this.saveHistory();
-        alert('バックアップからの復元が完了しました。');
-        location.reload();
-    }
 
     migrateData() {
         let modified = false;
@@ -760,48 +735,6 @@ class QuizApp {
         this.pruneData();
         const dataStr = JSON.stringify(this.quizData);
         localStorage.setItem('sharoQuizData', dataStr);
-
-        // --- ENHANCED PROTECTION ---
-        const currentBackupStr = localStorage.getItem('sharo_auto_backup');
-        if (currentBackupStr) {
-            try {
-                const currentBackup = JSON.parse(currentBackupStr);
-                const currentQuestionCount = this.getTotalQuestionCount(this.quizData);
-                const backupQuestionCount = this.getTotalQuestionCount(currentBackup.quizData || []);
-
-                // If massive shrinkage detected, don't overwrite the auto-backup.
-                if (backupQuestionCount > 100 && currentQuestionCount < (backupQuestionCount * 0.5)) {
-                    console.warn(`Data shrinkage detected (${currentQuestionCount} vs ${backupQuestionCount}). Skipping sharo_auto_backup update.`);
-                    return;
-                }
-            } catch (e) { console.error(e); }
-        }
-
-        // Wrap in try-catch: localStorage may throw QuotaExceededError when data is large.
-        // The main data (sharoQuizData / sharoQuizHistory / sharoQuestionStats) is already
-        // saved above; sharo_auto_backup is supplementary and can be safely skipped.
-        // sharo_auto_backup: history は sharoQuizHistory に独立保存済みのため除外してサイズ削減
-        try {
-            localStorage.setItem('sharo_auto_backup', JSON.stringify({
-                quizData: this.quizData,
-                questionStats: this.questionStats,
-                timestamp: Date.now()
-            }));
-        } catch (storageError) {
-            console.warn('sharo_auto_backup の保存をスキップしました（容量超過）:', storageError.message);
-            // Try to free up space by removing old backup entries
-            try {
-                localStorage.removeItem('sharo_pre_sync_backup');
-                localStorage.setItem('sharo_auto_backup', JSON.stringify({
-                    quizData: this.quizData,
-                    questionStats: this.questionStats,
-                    timestamp: Date.now()
-                }));
-                console.log('sharo_pre_sync_backup を削除して sharo_auto_backup を保存しました。');
-            } catch (retryError) {
-                console.warn('容量超過のため sharo_auto_backup の保存を完全にスキップします。', retryError.message);
-            }
-        }
         localStorage.setItem('sharoLastModified', Date.now());
     }
 
@@ -818,16 +751,10 @@ class QuizApp {
     }
     loadHistory() { const saved = localStorage.getItem('sharoQuizHistory'); return saved ? JSON.parse(saved) : []; }
     saveHistory() {
-        // 履歴が肥大化しないよう最新500件のみ保持
-        if (this.history.length > 500) this.history = this.history.slice(-500);
         try {
             localStorage.setItem('sharoQuizHistory', JSON.stringify(this.history));
         } catch (e) {
-            console.warn('saveHistory: localStorage 容量超過。古い履歴を削除して再試行します。', e.message);
-            try {
-                this.history = this.history.slice(-200);
-                localStorage.setItem('sharoQuizHistory', JSON.stringify(this.history));
-            } catch (e2) { console.error('saveHistory 失敗:', e2.message); }
+            console.warn('saveHistory: localStorage 容量超過。', e.message);
         }
     }
     loadQuestionStats() { const saved = localStorage.getItem('sharoQuestionStats'); return saved ? JSON.parse(saved) : {}; }
@@ -4494,17 +4421,6 @@ class QuizApp {
         console.log('Starting GitHub Sync...');
 
         try {
-            // 0. Create pre-sync backup (wrapped in try-catch for iOS 5MB storage limit)
-            try {
-                // history は sharoQuizHistory に独立保存済みのため除外してサイズ削減
-                localStorage.setItem('sharo_pre_sync_backup', JSON.stringify({
-                    quizData: this.quizData,
-                    questionStats: this.questionStats,
-                    timestamp: Date.now()
-                }));
-            } catch (storageError) {
-                console.warn('Local backup failed due to storage limits. Skipping backup and proceeding with sync.', storageError);
-            }
 
             // 1. Fetch remote data
             this.updateGitHubStatus('データをダウンロード中...');
