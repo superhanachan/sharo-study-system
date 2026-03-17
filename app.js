@@ -4021,7 +4021,7 @@ class QuizApp {
         reader.readAsText(file);
     }
 
-    importFromJSON(jsonString) {
+    async importFromJSON(jsonString) {
         try {
             const data = JSON.parse(jsonString);
             if (!data.quizData) throw new Error('Invalid backup format');
@@ -4128,7 +4128,7 @@ class QuizApp {
 
     // --- Automatic Recovery and Protection ---
 
-    checkAndOfferRecovery(manual = false) {
+    async checkAndOfferRecovery(manual = false) {
         const backupStr = localStorage.getItem('sharo_auto_backup');
         if (!backupStr) {
             if (manual) alert('内部バックアップが見つかりません。');
@@ -4631,19 +4631,47 @@ class QuizApp {
     }
 }
 // ============================================================
+// 自前のIndexedDBラッパー（CDN不要、全ブラウザ対応）
+// ============================================================
+const _sharoIDB = (() => {
+    const DB_NAME = 'sharo-study-db';
+    const STORE  = 'keyval';
+    let _db = null;
+    function open() {
+        if (_db) return Promise.resolve(_db);
+        return new Promise((resolve, reject) => {
+            const req = indexedDB.open(DB_NAME, 1);
+            req.onupgradeneeded = e => e.target.result.createObjectStore(STORE);
+            req.onsuccess  = e => { _db = e.target.result; resolve(_db); };
+            req.onerror    = e => reject(e.target.error);
+        });
+    }
+    return {
+        get: async (key) => {
+            const db = await open();
+            return new Promise((resolve, reject) => {
+                const req = db.transaction(STORE).objectStore(STORE).get(key);
+                req.onsuccess = () => resolve(req.result);
+                req.onerror   = () => reject(req.error);
+            });
+        },
+        set: async (key, val) => {
+            const db = await open();
+            return new Promise((resolve, reject) => {
+                const req = db.transaction(STORE, 'readwrite').objectStore(STORE).put(val, key);
+                req.onsuccess = () => resolve();
+                req.onerror   = () => reject(req.error);
+            });
+        }
+    };
+})();
+
+// ============================================================
 // IndexedDB ベースの初期化（localStorageから自動マイグレーション対応）
 // ============================================================
 async function initApp() {
-    // idb-keyval UMD がロードされ window.idbKeyval として利用可能
-    if (typeof idbKeyval === 'undefined') {
-        console.error('idb-keyval not loaded. Falling back to localStorage.');
-        // Fallback: use localStorage-backed stubs
-        window.idbGet = (k) => Promise.resolve((() => { const s = localStorage.getItem(k); return s ? JSON.parse(s) : undefined; })());
-        window.idbSet = (k, v) => Promise.resolve(localStorage.setItem(k, JSON.stringify(v)));
-    } else {
-        window.idbGet = (k) => idbKeyval.get(k);
-        window.idbSet = (k, v) => idbKeyval.set(k, v);
-    }
+    window.idbGet = k => _sharoIDB.get(k);
+    window.idbSet = (k, v) => _sharoIDB.set(k, v);
 
     // IDBからデータ読み込み
     let [quizData, questionStats] = await Promise.all([
