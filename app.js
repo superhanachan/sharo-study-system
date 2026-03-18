@@ -1989,6 +1989,10 @@ class QuizApp {
             const kwInfo = keywords[i];
             const currentIdx = i;
 
+            const peek = document.createElement('span');
+            peek.className = 'peek-answer';
+            peek.textContent = `(${kwInfo.text})`;
+
             if (kwInfo.type === 'drag') {
                 const blank = document.createElement('div');
                 blank.className = 'clause-blank';
@@ -2078,11 +2082,6 @@ class QuizApp {
                     }
                 }
 
-
-
-                const peek = document.createElement('span');
-                peek.className = 'peek-answer';
-                peek.textContent = `(${kwInfo.text})`;
                 placeholder.replaceWith(blank, peek);
             } else {
                 // Input type
