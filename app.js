@@ -2001,9 +2001,19 @@ class QuizApp {
                 const savedAnswer = this.userAnswers[`${set.id}-${currentIdx}`];
                 blank.dataset.answer = kwInfo.text; // Store correct answer for peek
 
-                // Add streak count to data attribute (always show, strictly per ID)
                 const streak = this.getStreakCount(statKey);
                 blank.dataset.streak = streak;
+
+                if (streak > 0) {
+                    const badge = document.createElement('span');
+                    badge.className = 'streak-badge';
+                    badge.innerHTML = `🔥${streak}`;
+                    badge.onclick = (e) => {
+                        e.stopPropagation();
+                        this.showSRSDetail(statKey);
+                    };
+                    blank.appendChild(badge);
+                }
 
                 if (savedAnswer) {
                     blank.textContent = savedAnswer;
@@ -2086,15 +2096,10 @@ class QuizApp {
                 const isAutoFilled = this.autoFilledAnswers.has(`${set.id}-${currentIdx}`);
                 if (isAutoFilled) input.classList.add('auto-filled');
 
-                // Add streak count to data attribute (always show, strictly per ID)
                 const streak = this.getStreakCount(statKey);
-
+                // restored logic
                 const savedAnswer = this.userAnswers[`${set.id}-${currentIdx}`] || '';
                 input.value = savedAnswer;
-
-                const peek = document.createElement('span');
-                peek.className = 'peek-answer';
-                peek.textContent = `(${kwInfo.text})`;
 
                 if (!this.isChecked) {
                     input.oninput = () => {
@@ -2130,11 +2135,18 @@ class QuizApp {
                 wrapper.className = 'clause-input-wrapper';
                 wrapper.appendChild(input);
 
-                // Add streak count to data attribute for wrapper (always show)
+                // Add streak count badge (always show if > 0)
                 wrapper.dataset.streak = streak;
-
-                // Input labels title only
-
+                if (streak > 0) {
+                    const badge = document.createElement('span');
+                    badge.className = 'streak-badge';
+                    badge.innerHTML = `🔥${streak}`;
+                    badge.onclick = (e) => {
+                        e.stopPropagation();
+                        this.showSRSDetail(statKey);
+                    };
+                    wrapper.appendChild(badge);
+                }
 
                 placeholder.replaceWith(wrapper, peek);
             }
@@ -3259,14 +3271,21 @@ class QuizApp {
                         const wrapper = document.createElement('span');
                         wrapper.className = 'clause-input-wrapper';
 
-                        // Add streak count to data attribute for wrapper (strictly per ID)
+                        // Add streak count badge (strictly per ID)
                         const streak = this.getStreakCount(statKey);
                         wrapper.dataset.streak = streak;
+                        if (streak > 0) {
+                            const badge = document.createElement('span');
+                            badge.className = 'streak-badge';
+                            badge.innerHTML = `🔥${streak}`;
+                            badge.onclick = (e) => {
+                                e.stopPropagation();
+                                this.showSRSDetail(statKey);
+                            };
+                            wrapper.appendChild(badge);
+                        }
 
                         wrapper.appendChild(input);
-
-                        // Label title only
-
 
                         const peek = document.createElement('span');
                         peek.className = 'peek-answer';

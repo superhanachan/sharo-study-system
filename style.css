@@ -2835,7 +2835,7 @@ body.answers-revealed .peek-answer {
 
 body.answers-revealed .clause-blank,
 body.answers-revealed .clause-input-blank {
-    border-color: #f72585 !important;
+        border-color: #f72585 !important;
     box-shadow: 0 0 12px rgba(247, 37, 133, 0.3);
 }
 
@@ -2846,29 +2846,36 @@ body.answers-revealed .clause-input-blank {
     overflow: visible !important;
 }
 
-.clause-blank[data-streak]::after,
+.clause-blank.clause-blank[data-streak]::after,
 .clause-input-wrapper[data-streak]::after {
-    content: '🔥' attr(data-streak);
+    content: none !important; /* Hide the old static fire icon */
+}
+
+/* Ensure streak-badge elements are correctly positioned and clickable */
+.streak-badge {
     position: absolute;
-    top: -20px;
-    /* Move higher to avoid overlap */
-    right: -15px;
-    /* Move further right */
-    font-size: 0.65rem;
-    /* Slightly smaller footprint */
+    top: -24px;
+    right: -10px;
     font-weight: 800;
-    color: #ff9f43;
-    background: rgba(20, 22, 35, 0.9);
-    padding: 0 5px;
-    border-radius: 5px;
-    border: 1px solid rgba(255, 159, 67, 0.4);
+    color: #ffd700; /* Gold/Fire color */
+    background: rgba(0, 0, 0, 0.95);
+    padding: 2px 6px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 215, 0, 0.4);
     white-space: nowrap;
-    z-index: 1000;
-    pointer-events: none;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-    line-height: 1.5;
-    transform: translateY(0);
-    animation: badgeFloat 2s ease-in-out infinite;
+    z-index: 2000;
+    pointer-events: auto !important; /* MUST BE AUTO TO CLICK */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+    line-height: 1;
+    cursor: pointer;
+    font-size: 0.75rem;
+    transition: transform 0.2s ease;
+}
+
+.streak-badge:hover {
+    transform: scale(1.2);
+    background: #ffd700;
+    color: #000;
 }
 
 @keyframes badgeFloat {
