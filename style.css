@@ -2785,25 +2785,27 @@ tr {
 .clause-history-btn {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.6rem;
     padding: 0.6rem 1.2rem;
-    background: rgba(76, 201, 240, 0.1);
-    border: 1px solid rgba(76, 201, 240, 0.3);
+    background: rgba(76, 201, 240, 0.08);
+    border: 1px solid rgba(76, 201, 240, 0.4);
     border-radius: 12px;
-    color: var(--accent);
-    font-size: 0.9rem;
-    font-weight: 600;
+    color: #4cc9f0;
+    font-size: 0.95rem;
+    font-weight: 700;
+    font-family: 'Outfit', sans-serif;
     cursor: pointer;
-    transition: var(--transition);
+    transition: all 0.3s ease;
     margin-bottom: 2rem;
     width: fit-content;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .clause-history-btn:hover {
-    background: rgba(76, 201, 240, 0.2);
-    border-color: var(--accent);
+    background: rgba(76, 201, 240, 0.15);
+    border-color: #4cc9f0;
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(76, 201, 240, 0.2);
+    box-shadow: 0 8px 24px rgba(76, 201, 240, 0.3);
 }
 
 #peek-answers-btn.active {

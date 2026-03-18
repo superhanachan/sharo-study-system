@@ -1924,15 +1924,21 @@ class QuizApp {
         const container = document.createElement('div');
         container.className = 'clause-container';
 
-        // Add history graph button if stats exist
+        // Add history graph button if not in edit mode
         const summaryKey = this.getSummaryStatKey(set.id, 'clause');
-        if (this.questionStats[summaryKey] && !this.isEditMode) {
+        if (!this.isEditMode) {
             const historyBtn = document.createElement('button');
             historyBtn.className = 'clause-history-btn';
             historyBtn.innerHTML = '📈 正答率の推移を確認';
             historyBtn.onclick = () => this.showSRSDetail(summaryKey);
             container.appendChild(historyBtn);
         }
+
+        // Add Title
+        const titleEl = document.createElement('div');
+        titleEl.className = 'clause-title';
+        titleEl.textContent = `【${set.title || '条文'}】`;
+        container.appendChild(titleEl);
 
         const clauseText = document.createElement('div');
         clauseText.className = 'clause-text';
