@@ -1418,7 +1418,6 @@ class QuizApp {
                 this.autoFilledAnswers.delete(item.userId); // Mark as "manually reset" fill
             }
         });
-
         this.isChecked = false; // Return to answering mode (or stay there)
         this.shuffledCache = {}; // Re-shuffle choices
         this.saveAutoFilledAnswers(); // Persist after reset
@@ -1494,8 +1493,8 @@ class QuizApp {
 
 
             // Summary stat for the whole clause
-            // Skip summary update if all blanks were auto-filled OR if any blank was auto-filled (to freeze streak)
-            if (answeredCount > 0 && !hasAnyAutoFill) {
+            // Update summary even if some blanks were auto-filled (honor efficiency)
+            if (answeredCount > 0 || hasAnyAutoFill) {
                 const summaryKey = this.getSummaryStatKey(this.getQuestionBaseId(set.id), 'clause');
                 if (!this.questionStats[summaryKey]) {
                     this.questionStats[summaryKey] = {
@@ -1577,11 +1576,11 @@ class QuizApp {
                     answeredCount += rowAnsweredBlanks;
                     correctCount += rowCorrectBlanks;
                     // For the overall row status/stat, consider it correct only if ALL blanks are correct
-                    // IF ANY BLANKS WERE AUTO-FILLED OR NO BLANKS WERE MANUALLY ANSWERED, skip summary update for this row
-                    if (rowAnsweredBlanks === 0 || rowAutoFilledCount > 0) {
-                        return; // Skip persistent stat update for this row
+                    // Skip persistent stat update ONLY if no blanks were answered at all
+                    if (rowAnsweredBlanks + rowAutoFilledCount === 0) {
+                        return;
                     }
-                    isCorrect = (keywordData.length > 0 && rowAnsweredBlanks === keywordData.length && rowCorrectBlanks === keywordData.length);
+                    isCorrect = (keywordData.length > 0 && (rowAnsweredBlanks + rowAutoFilledCount) === keywordData.length && rowCorrectBlanks + rowAutoFilledCount === keywordData.length);
                 } else {
                     const key = q.id;
                     const userAnswer = this.userAnswers[key];
@@ -1607,7 +1606,6 @@ class QuizApp {
                         }
                     }
 
-                    if (isAutoFilled) return; // Skip persistent stat update if auto-filled
                     if (!userAnswer || (Array.isArray(userAnswer) && userAnswer.length === 0)) return;
                 }
 
