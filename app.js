@@ -4453,7 +4453,9 @@ class QuizApp {
             const keywords = this.extractKeywords(question.text);
             keywords.forEach((kw, idx) => {
                 const key = `${qid}-${idx}`;
-                if (!visibleSet.has(kw.text)) {
+                // Only auto-fill if it's a "drag" keyword that was hidden from the bank.
+                // Numerical inputs (type: 'input') are never part of the bank and should not be auto-filled.
+                if (kw.type === 'drag' && !visibleSet.has(kw.text)) {
                     if (!this.userAnswers[key]) {
                         this.userAnswers[key] = kw.text;
                         this.autoFilledAnswers.add(key);
