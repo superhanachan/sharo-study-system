@@ -1458,14 +1458,14 @@ class QuizApp {
                     return;
                 }
 
-                if (!isAutoFilled) answeredCount++;
+                answeredCount++;
 
                 const isCorrect = kwInfo.type === 'drag'
                     ? userAnswer === kwInfo.text
                     : this.normalizeInput(userAnswer) === this.normalizeInput(kwInfo.text);
 
                 if (isCorrect) {
-                    if (!isAutoFilled) correctCount++;
+                    correctCount++;
                 } else {
                     allBlanksCorrect = false;
                 }
@@ -1493,8 +1493,8 @@ class QuizApp {
 
 
             // Summary stat for the whole clause
-            // Update summary even if some blanks were auto-filled (honor efficiency)
-            if (answeredCount > 0 || hasAnyAutoFill) {
+            // Update summary if any progress was made (honoring efficiency/mastery)
+            if (answeredCount > 0) {
                 const summaryKey = this.getSummaryStatKey(this.getQuestionBaseId(set.id), 'clause');
                 if (!this.questionStats[summaryKey]) {
                     this.questionStats[summaryKey] = {
@@ -1544,12 +1544,12 @@ class QuizApp {
 
                         if (!val) return; // Skip empty answers for both drag and input types
 
-                        if (!isAutoFilled) rowAnsweredBlanks++;
+                        rowAnsweredBlanks++;
                         const isKwCorrect = kwInfo.type === 'drag'
                             ? val === kwInfo.text
                             : this.normalizeInput(val) === this.normalizeInput(kwInfo.text);
                         if (isKwCorrect) {
-                            if (!isAutoFilled) rowCorrectBlanks++;
+                            rowCorrectBlanks++;
                         }
 
                         if (isAutoFilled) return; // Skip stat update if auto-filled
@@ -1576,11 +1576,10 @@ class QuizApp {
                     answeredCount += rowAnsweredBlanks;
                     correctCount += rowCorrectBlanks;
                     // For the overall row status/stat, consider it correct only if ALL blanks are correct
-                    // Skip persistent stat update ONLY if no blanks were answered at all
-                    if (rowAnsweredBlanks + rowAutoFilledCount === 0) {
+                    if (rowAnsweredBlanks === 0) {
                         return;
                     }
-                    isCorrect = (keywordData.length > 0 && (rowAnsweredBlanks + rowAutoFilledCount) === keywordData.length && rowCorrectBlanks + rowAutoFilledCount === keywordData.length);
+                    isCorrect = (keywordData.length > 0 && rowAnsweredBlanks === keywordData.length && rowCorrectBlanks === keywordData.length);
                 } else {
                     const key = q.id;
                     const userAnswer = this.userAnswers[key];
@@ -1602,7 +1601,7 @@ class QuizApp {
                             isCorrect = userAnswer === q.answer;
                         }
                         if (isCorrect) {
-                            if (!isAutoFilled) correctCount++;
+                            correctCount++;
                         }
                     }
 
