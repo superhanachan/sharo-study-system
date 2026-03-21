@@ -758,7 +758,6 @@ class QuizApp {
     }
 
     init() {
-        this.renderTOC();
         // If no specifically saved set, or just starting, show home dashboard
         if (!this.currentSetId) {
             this.loadSet(null);
@@ -2225,10 +2224,7 @@ class QuizApp {
 
         // SRS Due Today (Everything including overdue)
         const now = new Date();
-        const formatDateStr = (d) => {
-            return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-        };
-        const todayStr = formatDateStr(now);
+        const todayStr = this.formatDateStr(now);
 
         // Map for fast pool check (setId -> isInPool, qId -> setId)
         const inPoolSets = new Set();
@@ -2248,7 +2244,7 @@ class QuizApp {
             if (!s.nextReview || !isStatInActivePool(key)) return false;
             if (key.startsWith('clause-') && !key.startsWith('clause-summary-')) return false;
             const reviewDate = new Date(s.nextReview);
-            return formatDateStr(reviewDate) <= todayStr;
+            return this.formatDateStr(reviewDate) <= todayStr;
         }).length;
 
         // Current Due NOW (for the active learning buttons)
@@ -2261,12 +2257,12 @@ class QuizApp {
         // SRS Due Tomorrow calculation (Specific to that day, to match the bar)
         const tomorrow = new Date(now);
         tomorrow.setDate(tomorrow.getDate() + 1);
-        const tomorrowStr = formatDateStr(tomorrow);
+        const tomorrowStr = this.formatDateStr(tomorrow);
 
         const tomorrowSpecificCount = Object.entries(this.questionStats).filter(([key, s]) => {
             if (!s.nextReview || !isStatInActivePool(key)) return false;
             if (key.startsWith('clause-') && !key.startsWith('clause-summary-')) return false;
-            return formatDateStr(new Date(s.nextReview)) === tomorrowStr;
+            return this.formatDateStr(new Date(s.nextReview)) === tomorrowStr;
         }).length;
 
         // Update UI
@@ -2357,6 +2353,9 @@ class QuizApp {
 
         // Always update projection chart when dashboard updates
         this.renderSrsProjectionChart();
+
+        // Update sidebar counts
+        this.renderTOC();
     }
 
     renderSrsProjectionChart() {
@@ -3486,6 +3485,73 @@ class QuizApp {
         }
     }
 
+    formatDateStr(d) {
+        return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    }
+
+    getDueCountMap() {
+        const now = new Date();
+        const todayStr = this.formatDateStr(now);
+        const counts = {};
+
+        const inPoolSets = new Set();
+        const qToSet = new Map();
+        this.quizData.forEach(set => {
+            if (set.isInPool !== false) inPoolSets.add(set.id);
+            if (set.questions) set.questions.forEach(q => qToSet.set(q.id, set.id));
+        });
+
+        const isStatInActivePool = (key) => {
+            if (key.startsWith('clause-summary-')) return inPoolSets.has(key.replace('clause-summary-', ''));
+            if (qToSet.has(key)) return inPoolSets.has(qToSet.get(key));
+            return inPoolSets.has(key);
+        };
+
+        Object.entries(this.questionStats).forEach(([key, s]) => {
+            if (!s.nextReview || !isStatInActivePool(key)) return;
+            if (key.startsWith('clause-') && !key.startsWith('clause-summary-')) return;
+            
+            if (this.formatDateStr(new Date(s.nextReview)) <= todayStr) {
+                let itemId = s.pageId;
+                if (!itemId) {
+                    if (key.startsWith('clause-summary-')) itemId = key.replace('clause-summary-', '');
+                    else itemId = key;
+                }
+                counts[itemId] = (counts[itemId] || 0) + 1;
+            }
+        });
+        return counts;
+    }
+
+    calculateAllDueCounts() {
+        const itemDueMap = this.getDueCountMap();
+        const allDueCounts = {};
+        
+        const childrenMap = {};
+        this.quizData.forEach(item => {
+            const pid = item.parentId || 'root';
+            if (!childrenMap[pid]) childrenMap[pid] = [];
+            childrenMap[pid].push(item);
+        });
+
+        const walk = (parentId) => {
+            let total = 0;
+            const children = childrenMap[parentId || 'root'] || [];
+            children.forEach(item => {
+                if (item.type === 'folder') {
+                    total += walk(item.id);
+                } else {
+                    total += (itemDueMap[item.id] || 0);
+                }
+            });
+            if (parentId) allDueCounts[parentId] = total;
+            return total;
+        };
+
+        walk(null);
+        return { itemDueMap, allDueCounts };
+    }
+
     renderTOC() {
         // Build a flat list in order of display (DFS)
         const getFlatDisplayList = (parentId = null, depth = 0) => {
@@ -3502,6 +3568,7 @@ class QuizApp {
         };
 
         const list = getFlatDisplayList(null, 0);
+        const { itemDueMap, allDueCounts } = this.calculateAllDueCounts();
 
         this.tocList.innerHTML = list.map(s => {
             const isFolder = s.type === 'folder';
@@ -3531,6 +3598,8 @@ class QuizApp {
                     <a href="#${s.id}" draggable="false" onclick="if('${isFolder}' === 'true') { event.preventDefault(); app.toggleFolder('${s.id}'); }">
                         ${s.title}
                     </a>
+                    ${(isFolder && allDueCounts[s.id] > 0) ? `<span class="folder-due-badge" title="本日の復習待ち">${allDueCounts[s.id]}</span>` : ''}
+                    ${(!isFolder && itemDueMap[s.id] > 0) ? `<span class="folder-due-badge" title="本日の復習待ち">${itemDueMap[s.id]}</span>` : ''}
                     <div class="reorder-btns">
                         <button class="reorder-btn" onclick="event.stopPropagation(); app.movePageById('${s.id}', -1)">▲</button>
                         <button class="reorder-btn" onclick="event.stopPropagation(); app.movePageById('${s.id}', 1)">▼</button>
