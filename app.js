@@ -373,6 +373,7 @@ class QuizApp {
         this.historyBody = document.getElementById('history-body');
         this.weakQuestionsBody = document.getElementById('weak-questions-body');
         this.genWeakBtn = document.getElementById('gen-weak-btn');
+        this.genStagnantBtn = document.getElementById('gen-stagnant-btn');
         this.genWeakClauseBtn = document.getElementById('gen-weak-clause-btn');
         this.genRareBtn = document.getElementById('gen-rare-btn');
         this.genRandomBtn = document.getElementById('gen-random-btn');
@@ -577,6 +578,7 @@ class QuizApp {
         }
 
         if (this.genWeakBtn) this.genWeakBtn.addEventListener('click', () => this.generateSpecialQuiz('weak'));
+        if (this.genStagnantBtn) this.genStagnantBtn.addEventListener('click', () => this.generateSpecialQuiz('stagnant'));
         if (this.genWeakClauseBtn) {
             this.genWeakClauseBtn.addEventListener('click', () => this.generateSpecialQuiz('clause-weak'));
         }
@@ -2792,6 +2794,7 @@ class QuizApp {
                         accuracy: accuracy,
                         total: stat.total,
                         nextReview: stat.nextReview,
+                        srsLevel: stat.srsLevel || 0,
                         isMultiSelect: set.isMultiSelect
                     });
                 });
@@ -2814,6 +2817,7 @@ class QuizApp {
                     accuracy: accuracy,
                     total: stat.total,
                     nextReview: stat.nextReview,
+                    srsLevel: stat.srsLevel || 0,
                     isMultiSelect: false
                 });
             }
@@ -2844,6 +2848,22 @@ class QuizApp {
             }
             // Pick from the top 10 worst clauses and shuffle for variety
             filtered = candidates.slice(0, 10).sort(() => Math.random() - 0.5).slice(0, 3);
+        } else if (type === 'stagnant') {
+            title = "特訓：攻略難航中の問題10問";
+            // Get questions with many answers but low mastery
+            const candidates = allQuestions.filter(q => q.total >= 3).sort((a, b) => {
+                // Score by answers / (level + 1). Higher score means more answers for lower level.
+                const scoreA = a.total / ((a.srsLevel || 0) + 1);
+                const scoreB = b.total / ((b.srsLevel || 0) + 1);
+                if (scoreA !== scoreB) return scoreB - scoreA;
+                return b.total - a.total; // Tie-breaker: higher total
+            });
+            if (candidates.length === 0) {
+                alert('現在、攻略難航中の問題は見つかりませんでした。まだ解答数が少ないかもしれません。');
+                return;
+            }
+            // Pick and slightly shuffle for variety
+            filtered = candidates.slice(0, 20).sort(() => Math.random() - 0.5).slice(0, 10);
         } else if (type.startsWith('srs')) {
             const mode = type.split('-')[1];
             title = mode === 'clause' ? "特訓：忘却曲線（条文穴埋め）" : "特訓：忘却曲線（選択式）";
