@@ -372,6 +372,7 @@ class QuizApp {
         this.totalAnsweredDisplay = document.getElementById('total-answered');
         this.historyBody = document.getElementById('history-body');
         this.weakQuestionsBody = document.getElementById('weak-questions-body');
+        this.stagnantQuestionsBody = document.getElementById('stagnant-questions-body');
         this.genWeakBtn = document.getElementById('gen-weak-btn');
         this.genStagnantBtn = document.getElementById('gen-stagnant-btn');
         this.genWeakClauseBtn = document.getElementById('gen-weak-clause-btn');
@@ -1724,7 +1725,8 @@ class QuizApp {
         if (this.history.length === 0) {
             this.totalAccuracy.textContent = "0%"; this.totalAnsweredDisplay.textContent = "0";
             this.historyBody.innerHTML = '<tr><td colspan="4">履歴がありません</td></tr>';
-            this.weakQuestionsBody.innerHTML = '<tr><td colspan="4">データがありません</td></tr>';
+            this.weakQuestionsBody.innerHTML = '<tr><td colspan="5">データがありません</td></tr>';
+            this.stagnantQuestionsBody.innerHTML = '<tr><td colspan="5">データがありません</td></tr>';
             return;
         }
 
@@ -1783,6 +1785,45 @@ class QuizApp {
                 <td>${srsStatus}</td>
             </tr>`;
         }).join('');
+
+        // 攻略難航中の問題（抽出ロジックを追加）
+        const stagnantArray = Object.entries(this.questionStats).map(([id, s]) => {
+            const recent = s.recent || [];
+            const rTotal = recent.length;
+            const rCorrect = recent.reduce((a, b) => a + b, 0);
+            const accuracy = rTotal > 0 ? Math.round((rCorrect / rTotal) * 100) : 0;
+            const srsLevel = s.srsLevel || 0;
+            const stagnantScore = s.total / (srsLevel + 1);
+
+            let pageId = s.pageId;
+            if (!pageId) {
+                if (id.startsWith('clause-summary-')) pageId = id.replace('clause-summary-', '');
+                else if (id.startsWith('clause-')) {
+                    const parts = id.split('-');
+                    if (parts.length >= 3) pageId = parts[1];
+                } else {
+                    const foundSet = this.quizData.find(st => st.questions && st.questions.some(q => q.id === id));
+                    if (foundSet) pageId = foundSet.id;
+                }
+            }
+            return { ...s, id, pageId, accuracy, stagnantScore, srsLevel };
+        })
+        .filter(s => s.total >= 3) // ある程度回答しているものに限定
+        .sort((a, b) => b.stagnantScore - a.stagnantScore)
+        .slice(0, 10);
+
+        this.stagnantQuestionsBody.innerHTML = stagnantArray.map(s => {
+            return `<tr>
+                <td style="text-align: left;">
+                    <span class="question-link" onclick="app.navigateToQuestion('${s.pageId}')">${s.text}</span>
+                    <span class="history-icon-btn" onclick="app.showSRSDetail('${s.id}')" title="記憶定着の推移を見る">📈</span>
+                </td>
+                <td>${s.page}</td>
+                <td>${s.total}回</td>
+                <td><span class="srs-badge level-${s.srsLevel}">Lv.${s.srsLevel}</span></td>
+                <td style="color: ${s.accuracy < 50 ? 'var(--error)' : 'var(--text-primary)'}">${s.accuracy}%</td>
+            </tr>`;
+        }).join('') || '<tr><td colspan="5">条件に合う問題がまだありません</td></tr>';
 
         // Sync auto-fill UI settings
         if (this.autoFillToggle) this.autoFillToggle.checked = this.autoFillEnabled;
