@@ -2799,7 +2799,7 @@ class QuizApp {
                     });
                 });
             } else if (set.type === 'clause' && set.text) {
-                if (type !== 'clause-weak' && !isSrs && type !== 'rare' && type !== 'random') return;
+                if (!type.includes('weak') && !isSrs && type !== 'rare' && type !== 'random' && type !== 'stagnant') return;
                 if (isSrs && targetType !== 'clause') return;
 
                 const statKey = `clause-summary-${set.id}`;
