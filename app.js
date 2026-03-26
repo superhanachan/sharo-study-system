@@ -382,6 +382,7 @@ class QuizApp {
         this.genSRSPageBtn = document.getElementById('gen-srs-page-btn');
         this.sidebarGenSRSClauseBtn = document.getElementById('sidebar-gen-srs-clause-btn');
         this.sidebarGenSRSPageBtn = document.getElementById('sidebar-gen-srs-page-btn');
+        this.sidebarGenStagnantBtn = document.getElementById('sidebar-gen-stagnant-btn');
 
         this.chartBtns = {
             accuracy: document.getElementById('show-accuracy-btn'),
@@ -579,15 +580,8 @@ class QuizApp {
         }
 
         if (this.genWeakBtn) this.genWeakBtn.addEventListener('click', () => this.generateSpecialQuiz('weak'));
-        if (this.genStagnantBtn) this.genStagnantBtn.addEventListener('click', () => {
-            this.switchView('stats');
-            const target = document.getElementById('stagnant-questions-section');
-            if (target) {
-                target.scrollIntoView({ behavior: 'smooth' });
-                target.style.outline = '2px solid #e63946';
-                setTimeout(() => target.style.outline = 'none', 2000);
-            }
-        });
+        if (this.genStagnantBtn) this.genStagnantBtn.addEventListener('click', () => this.scrollToStagnantList());
+        if (this.sidebarGenStagnantBtn) this.sidebarGenStagnantBtn.addEventListener('click', () => this.scrollToStagnantList());
         if (this.genWeakClauseBtn) {
             this.genWeakClauseBtn.addEventListener('click', () => this.generateSpecialQuiz('clause-weak'));
         }
@@ -2262,6 +2256,17 @@ class QuizApp {
                 });
             }
         }
+    }
+
+    scrollToStagnantList() {
+        this.switchView('stats');
+        const target = document.getElementById('stagnant-questions-section');
+        if (target) {
+            target.scrollIntoView({ behavior: 'smooth' });
+            target.style.outline = '2px solid #e63946';
+            setTimeout(() => target.style.outline = 'none', 2000);
+        }
+        if (this.sidebar) this.sidebar.classList.remove('open');
     }
 
     updateDashboard() {
