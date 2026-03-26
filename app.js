@@ -579,7 +579,15 @@ class QuizApp {
         }
 
         if (this.genWeakBtn) this.genWeakBtn.addEventListener('click', () => this.generateSpecialQuiz('weak'));
-        if (this.genStagnantBtn) this.genStagnantBtn.addEventListener('click', () => this.generateSpecialQuiz('stagnant'));
+        if (this.genStagnantBtn) this.genStagnantBtn.addEventListener('click', () => {
+            this.switchView('stats');
+            const target = document.getElementById('stagnant-questions-section');
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth' });
+                target.style.outline = '2px solid #e63946';
+                setTimeout(() => target.style.outline = 'none', 2000);
+            }
+        });
         if (this.genWeakClauseBtn) {
             this.genWeakClauseBtn.addEventListener('click', () => this.generateSpecialQuiz('clause-weak'));
         }
