@@ -1812,7 +1812,7 @@ class QuizApp {
         })
         .filter(s => s.total >= 3) // ある程度回答しているものに限定
         .sort((a, b) => b.stagnantScore - a.stagnantScore)
-        .slice(0, 10);
+        .slice(0, 100);
 
         this.stagnantQuestionsBody.innerHTML = stagnantArray.map(s => {
             return `<tr>
