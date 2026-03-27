@@ -1,4 +1,4 @@
-﻿:root {
+:root {
     --bg-dark: #0f1117;
     --bg-card: rgba(30, 32, 45, 0.7);
     --text-primary: #ffffff;
@@ -1299,7 +1299,7 @@ th:hover {
 }
 
 th::after {
-    content: '竊・;
+    content: '↕';
     position: absolute;
     right: 0.5rem;
     opacity: 0.3;
@@ -1307,13 +1307,13 @@ th::after {
 }
 
 th.sort-asc::after {
-    content: '竊・;
+    content: '↑';
     opacity: 1;
     color: var(--accent);
 }
 
 th.sort-desc::after {
-    content: '竊・;
+    content: '↓';
     opacity: 1;
     color: var(--accent);
 }
@@ -3000,4 +3000,21 @@ body.answers-revealed .clause-input-blank {
     background: #1e202d !important;
     z-index: 20 !important;
     border-bottom: 2px solid var(--accent) !important;
+}
+
+.sort-icon {
+    margin-left: 0.3rem;
+    font-size: 0.7rem;
+    vertical-align: middle;
+    display: inline-block;
+    transition: transform 0.2s;
+    opacity: 0.8;
+}
+
+th[onclick] {
+    user-select: none;
+}
+
+th[onclick]:hover {
+    background: rgba(255, 255, 255, 0.05) !important;
 }

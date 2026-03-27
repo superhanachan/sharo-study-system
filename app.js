@@ -56,6 +56,9 @@ class QuizApp {
         this.sortColumnIndex = -1;
         this.sortDirection = 1;
 
+        this.stagnantSortKey = 'stagnantScore'; // Default sorting
+        this.stagnantSortOrder = -1; // -1 for desc, 1 for asc
+
         this.chartMode = 'accuracy';
         this.statsChart = null;
         this.srsProjectionChart = null;
@@ -1811,8 +1814,31 @@ class QuizApp {
             return { ...s, id, pageId, accuracy, stagnantScore, srsLevel };
         })
         .filter(s => s.total >= 3) // ある程度回答しているものに限定
-        .sort((a, b) => b.stagnantScore - a.stagnantScore)
+        .sort((a, b) => {
+            const valA = a[this.stagnantSortKey];
+            const valB = b[this.stagnantSortKey];
+            if (valA < valB) return this.stagnantSortOrder;
+            if (valA > valB) return -this.stagnantSortOrder;
+            return 0;
+        })
         .slice(0, 100);
+
+        // Update Sort Icons in headers
+        ['total', 'srsLevel', 'accuracy'].forEach(key => {
+            const el = document.getElementById(`stagnant-sort-${key}`);
+            if (el) {
+                const icon = el.querySelector('.sort-icon');
+                if (icon) {
+                    if (this.stagnantSortKey === key) {
+                        icon.textContent = this.stagnantSortOrder === 1 ? '▲' : '▼';
+                        icon.style.opacity = '1';
+                    } else {
+                        icon.textContent = '';
+                        icon.style.opacity = '0.3';
+                    }
+                }
+            }
+        });
 
         this.stagnantQuestionsBody.innerHTML = stagnantArray.map(s => {
             return `<tr>
@@ -1833,6 +1859,16 @@ class QuizApp {
 
         this.updateChartTabs(); this.renderChart();
         this.renderUnderstandingMap();
+    }
+
+    sortStagnant(key) {
+        if (this.stagnantSortKey === key) {
+            this.stagnantSortOrder *= -1;
+        } else {
+            this.stagnantSortKey = key;
+            this.stagnantSortOrder = -1; // New key defaults to descending
+        }
+        this.renderStats();
     }
 
     updateChartTabs() { Object.keys(this.chartBtns).forEach(mode => { this.chartBtns[mode].classList.toggle('active', this.chartMode === mode); }); }

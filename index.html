@@ -468,9 +468,9 @@
                                 <tr>
                                     <th>問題文</th>
                                     <th>ページ</th>
-                                    <th>解答数</th>
-                                    <th>習熟Lv</th>
-                                    <th>正答率</th>
+                                    <th onclick="app.sortStagnant('total')" style="cursor: pointer;" id="stagnant-sort-total">解答数 <span class="sort-icon"></span></th>
+                                    <th onclick="app.sortStagnant('srsLevel')" style="cursor: pointer;" id="stagnant-sort-srsLevel">習熟Lv <span class="sort-icon"></span></th>
+                                    <th onclick="app.sortStagnant('accuracy')" style="cursor: pointer;" id="stagnant-sort-accuracy">正答率 <span class="sort-icon"></span></th>
                                 </tr>
                             </thead>
                             <tbody id="stagnant-questions-body"></tbody>
