@@ -1747,13 +1747,8 @@ class QuizApp {
 
         this.historyBody.innerHTML = this.history.map(h => `<tr><td>${h.timestamp}</td><td><span class="question-link" onclick="app.navigateToQuestion('${h.pageId}')">${h.page}</span></td><td>${h.score}</td><td>${h.accuracy}%</td></tr>`).join('');
 
-        const statsArray = Object.entries(this.questionStats).map(([id, s]) => {
-            const recent = s.recent || [];
-            const rTotal = recent.length;
-            const rCorrect = recent.reduce((a, b) => a + b, 0);
-            const accuracy = rTotal > 0 ? Math.round((rCorrect / rTotal) * 100) : 0;
-
-            // Get pageId (fallback for old data)
+        const statsGrouped = {};
+        Object.entries(this.questionStats).forEach(([id, s]) => {
             let pageId = s.pageId;
             if (!pageId) {
                 if (id.startsWith('clause-summary-')) pageId = id.replace('clause-summary-', '');
@@ -1765,8 +1760,52 @@ class QuizApp {
                     if (foundSet) pageId = foundSet.id;
                 }
             }
+            if (!pageId) return;
 
-            return { ...s, id, pageId, accuracy, rTotal, rCorrect };
+            if (!statsGrouped[pageId]) {
+                const pageSet = this.quizData.find(p => p.id === pageId);
+                statsGrouped[pageId] = {
+                    id: id, // Default to current id
+                    pageId: pageId,
+                    text: pageSet ? pageSet.title : (s.page || '不明なページ'),
+                    page: s.page || '',
+                    total: 0,
+                    correct: 0,
+                    srsLevelSum: 0,
+                    srsLevelCount: 0,
+                    nextReview: null
+                };
+            }
+            const g = statsGrouped[pageId];
+            g.total += (s.total || 0);
+            g.correct += (s.correct || 0);
+
+            // 習熟度（未設定なら履歴から推論）
+            let srsLevel = s.srsLevel || 0;
+            if (srsLevel === 0 && s.history && s.history.length > 0) {
+                s.history.forEach(h => {
+                    if (h.isCorrect) srsLevel = Math.min(srsLevel + 1, SRS_INTERVALS.length - 1);
+                    else srsLevel = Math.max(0, srsLevel - 2);
+                });
+            }
+            g.srsLevelSum += srsLevel;
+            g.srsLevelCount++;
+            
+            // Prefer summary stat for nextReview and metadata
+            if (id.startsWith('clause-summary-') || (!id.includes('-') && !id.startsWith('clause'))) {
+                g.id = id;
+                g.nextReview = s.nextReview;
+                if (s.text) g.text = s.text;
+                if (s.page) g.page = s.page;
+            } else if (!g.nextReview) {
+                g.nextReview = s.nextReview;
+            }
+        });
+
+        const statsArray = Object.values(statsGrouped).map(g => {
+            const accuracy = g.total > 0 ? Math.round((g.correct / g.total) * 100) : 0;
+            const srsLevel = Math.round(g.srsLevelSum / g.srsLevelCount);
+            return { ...g, accuracy, srsLevel };
         }).filter(s => s.total > 0).sort((a, b) => {
             if (a.accuracy !== b.accuracy) return a.accuracy - b.accuracy;
             return a.total - b.total;
