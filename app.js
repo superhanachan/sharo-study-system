@@ -1791,26 +1791,9 @@ class QuizApp {
             </tr>`;
         }).join('');
 
-        // 攻略難航中の問題（抽出ロジックを追加）
-        const stagnantArray = Object.entries(this.questionStats).map(([id, s]) => {
-            const recent = s.recent || [];
-            const rTotal = recent.length;
-            const rCorrect = recent.reduce((a, b) => a + b, 0);
-            const accuracy = rTotal > 0 ? Math.round((rCorrect / rTotal) * 100) : 0;
-            
-            // 習熟度（未設定なら履歴から推論を試みる）
-            let srsLevel = s.srsLevel || 0;
-            const history = s.history || [];
-            if (srsLevel === 0 && history.length > 0) {
-                // 履歴からレベルを再計算（物理的な不整合を防ぐ）
-                history.forEach(h => {
-                    if (h.isCorrect) srsLevel = Math.min(srsLevel + 1, SRS_INTERVALS.length - 1);
-                    else srsLevel = Math.max(0, srsLevel - 2);
-                });
-            }
-
-            const stagnantScore = s.total / (srsLevel + 1);
-
+        // 攻略難航中の問題（抽出ロジックを追加：ページ単位で集計）
+        const groupedStats = {};
+        Object.entries(this.questionStats).forEach(([id, s]) => {
             let pageId = s.pageId;
             if (!pageId) {
                 if (id.startsWith('clause-summary-')) pageId = id.replace('clause-summary-', '');
@@ -1822,7 +1805,56 @@ class QuizApp {
                     if (foundSet) pageId = foundSet.id;
                 }
             }
-            return { ...s, id, pageId, accuracy, stagnantScore, srsLevel };
+            if (!pageId) return;
+
+            if (!groupedStats[pageId]) {
+                const pageSet = this.quizData.find(p => p.id === pageId);
+                groupedStats[pageId] = {
+                    id: pageId,
+                    text: pageSet ? pageSet.title : (s.page || '不明なページ'),
+                    page: s.page || '',
+                    total: 0,
+                    correct: 0,
+                    srsLevelSum: 0,
+                    srsLevelCount: 0,
+                    modalKey: id // 後で詳細を表示するために1つ保持
+                };
+            }
+            const g = groupedStats[pageId];
+            g.total += (s.total || 0);
+            g.correct += (s.correct || 0);
+
+            // 習熟度（未設定なら履歴から推論）
+            let srsLevel = s.srsLevel || 0;
+            if (srsLevel === 0 && s.history && s.history.length > 0) {
+                s.history.forEach(h => {
+                    if (h.isCorrect) srsLevel = Math.min(srsLevel + 1, SRS_INTERVALS.length - 1);
+                    else srsLevel = Math.max(0, srsLevel - 2);
+                });
+            }
+            g.srsLevelSum += srsLevel;
+            g.srsLevelCount++;
+
+            // 条文全体などのサマリースタットがあれば優先的に詳細用キーにする
+            if (id.startsWith('clause-summary-') || (!id.includes('-') && !id.startsWith('clause'))) {
+                g.modalKey = id;
+                if (s.text) g.text = s.text;
+                if (s.page) g.page = s.page;
+            }
+        });
+
+        const stagnantArray = Object.values(groupedStats).map(g => {
+            const accuracy = g.total > 0 ? Math.round((g.correct / g.total) * 100) : 0;
+            const srsLevel = Math.round(g.srsLevelSum / g.srsLevelCount);
+            const stagnantScore = g.total / (srsLevel + 1);
+            return {
+                ...g,
+                id: g.modalKey,
+                pageId: g.id,
+                accuracy,
+                srsLevel,
+                stagnantScore
+            };
         })
         .filter(s => s.total >= 3) // ある程度回答しているものに限定
         .sort((a, b) => {
