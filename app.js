@@ -1797,7 +1797,18 @@ class QuizApp {
             const rTotal = recent.length;
             const rCorrect = recent.reduce((a, b) => a + b, 0);
             const accuracy = rTotal > 0 ? Math.round((rCorrect / rTotal) * 100) : 0;
-            const srsLevel = s.srsLevel || 0;
+            
+            // 習熟度（未設定なら履歴から推論を試みる）
+            let srsLevel = s.srsLevel || 0;
+            const history = s.history || [];
+            if (srsLevel === 0 && history.length > 0) {
+                // 履歴からレベルを再計算（物理的な不整合を防ぐ）
+                history.forEach(h => {
+                    if (h.isCorrect) srsLevel = Math.min(srsLevel + 1, SRS_INTERVALS.length - 1);
+                    else srsLevel = Math.max(0, srsLevel - 2);
+                });
+            }
+
             const stagnantScore = s.total / (srsLevel + 1);
 
             let pageId = s.pageId;
