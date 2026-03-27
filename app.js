@@ -1795,6 +1795,7 @@ class QuizApp {
             if (id.startsWith('clause-summary-') || (!id.includes('-') && !id.startsWith('clause'))) {
                 g.id = id;
                 g.nextReview = s.nextReview;
+                g.summarySrsLevel = srsLevel; // このレベルを最優先で使用
                 if (s.text) g.text = s.text;
                 if (s.page) g.page = s.page;
             } else if (!g.nextReview) {
@@ -1804,7 +1805,8 @@ class QuizApp {
 
         const statsArray = Object.values(statsGrouped).map(g => {
             const accuracy = g.total > 0 ? Math.round((g.correct / g.total) * 100) : 0;
-            const srsLevel = Math.round(g.srsLevelSum / g.srsLevelCount);
+            // ページ単位の習熟度は、サマリー統計があればその値を、なけば平均を使用する
+            const srsLevel = g.summarySrsLevel !== undefined ? g.summarySrsLevel : Math.round(g.srsLevelSum / g.srsLevelCount);
             return { ...g, accuracy, srsLevel };
         }).filter(s => s.total > 0).sort((a, b) => {
             if (a.accuracy !== b.accuracy) return a.accuracy - b.accuracy;
@@ -1877,6 +1879,7 @@ class QuizApp {
             // 条文全体などのサマリースタットがあれば優先的に詳細用キーにする
             if (id.startsWith('clause-summary-') || (!id.includes('-') && !id.startsWith('clause'))) {
                 g.modalKey = id;
+                g.summarySrsLevel = srsLevel; // このレベルを最優先で使用
                 if (s.text) g.text = s.text;
                 if (s.page) g.page = s.page;
             }
@@ -1884,7 +1887,8 @@ class QuizApp {
 
         const stagnantArray = Object.values(groupedStats).map(g => {
             const accuracy = g.total > 0 ? Math.round((g.correct / g.total) * 100) : 0;
-            const srsLevel = Math.round(g.srsLevelSum / g.srsLevelCount);
+            // ページ単位の習熟度は、サマリー統計があればその値を、なけば平均を使用する
+            const srsLevel = g.summarySrsLevel !== undefined ? g.summarySrsLevel : Math.round(g.srsLevelSum / g.srsLevelCount);
             const stagnantScore = g.total / (srsLevel + 1);
             return {
                 ...g,
