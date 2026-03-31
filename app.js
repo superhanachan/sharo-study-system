@@ -325,8 +325,8 @@ class QuizApp {
         this.isChecked = false;
         this.shuffledCache = {};
 
-        if (modified) this.saveData();
-        this.saveQuestionStats();
+        if (modified) this.saveData(false);
+        this.saveQuestionStats(false);
     }
 
     cacheDOM() {
@@ -786,7 +786,7 @@ class QuizApp {
     }
 
     loadData() { return JSON.parse(JSON.stringify(DEFAULT_QUIZ_DATA)); } // kept for compatibility; data is loaded via IDB in initApp()
-    saveData() {
+    saveData(shouldUpdateTimestamp = true) {
         if (!this.quizData || this.quizData.length === 0) {
             console.error("Attempted to save empty quiz data. Aborting save for safety.");
             return;
@@ -794,7 +794,9 @@ class QuizApp {
         this.pruneData();
         // Write to IndexedDB (async, non-blocking fire-and-forget)
         window.idbSet('sharoQuizData', this.quizData).catch(e => console.error('IDB saveData error:', e));
-        localStorage.setItem('sharoLastModified', Date.now());
+        if (shouldUpdateTimestamp) {
+            localStorage.setItem('sharoLastModified', Date.now());
+        }
     }
 
     // Awaitable version for use before location.reload()
@@ -829,10 +831,13 @@ class QuizApp {
         }
     }
     loadQuestionStats() { return {}; } // kept for compatibility; data loaded via IDB in initApp()
-    saveQuestionStats() {
+    saveQuestionStats(shouldUpdateTimestamp = false) {
         this.pruneData();
         // Write to IndexedDB (async, non-blocking fire-and-forget)
         window.idbSet('sharoQuestionStats', this.questionStats).catch(e => console.error('IDB saveQuestionStats error:', e));
+        if (shouldUpdateTimestamp) {
+            localStorage.setItem('sharoLastModified', Date.now());
+        }
     }
 
     pruneData() {
@@ -1708,7 +1713,7 @@ class QuizApp {
             this.saveHistory();
         }
 
-        this.saveQuestionStats(); this.renderTable();
+        this.saveQuestionStats(true); this.renderTable();
         this.updateDashboard();
 
         if (set.type === 'clause') {
@@ -4766,6 +4771,153 @@ class QuizApp {
         });
     }
 
+    mergeStats(local, remote) {
+        const merged = JSON.parse(JSON.stringify(remote));
+        for (const [key, lStat] of Object.entries(local)) {
+            if (!merged[key]) {
+                merged[key] = lStat;
+            } else {
+                const rStat = merged[key];
+                if (lStat.history && rStat.history) {
+                    const combined = [...lStat.history, ...rStat.history];
+                    const unique = [];
+                    const seen = new Set();
+                    combined.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(h => {
+                        if (!seen.has(h.date)) {
+                            unique.push(h); seen.add(h.date);
+                        }
+                    });
+                    rStat.history = unique.slice(0, 50);
+                    rStat.total = unique.length;
+                    rStat.correct = unique.filter(h => h.isCorrect).length;
+                } else {
+                    if ((lStat.total || 0) > (rStat.total || 0)) {
+                        rStat.total = lStat.total;
+                        rStat.correct = lStat.correct;
+                        if (lStat.recent) rStat.recent = lStat.recent;
+                    }
+                }
+                if (lStat.nextReview && (!rStat.nextReview || new Date(lStat.nextReview) > new Date(rStat.nextReview))) {
+                    rStat.nextReview = lStat.nextReview;
+                    rStat.srsLevel = lStat.srsLevel;
+                }
+            }
+        }
+        return merged;
+    }
+
+    mergeHistory(local, remote) {
+        const combined = [...local, ...remote];
+        const unique = [];
+        const seen = new Set();
+        combined.sort((a, b) => new Date(b.isoDate || 0) - new Date(a.isoDate || 0)).forEach(h => {
+            const key = (h.isoDate || h.timestamp) + h.pageId;
+            if (!seen.has(key)) {
+                unique.push(h); seen.add(key);
+            }
+        });
+        return unique.slice(0, 50);
+    }
+
+    async syncWithGitHub() {
+        const config = JSON.parse(localStorage.getItem('sharoGitHubConfig') || '{}');
+        if (!config.token || !config.repo) {
+            alert('GitHubの設定（トークンとリポジトリ）を先に保存してください。');
+            return;
+        }
+
+        const forceRepaint = () => new Promise(resolve => setTimeout(resolve, 100));
+        if (this.ghSyncNowBtn) { this.ghSyncNowBtn.disabled = true; this.ghSyncNowBtn.textContent = '同期中...'; }
+        if (this.sidebarGhSyncBtn) { this.sidebarGhSyncBtn.disabled = true; this.sidebarGhSyncBtn.textContent = '同期中...'; }
+        this.updateGitHubStatus('同期中...');
+
+        try {
+            // Pre-sync backup
+            const backupData = { quizData: this.quizData, questionStats: this.questionStats, history: this.history };
+            await window.idbSet('sharoBackupBeforeSync', { data: backupData, date: Date.now() });
+
+            this.updateGitHubStatus('データをダウンロード中...');
+            await forceRepaint();
+            const remote = await this.fetchFromGitHub(config);
+            
+            const lastSyncModified = parseInt(localStorage.getItem('sharoLastSyncModified') || '0');
+            const localModified = parseInt(localStorage.getItem('sharoLastModified') || '0');
+            const localData = { quizData: this.quizData, questionStats: this.questionStats, history: this.history, lastModified: localModified };
+
+            if (!remote) {
+                // First time sync: just push
+                this.updateGitHubStatus('初回同期（アップロード中）...');
+                localData.lastModified = Date.now();
+                await this.pushToGitHub(config, localData, forceRepaint);
+                localStorage.setItem('sharoLastSyncModified', localData.lastModified);
+                localStorage.setItem('sharoLastModified', localData.lastModified);
+                this.updateGitHubStatus(`同期完了 (${new Date().toLocaleTimeString()})`);
+                alert('初回同期が完了しました。');
+                return;
+            }
+
+            const remoteModified = remote.lastModified || 0;
+            const hasRemoteChanged = remoteModified > lastSyncModified;
+            const hasLocalChanged = localModified > lastSyncModified;
+
+            if (hasRemoteChanged && hasLocalChanged) {
+                // CONFLICT
+                const choice = confirm(`【競合】GitHubとローカルの両方に新しい変更があります。\n\n・OK: データを統合して同期（推奨）\n・キャンセル: 今回は中断`);
+                if (!choice) {
+                    this.updateGitHubStatus('同期中断');
+                    return;
+                }
+                this.updateGitHubStatus('データを統合中...');
+                await forceRepaint();
+                this.questionStats = this.mergeStats(this.questionStats, remote.questionStats || {});
+                this.history = this.mergeHistory(this.history, remote.history || []);
+                // quizData merging is complex; for now strictly latest wins
+                if (remoteModified > localModified) this.quizData = remote.quizData;
+                
+                const mergedData = { quizData: this.quizData, questionStats: this.questionStats, history: this.history, lastModified: Date.now() };
+                await this.pushToGitHub(config, mergedData, forceRepaint);
+                await this.saveAll();
+                localStorage.setItem('sharoLastSyncModified', mergedData.lastModified);
+                localStorage.setItem('sharoLastModified', mergedData.lastModified);
+                alert('データの統合と同期が完了しました。');
+                location.reload();
+                return;
+            } else if (hasRemoteChanged) {
+                // Remote is newer, local hasn't changed since last sync
+                if (confirm(`GitHub上に新しいデータがあります（${new Date(remoteModified).toLocaleString()}）。読み込みますか？`)) {
+                    this.quizData = remote.quizData;
+                    this.questionStats = remote.questionStats;
+                    this.history = remote.history;
+                    await this.saveAll();
+                    localStorage.setItem('sharoLastSyncModified', remoteModified);
+                    localStorage.setItem('sharoLastModified', remoteModified);
+                    alert('リモートのデータを読み込みました。');
+                    location.reload();
+                    return;
+                }
+            } else if (hasLocalChanged || remoteModified !== localModified) {
+                // Local is newer or timestamps differ for other reasons: push local
+                this.updateGitHubStatus('アップデートを送信中...');
+                localData.lastModified = Date.now();
+                await this.pushToGitHub(config, localData, forceRepaint);
+                localStorage.setItem('sharoLastSyncModified', localData.lastModified);
+                localStorage.setItem('sharoLastModified', localData.lastModified);
+                this.updateGitHubStatus(`同期完了 (${new Date().toLocaleTimeString()})`);
+                alert('最新の記録をクラウドに保存しました。');
+            } else {
+                this.updateGitHubStatus('データは最新です');
+                alert('データは既に最新の状態です。');
+            }
+        } catch (error) {
+            console.error('Sync error:', error);
+            alert('同期に失敗しました: ' + error.message);
+            this.updateGitHubStatus('同期失敗');
+        } finally {
+            if (this.ghSyncNowBtn) { this.ghSyncNowBtn.disabled = false; this.ghSyncNowBtn.textContent = '今すぐ同期（アップロード＆ダウンロード）'; }
+            if (this.sidebarGhSyncBtn) { this.sidebarGhSyncBtn.disabled = false; this.sidebarGhSyncBtn.textContent = '今すぐ同期'; }
+        }
+    }
+
     applyAutoFillForHiddenChoices(qid, visibleChoices) {
         const visibleSet = new Set(visibleChoices);
         const set = this.isAutoGenerated ? this.autoGeneratedSet : this.quizData.find(s => s.id === this.currentSetId);
@@ -4860,100 +5012,6 @@ class QuizApp {
         this.ghSyncStatus.className = 'github-connect-status synced';
     }
 
-    async syncWithGitHub() {
-        const config = JSON.parse(localStorage.getItem('sharoGitHubConfig') || '{}');
-        if (!config.token || !config.repo) {
-            alert('GitHubの設定（トークンとリポジトリ）を先に保存してください。');
-            return;
-        }
-
-        // Helper to force browser repaint so status messages actually show up
-        const forceRepaint = () => new Promise(resolve => setTimeout(resolve, 100));
-
-        if (this.ghSyncNowBtn) {
-            this.ghSyncNowBtn.disabled = true;
-            this.ghSyncNowBtn.textContent = '同期中...';
-        }
-        if (this.sidebarGhSyncBtn) {
-            this.sidebarGhSyncBtn.disabled = true;
-            this.sidebarGhSyncBtn.textContent = '同期中...';
-        }
-        this.updateGitHubStatus('同期中...');
-        console.log('Starting GitHub Sync...');
-
-        try {
-
-            // 1. Fetch remote data
-            this.updateGitHubStatus('データをダウンロード中...');
-            await forceRepaint();
-            const remote = await this.fetchFromGitHub(config);
-            let localData = {
-                quizData: this.quizData,
-                questionStats: this.questionStats,
-                history: this.history,
-                lastModified: parseInt(localStorage.getItem('sharoLastModified') || '0')
-            };
-
-            if (remote) {
-                // --- DATA LOSS GUARD ---
-                const localCount = this.getTotalQuestionCount(this.quizData);
-                const remoteCount = this.getTotalQuestionCount(remote.quizData || []);
-
-                // If remote data has significantly fewer questions, warn the user.
-                if (localCount > 100 && remoteCount < (localCount * 0.7)) {
-                    if (!confirm(`【警告】GitHub上の問題数（${remoteCount}問）が現在のローカル（${localCount}問）より大幅に少ないです。何らかの原因でサーバーのデータが消失している可能性があります。上書きして続行しますか？`)) {
-                        this.updateGitHubStatus('同期中断（データ消失回避）');
-                        return;
-                    }
-                }
-
-                // 2. Conflict handling: simple timestamp check
-                if (remote.lastModified > localData.lastModified) {
-                    if (confirm(`GitHub上に新しいデータが見つかりました（${new Date(remote.lastModified).toLocaleString()}）。上書きしますか？`)) {
-                        this.quizData = remote.quizData;
-                        this.questionStats = remote.questionStats;
-                        this.history = remote.history;
-                        await this.saveAll();
-                        localStorage.setItem('sharoLastModified', remote.lastModified);
-                        alert('リモートのデータを読み込みました。');
-                        location.reload(); // Reload to refresh everything
-                        return;
-                    }
-                }
-            }
-
-            // 3. Push local data (if remote is older or user chose to push)
-            localData.lastModified = Date.now();
-            await this.pushToGitHub(config, localData, forceRepaint);
-            localStorage.setItem('sharoLastModified', localData.lastModified);
-
-            this.updateGitHubStatus(`同期完了 (${new Date().toLocaleTimeString()})`);
-            
-            // Wait slightly before alerting to allow the "同期完了" text to render
-            setTimeout(() => {
-                alert('GitHubへの同期が完了しました。');
-            }, 100);
-            
-        } catch (error) {
-            console.error('GitHub Sync Error Details:', {
-                message: error.message,
-                stack: error.stack,
-                config_path: config.path,
-                config_repo: config.repo
-            });
-            alert('同期に失敗しました: ' + error.message + '\n\n※100MBを超える巨大なファイルやGitHubの権限、リポジトリ名の設定が正しいかご確認ください。');
-            this.updateGitHubStatus('同期失敗');
-        } finally {
-            if (this.ghSyncNowBtn) {
-                this.ghSyncNowBtn.disabled = false;
-                this.ghSyncNowBtn.textContent = '今すぐ同期（アップロード＆ダウンロード）';
-            }
-            if (this.sidebarGhSyncBtn) {
-                this.sidebarGhSyncBtn.disabled = false;
-                this.sidebarGhSyncBtn.textContent = '今すぐ同期';
-            }
-        }
-    }
 
     async fetchFromGitHub(config) {
         const url = `https://api.github.com/repos/${config.repo}/contents/${config.path}`;
