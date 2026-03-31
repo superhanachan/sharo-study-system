@@ -537,8 +537,11 @@ class QuizApp {
                 e.preventDefault();
                 const raw = (e.clipboardData || window.clipboardData).getData('text');
                 
+                // ◯○〇 の記号があれば、その前で改行を入れる（PDFの単一行化対策）
+                let text = raw.replace(/([◯○〇])/g, '\n$1');
+                
                 // 改行を一旦正規化
-                let text = raw.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+                text = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
                 
                 // 1. 各行を処理
                 const lines = text.split('\n');
@@ -548,8 +551,8 @@ class QuizApp {
                     const line = lines[i].trim();
                     if (!line) continue;
                     
-                    // 行頭が「イ)」「a)」「1)」「(1)」「ア.」などの記号で始まるか判定
-                    const isItemStart = /^[a-z0-9\u3040-\u309F\u30A0-\u30FF一-龠][\).）．]|[0-9]\)|^[（(][0-9イアa-z][）)]/.test(line);
+                    // 行頭が「イ)」「a)」「1)」「(1)」「ア.」「◯」などの記号で始まるか判定
+                    const isItemStart = /^[◯○〇]|^[a-z0-9\u3040-\u309F\u30A0-\u30FF一-龠][\).）．]|[0-9]\)|^[（(][0-9イアa-z][）)]/.test(line);
                     
                     if (isItemStart && processed !== '') {
                         // 項目頭なら改行を入れる
