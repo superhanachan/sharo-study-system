@@ -84,6 +84,12 @@ class QuizApp {
         const storedMaxChoices = localStorage.getItem('sharoMaxDisplayedChoices');
         this.MAX_DISPLAYED_CHOICES = storedMaxChoices !== null ? parseInt(storedMaxChoices) : 10;
 
+        this.stagnantFilters = {
+            totalMin: 0, totalMax: 100,
+            srsMin: 0, srsMax: 10,
+            accMin: 0, accMax: 100
+        };
+
         this.migrateData();
         this.cacheDOM();
         this.bindEvents();
@@ -442,6 +448,19 @@ class QuizApp {
         this.autoFillIgnoreStatsToggle = document.getElementById('auto-fill-ignore-stats');
         this.maxChoicesInput = document.getElementById('max-displayed-choices');
         this.contextMenu = document.getElementById('context-menu');
+
+        // Stagnant filters
+        this.stagnantFilterElements = {
+            totalMin: document.getElementById('stagnant-filter-total-min'),
+            totalMax: document.getElementById('stagnant-filter-total-max'),
+            totalVal: document.getElementById('stagnant-filter-total-val'),
+            srsMin: document.getElementById('stagnant-filter-srs-min'),
+            srsMax: document.getElementById('stagnant-filter-srs-max'),
+            srsVal: document.getElementById('stagnant-filter-srs-val'),
+            accMin: document.getElementById('stagnant-filter-acc-min'),
+            accMax: document.getElementById('stagnant-filter-acc-max'),
+            accVal: document.getElementById('stagnant-filter-acc-val')
+        };
     }
 
     bindEvents() {
@@ -766,6 +785,19 @@ class QuizApp {
         if (forceRestoreBtn) {
             forceRestoreBtn.addEventListener('click', () => this.checkAndOfferRecovery(true));
         }
+
+        // Stagnant filter events
+        ['totalMin', 'totalMax', 'srsMin', 'srsMax', 'accMin', 'accMax'].forEach(key => {
+            const el = this.stagnantFilterElements[key];
+            if (el) {
+                el.addEventListener('input', (e) => {
+                    const val = parseInt(e.target.value);
+                    this.stagnantFilters[key] = val;
+                    this.updateStagnantFilterDisplays();
+                    this.renderStats();
+                });
+            }
+        });
     }
 
     init() {
@@ -781,6 +813,7 @@ class QuizApp {
         this.renderSrsProjectionChart();
         this.loadGitHubConfig();
         this.updateAutoFillShortcutUI();
+        this.updateStagnantFilterDisplays();
 
         // Initialize auto-fill UI
         if (this.autoFillToggle) this.autoFillToggle.checked = this.autoFillEnabled;
@@ -1915,7 +1948,12 @@ class QuizApp {
                 stagnantScore
             };
         })
-        .filter(s => s.total >= 3) // ある程度回答しているものに限定
+        .filter(s => {
+            const f = this.stagnantFilters;
+            return s.total >= f.totalMin && s.total <= f.totalMax &&
+                   s.srsLevel >= f.srsMin && s.srsLevel <= f.srsMax &&
+                   s.accuracy >= f.accMin && s.accuracy <= f.accMax;
+        })
         .sort((a, b) => {
             const valA = a[this.stagnantSortKey];
             const valB = b[this.stagnantSortKey];
@@ -2926,6 +2964,24 @@ class QuizApp {
         });
         tableHtml += '</table></div>';
         return tableHtml;
+    }
+
+    updateStagnantFilterDisplays() {
+        const f = this.stagnantFilters;
+        const e = this.stagnantFilterElements;
+        if (!e.totalVal) return;
+
+        e.totalVal.textContent = `${f.totalMin} - ${f.totalMax}${f.totalMax === 100 ? '+' : ''}`;
+        e.srsVal.textContent = `${f.srsMin} - ${f.srsMax}`;
+        e.accVal.textContent = `${f.accMin}% - ${f.accMax}%`;
+
+        // Sync slider positions if needed (when called from init)
+        if (e.totalMin.value != f.totalMin) e.totalMin.value = f.totalMin;
+        if (e.totalMax.value != f.totalMax) e.totalMax.value = f.totalMax;
+        if (e.srsMin.value != f.srsMin) e.srsMin.value = f.srsMin;
+        if (e.srsMax.value != f.srsMax) e.srsMax.value = f.srsMax;
+        if (e.accMin.value != f.accMin) e.accMin.value = f.accMin;
+        if (e.accMax.value != f.accMax) e.accMax.value = f.accMax;
     }
 
     renderChart() {

@@ -462,6 +462,34 @@
 
                 <div id="stagnant-questions-section" class="history-section" style="margin-top: 3rem;">
                     <h3>攻略難航中の問題（回答回数に対し習熟レベルが低い順）</h3>
+                    
+                    <div class="stagnant-filter-bar">
+                        <div class="filter-group">
+                            <label>解答数:</label>
+                            <div class="range-inputs">
+                                <input type="range" id="stagnant-filter-total-min" min="0" max="100" value="0">
+                                <input type="range" id="stagnant-filter-total-max" min="0" max="100" value="100">
+                                <span id="stagnant-filter-total-val" class="filter-val">0 - 100+</span>
+                            </div>
+                        </div>
+                        <div class="filter-group">
+                            <label>習熟LV:</label>
+                            <div class="range-inputs">
+                                <input type="range" id="stagnant-filter-srs-min" min="0" max="10" value="0">
+                                <input type="range" id="stagnant-filter-srs-max" min="0" max="10" value="10">
+                                <span id="stagnant-filter-srs-val" class="filter-val">0 - 10</span>
+                            </div>
+                        </div>
+                        <div class="filter-group">
+                            <label>正答率:</label>
+                            <div class="range-inputs">
+                                <input type="range" id="stagnant-filter-acc-min" min="0" max="100" value="0">
+                                <input type="range" id="stagnant-filter-acc-max" min="0" max="100" value="100">
+                                <span id="stagnant-filter-acc-val" class="filter-val">0% - 100%</span>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div class="table-wrapper stagnant-scroll-wrapper">
                         <table id="stagnant-questions-table">
                             <thead>
