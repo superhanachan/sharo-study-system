@@ -62,6 +62,7 @@ class QuizApp {
         this.chartMode = 'accuracy';
         this.statsChart = null;
         this.srsProjectionChart = null;
+        this.masteryHistogramChart = null;
         this.questionObserver = null;
         this.isBankMinimized = false; // Persistent state for the session
         this.dailyGoal = 50;
@@ -2623,6 +2624,7 @@ class QuizApp {
 
         // Always update projection chart when dashboard updates
         this.renderSrsProjectionChart();
+        this.renderMasteryHistogramChart();
 
         // Update sidebar counts
         this.renderTOC();
@@ -2770,6 +2772,102 @@ class QuizApp {
             });
         } catch (e) {
             console.error("Error rendering SRS projection chart:", e);
+        }
+    }
+
+    renderMasteryHistogramChart() {
+        const canvas = document.getElementById('masteryHistogramChart');
+        if (!canvas) return;
+
+        if (typeof Chart === 'undefined') return;
+
+        try {
+            const levels = Array.from({ length: 11 }, (_, i) => i); // 0 to 10
+            const counts = levels.map(() => 0);
+
+            Object.entries(this.questionStats).forEach(([key, s]) => {
+                if (key.startsWith('clause-') && !key.startsWith('clause-summary-')) return;
+                // Only count items with stats
+                if (s.total === 0) return;
+
+                const level = s.srsLevel || 0;
+                if (level >= 0 && level <= 10) {
+                    counts[level]++;
+                }
+            });
+
+            // If nothing studied yet, check for new questions (Lv0)
+            if (counts.every(c => c === 0)) {
+                 // Try counting total questions
+                 // But wait, un-mastered questions (Lv0) are also part of questionStats once encountered.
+                 // Actually the request was mastery level vs question count.
+            }
+
+            const colors = levels.map(level => {
+                if (level >= 9) return 'rgba(155, 89, 182, 0.7)'; // 完遂
+                if (level >= 7) return 'rgba(6, 214, 160, 0.7)';  // 習熟
+                if (level >= 5) return 'rgba(76, 201, 240, 0.7)';  // 安定
+                if (level >= 3) return 'rgba(255, 159, 64, 0.7)';  // 成長
+                if (level >= 1) return 'rgba(255, 107, 107, 0.7)'; // 初歩
+                return 'rgba(148, 163, 184, 0.7)';                // 未着手
+            });
+
+            const borders = levels.map(level => {
+                if (level >= 9) return '#9b59b6';
+                if (level >= 7) return '#06d6a0';
+                if (level >= 5) return '#4cc9f0';
+                if (level >= 3) return '#ff9f40';
+                if (level >= 1) return '#ff6b6b';
+                return '#94a3b8';
+            });
+
+            if (this.masteryHistogramChart) {
+                this.masteryHistogramChart.destroy();
+            }
+
+            const ctx = canvas.getContext('2d');
+            this.masteryHistogramChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: levels.map(l => `Lv.${l}`),
+                    datasets: [{
+                        label: '問題数',
+                        data: counts,
+                        backgroundColor: colors,
+                        borderColor: borders,
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (item) => `問題数: ${item.raw} 問`
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: 'rgba(255,255,255,0.6)', font: { size: 11 } }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: {
+                                color: 'rgba(255,255,255,0.6)',
+                                stepSize: 5
+                            }
+                        }
+                    }
+                }
+            });
+        } catch (e) {
+            console.error("Error rendering mastery histogram chart:", e);
         }
     }
 
