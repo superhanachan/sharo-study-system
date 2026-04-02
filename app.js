@@ -2643,11 +2643,14 @@ class QuizApp {
             const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
             const endOfThreeMonths = new Date(now.getFullYear(), now.getMonth() + 3, 0);
 
-            // Prepare data buckets
+            // Prepare data buckets (More granular levels as requested)
             const datasets = {
-                low: { label: '未熟 (Lv0-2)', data: {}, color: 'rgba(255, 107, 107, 0.7)', border: '#ff6b6b' },
-                mid: { label: '成長 (Lv3-5)', data: {}, color: 'rgba(76, 201, 240, 0.7)', border: '#4cc9f0' },
-                high: { label: '習熟 (Lv6+)', data: {}, color: 'rgba(6, 214, 160, 0.7)', border: '#06d6a0' }
+                lv0: { label: '未着手 (Lv0)', data: {}, color: 'rgba(148, 163, 184, 0.7)', border: '#94a3b8' },
+                lv1: { label: '初歩 (Lv1-2)', data: {}, color: 'rgba(255, 107, 107, 0.7)', border: '#ff6b6b' },
+                lv2: { label: '成長 (Lv3-4)', data: {}, color: 'rgba(255, 159, 64, 0.7)', border: '#ff9f40' },
+                lv3: { label: '安定 (Lv5-6)', data: {}, color: 'rgba(76, 201, 240, 0.7)', border: '#4cc9f0' },
+                lv4: { label: '習熟 (Lv7-8)', data: {}, color: 'rgba(6, 214, 160, 0.7)', border: '#06d6a0' },
+                lv5: { label: '完遂 (Lv9+)', data: {}, color: 'rgba(155, 89, 182, 0.7)', border: '#9b59b6' }
             };
 
             const labels = [];
@@ -2661,9 +2664,8 @@ class QuizApp {
             while (iter <= endOfThreeMonths) {
                 const dateStr = formatDateStr(iter);
                 labels.push(dateStr);
-                datasets.low.data[dateStr] = 0;
-                datasets.mid.data[dateStr] = 0;
-                datasets.high.data[dateStr] = 0;
+                // Initialize all buckets
+                Object.keys(datasets).forEach(k => datasets[k].data[dateStr] = 0);
                 iter.setDate(iter.getDate() + 1);
             }
 
@@ -2673,9 +2675,12 @@ class QuizApp {
                 if (key.startsWith('clause-') && !key.startsWith('clause-summary-')) return;
 
                 const level = s.srsLevel || 0;
-                let bucket = 'low';
-                if (level >= 6) bucket = 'high';
-                else if (level >= 3) bucket = 'mid';
+                let bucket = 'lv0';
+                if (level >= 9) bucket = 'lv5';
+                else if (level >= 7) bucket = 'lv4';
+                else if (level >= 5) bucket = 'lv3';
+                else if (level >= 3) bucket = 'lv2';
+                else if (level >= 1) bucket = 'lv1';
 
                 const reviewDate = new Date(s.nextReview);
                 const reviewDateStr = formatDateStr(reviewDate);
