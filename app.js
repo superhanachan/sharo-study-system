@@ -2490,9 +2490,6 @@ class QuizApp {
         const maxPossibleLevels = (realTotalQuestions || 1) * 8;
         const masteryPercent = Math.min(100, Math.round((sumOfLevels / maxPossibleLevels) * 100 * 10) / 10);
 
-        // Map 0-100% to 0-3776m
-        const heightMeters = Math.round(masteryPercent * 37.76);
-
         // SRS Due Today (Everything including overdue)
         const now = new Date();
         const todayStr = this.formatDateStr(now);
@@ -2538,14 +2535,10 @@ class QuizApp {
 
         // Update UI
         const masteryEl = document.getElementById('mastery-percent');
-        const heightEl = document.getElementById('climb-height');
         const dueCountEl = document.getElementById('srs-due-count');
         const dueTomorrowEl = document.getElementById('srs-tomorrow-count');
-        const hikerMarker = document.getElementById('hiker-marker');
-        const fujiSvg = document.querySelector('.fuji-svg');
 
         if (masteryEl) masteryEl.textContent = `${masteryPercent}%`;
-        if (heightEl) heightEl.textContent = `${heightMeters} m`;
         if (dueCountEl) {
             dueCountEl.textContent = dueTodayTotal; // Match the first bar
             const card = dueCountEl.closest('.main-stat-card');
@@ -2555,21 +2548,6 @@ class QuizApp {
             dueTomorrowEl.textContent = tomorrowSpecificCount; // Match the second bar
         }
 
-        if (hikerMarker) {
-            // Mt Fuji path logic in SVG: Base (20, 110) to Summit (100, 20)
-            const startX = 20; const startY = 110;
-            const endX = 100; const endY = 20;
-            const currentX = startX + (endX - startX) * (masteryPercent / 100);
-            const currentY = startY + (endY - startY) * (masteryPercent / 100);
-
-            // Trigger Walking Animation
-            hikerMarker.classList.add('walking');
-            hikerMarker.style.setProperty('--hiker-x', `${currentX}px`);
-            hikerMarker.style.setProperty('--hiker-y', `${currentY}px`);
-            hikerMarker.setAttribute('transform', `translate(${currentX}, ${currentY})`);
-
-            setTimeout(() => hikerMarker.classList.remove('walking'), 2000);
-        }
 
         // Daily Progress
         const nowTime = new Date();

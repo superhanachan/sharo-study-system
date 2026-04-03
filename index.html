@@ -114,45 +114,14 @@
 
                 <!-- Central Home Dashboard -->
                 <div id="home-dashboard" class="home-dashboard">
+
                     <div class="welcome-banner">
-                        <h2 class="welcome-title">富士山登頂プロジェクト</h2>
-                        <p class="welcome-subtitle">毎日の継続が合格への最短ルートです</p>
+                        <h2 class="welcome-title">学習ダッシュボード</h2>
+                        <p class="welcome-subtitle">毎日の積み重ねが合格への鍵です</p>
                     </div>
 
                     <div class="main-mountain-display">
-                        <div class="mountain-graphic">
-                            <svg viewBox="0 0 200 120" class="fuji-svg large-fuji">
-                                <defs>
-                                    <linearGradient id="skyGradientLarge" x1="0%" y1="0%" x2="0%" y2="100%">
-                                        <stop offset="0%" style="stop-color:#1e293b;stop-opacity:1" />
-                                        <stop offset="100%" style="stop-color:#334155;stop-opacity:1" />
-                                    </linearGradient>
-                                </defs>
-                                <rect width="200" height="120" fill="url(#skyGradientLarge)" rx="10" />
-                                <path d="M20 110 L100 20 L180 110 Z" fill="#1e3a8a" stroke="#1d4ed8" stroke-width="2" />
-                                <path d="M82 40 L100 20 L118 40 C110 35 105 45 100 40 C95 45 90 35 82 40 Z"
-                                    fill="white" />
-                                <line x1="60" y1="65" x2="140" y2="65" stroke="rgba(255,255,255,0.2)"
-                                    stroke-dasharray="2,2" />
-                                <text x="142" y="67" class="mountain-marker">5合目</text>
-                                <line x1="85" y1="36" x2="115" y2="36" stroke="rgba(255,255,255,0.2)"
-                                    stroke-dasharray="2,2" />
-                                <text x="117" y="38" class="mountain-marker">8合目</text>
-                                <circle cx="100" cy="20" r="2" fill="#ef4444" />
-                                <text x="105" y="25" fill="white" font-size="6">3776m</text>
-                                <g id="hiker-marker" style="--hiker-x: 20px; --hiker-y: 110px;"
-                                    transform="translate(20, 110)">
-                                    <circle r="4" fill="#fbbf24" stroke="white" stroke-width="1" />
-                                    <text x="6" y="3" fill="#fbbf24" font-size="8" font-weight="bold">📍</text>
-                                </g>
-                            </svg>
-                        </div>
-
                         <div class="main-stats-grid">
-                            <div class="main-stat-card">
-                                <span class="card-label">現在の標高</span>
-                                <span id="climb-height" class="card-value">0 m</span>
-                            </div>
                             <div class="main-stat-card ripple-card" id="due-card">
                                 <span class="card-label">本日の復習待ち</span>
                                 <span id="srs-due-count" class="card-value">0</span>
