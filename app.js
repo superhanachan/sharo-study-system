@@ -2573,10 +2573,6 @@ class QuizApp {
             // Celebration color for daily goal
             if (dailyPercent >= 100) {
                 dailyBarFill.style.background = 'linear-gradient(90deg, #ff9e00, #ff5400)';
-                if (fujiSvg) {
-                    const sky = fujiSvg.querySelector('#skyGradient stop:last-child');
-                    if (sky) sky.style.stopColor = '#4338ca'; // Deepen the sky
-                }
             } else {
                 dailyBarFill.style.background = 'linear-gradient(90deg, #4cc9f0, #4361ee)';
             }
