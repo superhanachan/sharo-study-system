@@ -2266,29 +2266,7 @@ class QuizApp {
         const lines = rawText.split('\n');
         const hasTable = lines.some(l => l.trim().startsWith('|'));
 
-        let htmlContent = '';
-        if (hasTable) {
-            let processedHtml = '';
-            let tableLines = [];
-
-            lines.forEach(line => {
-                if (line.trim().startsWith('|')) {
-                    tableLines.push(line);
-                } else {
-                    if (tableLines.length > 0) {
-                        processedHtml += this.renderTableFromMarkdown(tableLines);
-                        tableLines = [];
-                    }
-                    processedHtml += line + '<br>';
-                }
-            });
-            if (tableLines.length > 0) {
-                processedHtml += this.renderTableFromMarkdown(tableLines);
-            }
-            htmlContent = processedHtml;
-        } else {
-            htmlContent = rawText.replace(/\n/g, '<br>');
-        }
+        const htmlContent = this.renderWithMarkdown(rawText);
         const keywords = [];
         let blankIndex = 0;
 
@@ -3103,6 +3081,38 @@ class QuizApp {
         return tableHtml;
     }
 
+    renderWithMarkdown(text) {
+        if (!text) return '';
+        const lines = text.split('\n');
+        let processedHtml = '';
+        let tableLines = [];
+
+        lines.forEach((line, index) => {
+            const trimmed = line.trim();
+            if (trimmed.startsWith('|')) {
+                tableLines.push(line);
+            } else if (/^-{3,}$/.test(trimmed)) {
+                if (tableLines.length > 0) {
+                    processedHtml += this.renderTableFromMarkdown(tableLines);
+                    tableLines = [];
+                }
+                processedHtml += '<hr>';
+            } else {
+                if (tableLines.length > 0) {
+                    processedHtml += this.renderTableFromMarkdown(tableLines);
+                    tableLines = [];
+                }
+                processedHtml += line + (index < lines.length - 1 ? '<br>' : '');
+            }
+        });
+
+        if (tableLines.length > 0) {
+            processedHtml += this.renderTableFromMarkdown(tableLines);
+        }
+
+        return processedHtml;
+    }
+
     updateStagnantFilterDisplays() {
         const f = this.stagnantFilters;
         const e = this.stagnantFilterElements;
@@ -3560,21 +3570,7 @@ class QuizApp {
                 wrapper.appendChild(badge);
 
                 const cText = document.createElement('div'); cText.className = 'clause-text-mini';
-                let htmlContent = q.text;
-                const lines = q.text.split('\n');
-                const hasTable = lines.some(l => l.trim().startsWith('|'));
-                if (hasTable) {
-                    let processedHtml = ''; let tableLines = [];
-                    lines.forEach(line => {
-                        if (line.trim().startsWith('|')) tableLines.push(line);
-                        else {
-                            if (tableLines.length > 0) { processedHtml += this.renderTableFromMarkdown(tableLines); tableLines = []; }
-                            processedHtml += line + '<br>';
-                        }
-                    });
-                    if (tableLines.length > 0) processedHtml += this.renderTableFromMarkdown(tableLines);
-                    htmlContent = processedHtml;
-                } else { htmlContent = q.text.replace(/\n/g, '<br>'); }
+                let htmlContent = this.renderWithMarkdown(q.text);
 
                 const rowKeywords = []; let blankIdx = 0;
                 // Combined drag/input support (including full-width)
@@ -3782,7 +3778,7 @@ class QuizApp {
                     tdQ.appendChild(memoEl);
                 } else if (this.isChecked && q.memo) {
                     const memoEl = document.createElement('div'); memoEl.className = 'memo-display';
-                    memoEl.innerHTML = `<strong>解説:</strong> ${q.memo.replace(/\n/g, '<br>')}`;
+                    memoEl.innerHTML = `<strong>解説:</strong> ${this.renderWithMarkdown(q.memo)}`;
                     tdQ.appendChild(memoEl);
                 }
             }
