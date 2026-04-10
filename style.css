@@ -22,15 +22,18 @@
 
 hr {
     border: none;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    margin: 1.5rem 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    margin: 2rem 0;
     width: 100%;
+    opacity: 0.8;
 }
 
 .clause-text-mini hr {
-    margin: 0.8rem 0;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+    margin: 1.2rem 0;
+    height: 1.5px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    opacity: 0.6;
 }
 
 /* GitHub Sync Styles */
