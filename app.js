@@ -1952,7 +1952,7 @@ class QuizApp {
                     page: s.page || '',
                     total: 0,
                     correct: 0,
-                    errorCount: 0,
+                    errorCount: (s.recent || []).filter(x => x === 0).length,
                     srsLevelSum: 0,
                     srsLevelCount: 0,
                     modalKey: id // 後で詳細を表示するために1つ保持
@@ -1961,7 +1961,6 @@ class QuizApp {
             const g = groupedStats[pageId];
             g.total += (s.total || 0);
             g.correct += (s.correct || 0);
-            g.errorCount += (s.recent || []).filter(x => x === 0).length;
 
             // 習熟度（未設定なら履歴から推論）
             let srsLevel = s.srsLevel || 0;
@@ -1977,12 +1976,15 @@ class QuizApp {
             // 条文全体などのサマリースタットがあれば優先的に詳細用キーにする
             if (id.startsWith('clause-summary-') || (!id.includes('-') && !id.startsWith('clause'))) {
                 g.modalKey = id;
+                g.errorCount = (s.recent || []).filter(x => x === 0).length;
                 g.summarySrsLevel = srsLevel; 
                 g.sessionCount = (s.history || []).length; // セッション数を使用
                 if (s.text) g.text = s.text;
                 if (s.page) g.page = s.page;
             } else if (!g.sessionCount) {
                 g.sessionCount = (s.history || []).length;
+                // If we don't have a summary, but this item has more errors than the current representative, maybe pick it?
+                // Actually, the user's primary need is clause-summary coherence.
             }
         });
 
