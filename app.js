@@ -1952,6 +1952,7 @@ class QuizApp {
                     page: s.page || '',
                     total: 0,
                     correct: 0,
+                    errorCount: 0,
                     srsLevelSum: 0,
                     srsLevelCount: 0,
                     modalKey: id // 後で詳細を表示するために1つ保持
@@ -1960,6 +1961,7 @@ class QuizApp {
             const g = groupedStats[pageId];
             g.total += (s.total || 0);
             g.correct += (s.correct || 0);
+            g.errorCount += (s.recent || []).filter(x => x === 0).length;
 
             // 習熟度（未設定なら履歴から推論）
             let srsLevel = s.srsLevel || 0;
@@ -1995,6 +1997,7 @@ class QuizApp {
                 id: g.modalKey,
                 pageId: g.id,
                 total: displayTotal,
+                errorCount: g.errorCount,
                 accuracy,
                 srsLevel,
                 stagnantScore
@@ -2016,7 +2019,7 @@ class QuizApp {
         .slice(0, 100);
 
         // Update Sort Icons in headers
-        ['total', 'srsLevel', 'accuracy'].forEach(key => {
+        ['total', 'errorCount', 'srsLevel', 'accuracy'].forEach(key => {
             const el = document.getElementById(`stagnant-sort-${key}`);
             if (el) {
                 const icon = el.querySelector('.sort-icon');
@@ -2040,6 +2043,7 @@ class QuizApp {
                 </td>
                 <td>${s.page}</td>
                 <td>${s.total}回</td>
+                <td><span style="color: ${s.errorCount > 0 ? 'var(--error)' : 'var(--text-secondary)'}">${s.errorCount}個</span></td>
                 <td><span class="srs-badge level-${s.srsLevel}">Lv.${s.srsLevel}</span></td>
                 <td style="color: ${s.accuracy < 50 ? 'var(--error)' : 'var(--text-primary)'}">${s.accuracy}%</td>
             </tr>`;
@@ -3188,6 +3192,7 @@ class QuizApp {
                         columns: set.columns,
                         accuracy: accuracy,
                         total: stat.total,
+                        errorCount: (stat.recent || []).filter(x => x === 0).length,
                         nextReview: stat.nextReview,
                         srsLevel: stat.srsLevel || 0,
                         isMultiSelect: set.isMultiSelect
@@ -3211,6 +3216,7 @@ class QuizApp {
                     pageId: set.id,
                     accuracy: accuracy,
                     total: stat.total,
+                    errorCount: (stat.recent || []).filter(x => x === 0).length,
                     nextReview: stat.nextReview,
                     srsLevel: stat.srsLevel || 0,
                     isMultiSelect: false
@@ -3247,7 +3253,8 @@ class QuizApp {
             title = "特訓：攻略難航中の問題10問";
             // Get questions with many answers but low mastery
             const candidates = allQuestions.filter(q => q.total >= 3).sort((a, b) => {
-                // Score by answers / (level + 1). Higher score means more answers for lower level.
+                // Score by errorCount (red dots) primary, then total / (level + 1).
+                if (a.errorCount !== b.errorCount) return b.errorCount - a.errorCount;
                 const scoreA = a.total / ((a.srsLevel || 0) + 1);
                 const scoreB = b.total / ((b.srsLevel || 0) + 1);
                 if (scoreA !== scoreB) return scoreB - scoreA;
