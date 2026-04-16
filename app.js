@@ -1063,6 +1063,22 @@ class QuizApp {
         return type === 'clause' ? `clause-summary-${baseId}` : baseId;
     }
 
+    rebuildPoolCache() {
+        this._inPoolSets = new Set();
+        this._qToSet = new Map();
+        this.quizData.forEach(set => {
+            if (set.isInPool !== false) this._inPoolSets.add(set.id);
+            if (set.questions) set.questions.forEach(q => this._qToSet.set(q.id, set.id));
+        });
+    }
+
+    isStatInActivePool(key) {
+        if (!this._inPoolSets) this.rebuildPoolCache();
+        if (key.startsWith('clause-summary-')) return this._inPoolSets.has(key.replace('clause-summary-', ''));
+        if (this._qToSet.has(key)) return this._inPoolSets.has(this._qToSet.get(key));
+        return this._inPoolSets.has(key);
+    }
+
     getStreakCount(statKey) {
         if (!statKey) return 0;
 
@@ -2516,12 +2532,12 @@ class QuizApp {
         }
 
         // Overall Mastery (Mt. Fuji)
-        const allStats = Object.values(this.questionStats);
 
-        // Better total questions calculation (flatten all)
+        // Better total questions calculation (flatten all in pool)
         const getFlatTotal = (list) => {
             let count = 0;
             list.forEach(item => {
+                if (item.isInPool === false) return; 
                 if (item.type === 'clause') count++;
                 else if (item.questions) count += item.questions.length;
                 if (item.children) count += getFlatTotal(item.children);
@@ -2530,7 +2546,11 @@ class QuizApp {
         };
         const realTotalQuestions = getFlatTotal(this.quizData);
 
-        const sumOfLevels = allStats.reduce((acc, s) => acc + Math.min(8, (s.srsLevel || 0)), 0);
+        const sumOfLevels = Object.entries(this.questionStats).reduce((acc, [key, s]) => {
+            if (!this.isStatInActivePool(key)) return acc;
+            if (key.startsWith('clause-') && !key.startsWith('clause-summary-')) return acc;
+            return acc + Math.min(8, (s.srsLevel || 0));
+        }, 0);
         const maxPossibleLevels = (realTotalQuestions || 1) * 8;
         const masteryPercent = Math.min(100, Math.round((sumOfLevels / maxPossibleLevels) * 100 * 10) / 10);
 
@@ -2538,22 +2558,10 @@ class QuizApp {
         const now = new Date();
         const todayStr = this.formatDateStr(now);
 
-        // Map for fast pool check (setId -> isInPool, qId -> setId)
-        const inPoolSets = new Set();
-        const qToSet = new Map();
-        this.quizData.forEach(set => {
-            if (set.isInPool !== false) inPoolSets.add(set.id);
-            if (set.questions) set.questions.forEach(q => qToSet.set(q.id, set.id));
-        });
-
-        const isStatInActivePool = (key) => {
-            if (key.startsWith('clause-summary-')) return inPoolSets.has(key.replace('clause-summary-', ''));
-            if (qToSet.has(key)) return inPoolSets.has(qToSet.get(key));
-            return inPoolSets.has(key);
-        };
+        this.rebuildPoolCache();
 
         const dueTodayTotal = Object.entries(this.questionStats).filter(([key, s]) => {
-            if (!s.nextReview || !isStatInActivePool(key)) return false;
+            if (!s.nextReview || !this.isStatInActivePool(key)) return false;
             if (key.startsWith('clause-') && !key.startsWith('clause-summary-')) return false;
             const reviewDate = new Date(s.nextReview);
             return this.formatDateStr(reviewDate) <= todayStr;
@@ -2561,7 +2569,7 @@ class QuizApp {
 
         // Current Due NOW (for the active learning buttons)
         const dueCount = Object.entries(this.questionStats).filter(([key, s]) => {
-            if (!s.nextReview || !isStatInActivePool(key)) return false;
+            if (!s.nextReview || !this.isStatInActivePool(key)) return false;
             if (key.startsWith('clause-') && !key.startsWith('clause-summary-')) return false;
             return new Date(s.nextReview) <= now;
         }).length;
@@ -2572,7 +2580,7 @@ class QuizApp {
         const tomorrowStr = this.formatDateStr(tomorrow);
 
         const tomorrowSpecificCount = Object.entries(this.questionStats).filter(([key, s]) => {
-            if (!s.nextReview || !isStatInActivePool(key)) return false;
+            if (!s.nextReview || !this.isStatInActivePool(key)) return false;
             if (key.startsWith('clause-') && !key.startsWith('clause-summary-')) return false;
             return this.formatDateStr(new Date(s.nextReview)) === tomorrowStr;
         }).length;
@@ -2693,6 +2701,7 @@ class QuizApp {
             Object.entries(this.questionStats).forEach(([key, s]) => {
                 if (!s.nextReview) return;
                 if (key.startsWith('clause-') && !key.startsWith('clause-summary-')) return;
+                if (!this.isStatInActivePool(key)) return;
 
                 const level = s.srsLevel || 0;
                 let bucket = 'lv0';
@@ -2805,6 +2814,7 @@ class QuizApp {
 
             Object.entries(this.questionStats).forEach(([key, s]) => {
                 if (key.startsWith('clause-') && !key.startsWith('clause-summary-')) return;
+                if (!this.isStatInActivePool(key)) return;
                 // Only count items with stats
                 if (s.total === 0) return;
 
@@ -4347,7 +4357,7 @@ class QuizApp {
         if (!title) return;
         const id = 'f-' + Date.now();
         this.quizData.push({
-            id, title, type: 'folder', parentId: parentId, isCollapsed: false
+            id, title, type: 'folder', parentId: parentId, isCollapsed: false, isInPool: true
         });
         if (parentId) {
             const parent = this.quizData.find(p => p.id === parentId);
@@ -4402,7 +4412,8 @@ class QuizApp {
         const newPage = {
             id, title, type: 'page', parentId: parentId, isMultiSelect: isMulti,
             columns: cols,
-            questions: questions
+            questions: questions,
+            isInPool: true
         };
 
         // If current viewing is a folder, maybe add to it? For now, just add to root
@@ -4426,7 +4437,8 @@ class QuizApp {
         const newPage = {
             id, title, type: 'clause', parentId: parentId,
             text: 'ここに条文を入力してください。[[キーワード]]のように囲むとそこが穴埋めになります。',
-            dummies: ''
+            dummies: '',
+            isInPool: true
         };
         this.quizData.push(newPage);
         this.saveData();
