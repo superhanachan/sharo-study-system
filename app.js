@@ -2503,6 +2503,7 @@ class QuizApp {
                             }
                         });
                     };
+                }
                 let overrideBtn = null;
                 if (this.isChecked) {
                     input.disabled = true;
