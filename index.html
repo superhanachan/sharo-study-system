@@ -180,6 +180,28 @@
                         </div>
                     </div>
 
+                    <div class="projection-section" style="margin-top: 1.5rem;">
+                        <div class="chart-header">
+                            <h3>忘却曲線の設定・基準</h3>
+                        </div>
+                        <div class="srs-config-grid">
+                            <div class="srs-config-card">
+                                <h4>復習間隔（間隔日数）</h4>
+                                <div id="srs-intervals-display" class="srs-intervals-display">
+                                    <!-- 動的に生成 -->
+                                </div>
+                            </div>
+                            <div class="srs-config-card">
+                                <h4>習熟度レベルの変動</h4>
+                                <ul class="srs-logic-list">
+                                    <li><span class="logic-tag success">◎ 正解</span> ➡️ レベルが <strong>+1</strong> 増加</li>
+                                    <li><span class="logic-tag danger">× 不正解</span> ➡️ レベルが <strong>-2</strong> 減少</li>
+                                    <li><span class="logic-tag info">ℹ️ 備考</span> 習得済みレベル到達で長期記憶へ</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="main-daily-row">
                         <div class="daily-header">
                             <span class="daily-label">今日の歩み</span>

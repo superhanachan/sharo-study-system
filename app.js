@@ -452,6 +452,7 @@ class QuizApp {
         this.autoFillIgnoreStatsToggle = document.getElementById('auto-fill-ignore-stats');
         this.maxChoicesInput = document.getElementById('max-displayed-choices');
         this.autoBracketToggle = document.getElementById('auto-bracket-toggle');
+        this.srsIntervalsDisplay = document.getElementById('srs-intervals-display');
         this.contextMenu = document.getElementById('context-menu');
 
         // Stagnant filters
@@ -832,6 +833,7 @@ class QuizApp {
         if (this.autoFillThresholdInput) this.autoFillThresholdInput.value = this.autoFillThreshold;
         if (this.autoFillIgnoreStatsToggle) this.autoFillIgnoreStatsToggle.checked = this.autoFillIgnoreStats;
         if (this.autoBracketToggle) this.autoBracketToggle.checked = this.autoBracketEnabled;
+        this.renderSRSConfig();
     }
 
     loadData() { return JSON.parse(JSON.stringify(DEFAULT_QUIZ_DATA)); } // kept for compatibility; data is loaded via IDB in initApp()
@@ -2519,6 +2521,20 @@ class QuizApp {
             setTimeout(() => target.style.outline = 'none', 2000);
         }
         if (this.sidebar) this.sidebar.classList.remove('open');
+    }
+
+    renderSRSConfig() {
+        if (!this.srsIntervalsDisplay) return;
+        this.srsIntervalsDisplay.innerHTML = '';
+        SRS_INTERVALS.forEach((days, lv) => {
+            const chip = document.createElement('div');
+            chip.className = 'interval-chip';
+            chip.innerHTML = `
+                <span class="lv-label">Lv.${lv}</span>
+                <span class="days-label">${days}日後</span>
+            `;
+            this.srsIntervalsDisplay.appendChild(chip);
+        });
     }
 
     updateDashboard() {

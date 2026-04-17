@@ -449,6 +449,78 @@ h2,
     width: 100%;
 }
 
+/* SRS Config Display */
+.srs-config-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-top: 1.5rem;
+}
+
+.srs-config-card h4 {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+    padding-left: 0.5rem;
+    border-left: 3px solid var(--accent);
+}
+
+.srs-intervals-display {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.interval-chip {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--glass-border);
+    padding: 0.4rem 0.8rem;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 60px;
+}
+
+.interval-chip .lv-label {
+    font-size: 0.65rem;
+    color: var(--accent);
+    margin-bottom: 2px;
+}
+
+.interval-chip .days-label {
+    font-weight: bold;
+    color: var(--text-primary);
+}
+
+.srs-logic-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.srs-logic-list li {
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.logic-tag {
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    min-width: 70px;
+    text-align: center;
+}
+
+.logic-tag.success { background: rgba(74, 222, 128, 0.2); color: #4ade80; }
+.logic-tag.danger { background: rgba(247, 37, 133, 0.2); color: #f72585; }
+.logic-tag.info { background: rgba(76, 201, 240, 0.2); color: #4cc9f0; }
+
 @media (max-width: 768px) {
     .projection-chart-container {
         height: 250px;
