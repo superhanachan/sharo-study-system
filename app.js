@@ -995,7 +995,8 @@ class QuizApp {
 
         if (isCorrect) {
             // 同一日に既に正解済みの場合はレベルを上げない
-            if (!alreadyCorrectToday) {
+            // ただし、Lv 0（今日やるべき分）の場合は、今日やるべきリストから消すために Lv 1 に上げる
+            if (stat.srsLevel === 0 || !alreadyCorrectToday) {
                 stat.srsLevel = Math.min(stat.srsLevel + 1, SRS_INTERVALS.length - 1);
             }
         } else {
