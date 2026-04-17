@@ -85,6 +85,9 @@ class QuizApp {
         const storedMaxChoices = localStorage.getItem('sharoMaxDisplayedChoices');
         this.MAX_DISPLAYED_CHOICES = storedMaxChoices !== null ? parseInt(storedMaxChoices) : 10;
 
+        const storedBracketEnabled = localStorage.getItem('sharoAutoBracketEnabled');
+        this.autoBracketEnabled = storedBracketEnabled !== null ? JSON.parse(storedBracketEnabled) : true;
+
         this.stagnantFilters = {
             totalMin: 0, totalMax: 100,
             srsMin: 0, srsMax: 10,
@@ -448,6 +451,7 @@ class QuizApp {
         this.autoFillThresholdInput = document.getElementById('auto-fill-threshold');
         this.autoFillIgnoreStatsToggle = document.getElementById('auto-fill-ignore-stats');
         this.maxChoicesInput = document.getElementById('max-displayed-choices');
+        this.autoBracketToggle = document.getElementById('auto-bracket-toggle');
         this.contextMenu = document.getElementById('context-menu');
 
         // Stagnant filters
@@ -781,6 +785,13 @@ class QuizApp {
             };
         }
 
+        if (this.autoBracketToggle) {
+            this.autoBracketToggle.onchange = () => {
+                this.autoBracketEnabled = this.autoBracketToggle.checked;
+                localStorage.setItem('sharoAutoBracketEnabled', JSON.stringify(this.autoBracketEnabled));
+            };
+        }
+
         // Recovery button for internal backup
         const forceRestoreBtn = document.getElementById('force-restore-internal-btn');
         if (forceRestoreBtn) {
@@ -820,6 +831,7 @@ class QuizApp {
         if (this.autoFillToggle) this.autoFillToggle.checked = this.autoFillEnabled;
         if (this.autoFillThresholdInput) this.autoFillThresholdInput.value = this.autoFillThreshold;
         if (this.autoFillIgnoreStatsToggle) this.autoFillIgnoreStatsToggle.checked = this.autoFillIgnoreStats;
+        if (this.autoBracketToggle) this.autoBracketToggle.checked = this.autoBracketEnabled;
     }
 
     loadData() { return JSON.parse(JSON.stringify(DEFAULT_QUIZ_DATA)); } // kept for compatibility; data is loaded via IDB in initApp()
@@ -2212,28 +2224,31 @@ class QuizApp {
 
                 let changed = false;
 
-                // 1. Handle Added Keywords: If a new keyword appears, tag all its instances
-                const added = [...currKeywords].filter(k => !prevKeywords.has(k));
-                added.forEach(keyword => {
-                    const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                    const regex = new RegExp(`(?<!\\[\\[)${escaped}(?!\\]\\])`, 'g');
-                    if (regex.test(val)) {
-                        val = val.replace(regex, `[[${keyword}]]`);
-                        changed = true;
-                    }
-                });
+                // 1. Handle Added Keywords: If a new keyword appears, tag all its instances (if enabled)
+                if (this.autoBracketEnabled) {
+                    const added = [...currKeywords].filter(k => !prevKeywords.has(k));
+                    added.forEach(keyword => {
+                        const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                        const regex = new RegExp(`(?<!\\[\\[)${escaped}(?!\\]\\])`, 'g');
+                        if (regex.test(val)) {
+                            val = val.replace(regex, `[[${keyword}]]`);
+                            changed = true;
+                        }
+                    });
+                }
 
-                // 2. Handle Removed Keywords: If a keyword is gone from [[ ]], untag it everywhere
-                // This happens when the user breaks a [[ ]] tag.
-                const removed = [...prevKeywords].filter(k => !currKeywords.has(k));
-                removed.forEach(keyword => {
-                    const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                    const regex = new RegExp(`\\[\\[${escaped}\\]\\]`, 'g');
-                    if (regex.test(val)) {
-                        val = val.replace(regex, keyword);
-                        changed = true;
-                    }
-                });
+                // 2. Handle Removed Keywords: If a keyword is gone from [[ ]], untag it everywhere (if enabled)
+                if (this.autoBracketEnabled) {
+                    const removed = [...prevKeywords].filter(k => !currKeywords.has(k));
+                    removed.forEach(keyword => {
+                        const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                        const regex = new RegExp(`\\[\\[${escaped}\\]\\]`, 'g');
+                        if (regex.test(val)) {
+                            val = val.replace(regex, keyword);
+                            changed = true;
+                        }
+                    });
+                }
 
                 if (changed) {
                     this.clauseTextEditor.value = val;
