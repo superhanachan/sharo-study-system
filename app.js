@@ -1731,31 +1731,35 @@ class QuizApp {
                         }
                     });
 
-                    let rowCorrectBlanks = 0;
-                    let rowAnsweredBlanks = 0;
-                    let rowAutoFilledCount = 0;
+                    let allRowBlanksCorrect = true;
                     keywordData.forEach((kwInfo, idx) => {
                         const key = `${q.id}-${idx}`;
-                        const val = this.userAnswers[key];
-                        // Always skip streak count for auto-filled answers
+                        const val = (this.userAnswers[key] || "").toString();
                         const isAutoFilled = this.autoFilledAnswers.has(key);
                         if (isAutoFilled) rowAutoFilledCount++;
 
-                        if (onlyManual && (isAutoFilled || !val)) return;
-
-                        if (!val) return; // Skip empty answers for both drag and input types
+                        // Single view logic for overall correctness:
+                        // 1. If empty and not auto-filled, we mark row as incomplete/wrong for summary purposes 
+                        //    only if it was required to be answered.
+                        if (!val) {
+                            allRowBlanksCorrect = false;
+                            return;
+                        }
 
                         rowAnsweredBlanks++;
                         const isKwCorrect = kwInfo.type === 'drag'
                             ? val === kwInfo.text
                             : this.normalizeInput(val) === this.normalizeInput(kwInfo.text);
+                        
                         if (isKwCorrect) {
                             rowCorrectBlanks++;
+                        } else {
+                            allRowBlanksCorrect = false;
                         }
 
-                        if (isAutoFilled) return; // Skip stat update if auto-filled
+                        if (isAutoFilled) return; // Skip indiviual stat update if auto-filled
 
-                        // Detailed stat per blank (Added for auto-fill support in review mode)
+                        // Detailed stat per blank
                         const bStatKey = this.getBlankStatKey(this.getQuestionBaseId(q.id), idx);
                         if (!this.questionStats[bStatKey]) {
                             this.questionStats[bStatKey] = {
@@ -1776,11 +1780,11 @@ class QuizApp {
 
                     answeredCount += rowAnsweredBlanks;
                     correctCount += rowCorrectBlanks;
-                    // For the overall row status/stat, consider it correct only if ALL blanks are correct
-                    if (rowAnsweredBlanks === 0) {
-                        return;
+                    
+                    if (rowAnsweredBlanks === 0 && rowAutoFilledCount === 0) {
+                        return; // No activity on this row
                     }
-                    isCorrect = (keywordData.length > 0 && rowAnsweredBlanks === keywordData.length && rowCorrectBlanks === keywordData.length);
+                    isCorrect = allRowBlanksCorrect;
                 } else {
                     const key = q.id;
                     const userAnswer = this.userAnswers[key];
