@@ -526,28 +526,27 @@ h2,
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 20px;
-    height: 20px;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid var(--glass-border);
-    color: var(--text-secondary);
+    background: var(--success);
+    color: var(--bg-dark);
+    border: 1px solid var(--success);
+    padding: 2px 8px;
     border-radius: 4px;
     margin-left: 8px;
     cursor: pointer;
-    font-size: 0.7rem;
+    font-size: 0.75rem;
+    font-weight: 800;
     transition: var(--transition);
     vertical-align: middle;
+    box-shadow: 0 0 10px rgba(74, 222, 128, 0.3);
 }
 
 .override-btn:hover {
-    background: var(--success);
-    color: var(--bg-dark);
-    border-color: var(--success);
-    transform: scale(1.1);
+    filter: brightness(1.2);
+    transform: scale(1.05);
 }
 
 .override-btn:active {
-    transform: scale(0.9);
+    transform: scale(0.95);
 }
 
 @media (max-width: 768px) {
