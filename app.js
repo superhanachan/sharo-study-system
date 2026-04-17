@@ -973,16 +973,31 @@ class QuizApp {
         if (stat.srsLevel === undefined) stat.srsLevel = 0;
         if (!stat.history) stat.history = [];
 
+        const now = new Date();
+        const todayStr = this.formatDateStr(now);
+
+        // 同じ日に既に正解しているかチェック
+        const alreadyCorrectToday = stat.history.some(h => {
+            if (!h.date || !h.isCorrect) return false;
+            try {
+                const hDate = new Date(h.date);
+                return this.formatDateStr(hDate) === todayStr;
+            } catch (e) { return false; }
+        });
+
         // Record attempt
         stat.history.push({
-            date: new Date().toISOString(),
+            date: now.toISOString(),
             isCorrect: isCorrect,
             level: stat.srsLevel
         });
         if (stat.history.length > 20) stat.history.shift();
 
         if (isCorrect) {
-            stat.srsLevel = Math.min(stat.srsLevel + 1, SRS_INTERVALS.length - 1);
+            // 同一日に既に正解済みの場合はレベルを上げない
+            if (!alreadyCorrectToday) {
+                stat.srsLevel = Math.min(stat.srsLevel + 1, SRS_INTERVALS.length - 1);
+            }
         } else {
             // Drop 2 levels on mistake, but keep at least 0
             stat.srsLevel = Math.max(0, stat.srsLevel - 2);
