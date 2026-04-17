@@ -521,6 +521,35 @@ h2,
 .logic-tag.danger { background: rgba(247, 37, 133, 0.2); color: #f72585; }
 .logic-tag.info { background: rgba(76, 201, 240, 0.2); color: #4cc9f0; }
 
+/* Override Button */
+.override-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--glass-border);
+    color: var(--text-secondary);
+    border-radius: 4px;
+    margin-left: 8px;
+    cursor: pointer;
+    font-size: 0.7rem;
+    transition: var(--transition);
+    vertical-align: middle;
+}
+
+.override-btn:hover {
+    background: var(--success);
+    color: var(--bg-dark);
+    border-color: var(--success);
+    transform: scale(1.1);
+}
+
+.override-btn:active {
+    transform: scale(0.9);
+}
+
 @media (max-width: 768px) {
     .projection-chart-container {
         height: 250px;

@@ -1010,6 +1010,22 @@ class QuizApp {
         stat.nextReview = nextDate.toISOString();
     }
 
+    overrideCorrect(statKey, callback) {
+        const stat = this.questionStats[statKey];
+        if (!stat || !stat.history || stat.history.length === 0) return;
+        const last = stat.history[stat.history.length - 1];
+        if (last.isCorrect) return; // Only override mistakes
+
+        stat.history.pop();
+        stat.srsLevel = last.level;
+        stat.correct++; // Mistake was originally counted as total++, but not correct++
+        
+        this.updateSRS(stat, true);
+        this.saveData();
+        this.updateDashboard();
+        if (callback) callback();
+    }
+
     getQuestionBaseId(id) {
         if (id === undefined || id === null) return '';
         const idStr = String(id);
@@ -2424,6 +2440,7 @@ class QuizApp {
                     };
                 }
 
+                let overrideBtn = null;
                 if (this.isChecked) {
                     const savedAnswer = this.userAnswers[`${set.id}-${currentIdx}`];
                     const isCorrect = savedAnswer === kwInfo.text;
@@ -2433,10 +2450,24 @@ class QuizApp {
                         reveal.className = 'reveal-correct';
                         reveal.textContent = ` (${kwInfo.text})`;
                         blank.appendChild(reveal);
+
+                        // Oops button
+                        overrideBtn = document.createElement('span');
+                        overrideBtn.className = 'override-btn';
+                        overrideBtn.innerHTML = '↺ やり直し';
+                        overrideBtn.title = 'うっかりミス（正解として扱う）';
+                        overrideBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            this.overrideCorrect(statKey, () => this.renderClauseView(set));
+                        };
                     }
                 }
 
-                placeholder.replaceWith(blank, peek);
+                if (overrideBtn) {
+                    placeholder.replaceWith(blank, overrideBtn, peek);
+                } else {
+                    placeholder.replaceWith(blank, peek);
+                }
             } else {
                 // Input type
                 const input = document.createElement('input');
@@ -2472,7 +2503,8 @@ class QuizApp {
                             }
                         });
                     };
-                } else {
+                let overrideBtn = null;
+                if (this.isChecked) {
                     input.disabled = true;
                     const isCorrect = this.normalizeInput(savedAnswer) === this.normalizeInput(kwInfo.text);
                     input.classList.add(isCorrect ? 'correct' : 'wrong');
@@ -2480,7 +2512,23 @@ class QuizApp {
                         const tip = document.createElement('span');
                         tip.className = 'reveal-correct';
                         tip.textContent = ` (${kwInfo.text})`;
-                        placeholder.parentNode.insertBefore(tip, placeholder.nextSibling);
+                        // We'll append tip later or inside a wrapper
+
+                        // Oops button
+                        overrideBtn = document.createElement('span');
+                        overrideBtn.className = 'override-btn';
+                        overrideBtn.innerHTML = '↺ やり直し';
+                        overrideBtn.title = 'うっかりミス（正解として扱う）';
+                        overrideBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            this.overrideCorrect(statKey, () => this.renderClauseView(set));
+                        };
+                        
+                        // Attach tip and button to a temporary container that we'll add to the wrapper or sibling
+                        const resultBox = document.createElement('span');
+                        resultBox.appendChild(tip);
+                        resultBox.appendChild(overrideBtn);
+                        overrideBtn = resultBox; // Re-use the variable to represent the whole mistake UI
                     }
                 }
 
@@ -2501,7 +2549,11 @@ class QuizApp {
                     wrapper.appendChild(badge);
                 }
 
-                placeholder.replaceWith(wrapper, peek);
+                if (overrideBtn) {
+                    placeholder.replaceWith(wrapper, overrideBtn, peek);
+                } else {
+                    placeholder.replaceWith(wrapper, peek);
+                }
             }
         }
 
@@ -2567,7 +2619,7 @@ class QuizApp {
         buildInfo.style.fontWeight = 'bold';
         buildInfo.style.boxShadow = '0 0 10px rgba(247, 37, 133, 0.5)';
         const autoFillStatus = this.autoFillEnabled ? `ON(${this.autoFillThreshold}🔥)` : 'OFF';
-        const buildDate = localStorage.getItem('sharoBuildDate') || '2026-03-13 13:00';
+        const buildDate = '2026-04-17 (Updated)';
         const buildMsg = `BUILD: ${buildDate} [AUTO:${autoFillStatus}]`;
 
         buildInfo.textContent = buildMsg;
@@ -3608,6 +3660,7 @@ class QuizApp {
                         isAllCorrect = (correctSet.size === userSet.size && [...correctSet].every(item => userSet.has(item)));
                     } else { isAllCorrect = userAnswer === q.answer; }
                     tr.classList.add(isAllCorrect ? 'row-correct' : 'row-wrong');
+                    tr.dataset.isWrong = !isAllCorrect;
                 }
             }
 
@@ -3722,6 +3775,16 @@ class QuizApp {
                                 const reveal = document.createElement('span');
                                 reveal.className = 'reveal-correct'; reveal.textContent = ` (${kwInfo.text})`;
                                 blank.appendChild(reveal);
+
+                                // Oops button
+                                const overrideBtn = document.createElement('span');
+                                overrideBtn.className = 'override-btn';
+                                overrideBtn.innerHTML = '↺';
+                                overrideBtn.onclick = (e) => {
+                                    e.stopPropagation();
+                                    this.overrideCorrect(statKey, () => this.renderTable());
+                                };
+                                blank.appendChild(overrideBtn);
                             }
                         }
 
@@ -3770,6 +3833,16 @@ class QuizApp {
                                 tip.className = 'reveal-correct';
                                 tip.textContent = ` (${kwInfo.text})`;
                                 placeholder.parentNode.insertBefore(tip, placeholder.nextSibling);
+
+                                // Oops button
+                                const overrideBtn = document.createElement('span');
+                                overrideBtn.className = 'override-btn';
+                                overrideBtn.innerHTML = '↺';
+                                overrideBtn.onclick = (e) => {
+                                    e.stopPropagation();
+                                    this.overrideCorrect(statKey, () => this.renderTable());
+                                };
+                                placeholder.parentNode.insertBefore(overrideBtn, tip.nextSibling);
                             }
                         }
 
@@ -3853,6 +3926,19 @@ class QuizApp {
                 const historyBtn = document.createElement('span'); historyBtn.className = 'history-icon-btn'; historyBtn.innerHTML = ' 📈';
                 historyBtn.onclick = (e) => { e.stopPropagation(); this.showSRSDetail(statKey); };
                 tdQ.appendChild(historyBtn);
+                
+                // Oops button for summary/row if wrong
+                if (this.isChecked && tr.dataset.isWrong === "true") {
+                    const overrideBtn = document.createElement('span');
+                    overrideBtn.className = 'override-btn';
+                    overrideBtn.innerHTML = '↺';
+                    overrideBtn.title = 'うっかりミス（正解として扱う）';
+                    overrideBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        this.overrideCorrect(statKey, () => this.renderTable());
+                    };
+                    tdQ.appendChild(overrideBtn);
+                }
             }
             tr.appendChild(tdQ);
 
