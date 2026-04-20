@@ -1238,19 +1238,26 @@ class QuizApp {
             this.saveQuestionStats();
         }
 
+        // Sort history by date internally for graph display (ascending: oldest to newest)
+        const sortedHistory = [...history].sort((a, b) => {
+            const da = new Date(a.date);
+            const db = new Date(b.date);
+            return (isNaN(da) ? 0 : da) - (isNaN(db) ? 0 : db);
+        });
+
         const nextReview = stat.nextReview ? new Date(stat.nextReview) : null;
 
-        const labels = history.map((h, i) => {
+        const labels = sortedHistory.map((h, i) => {
             const d = new Date(h.date);
             const dateStr = isNaN(d) ? '?' : (d.getMonth() + 1) + '/' + d.getDate();
             return `${i + 1}回目 (${dateStr})`;
         });
 
-        const data = history.map((h, index) => {
+        const data = sortedHistory.map((h, index) => {
             return h.level !== undefined ? h.level : 0;
         });
 
-        const pointColors = history.map(h => h.isCorrect ? '#4ade80' : '#f72585');
+        const pointColors = sortedHistory.map(h => h.isCorrect ? '#4ade80' : '#f72585');
 
         if (nextReview) {
             labels.push(`次回 (${(nextReview.getMonth() + 1)}/${nextReview.getDate()})`);
@@ -1311,8 +1318,8 @@ class QuizApp {
                             callbacks: {
                                 label: (context) => {
                                     const idx = context.dataIndex;
-                                    if (idx < history.length) {
-                                        return `習熟度: Lv.${context.raw} (${history[idx].isCorrect ? '正解' : '不正解'})`;
+                                    if (idx < sortedHistory.length) {
+                                        return `習熟度: Lv.${context.raw} (${sortedHistory[idx].isCorrect ? '正解' : '不正解'})`;
                                     }
                                     return `現在の習熟度: Lv.${context.raw}`;
                                 }
@@ -1323,8 +1330,8 @@ class QuizApp {
             });
         }, 100);
 
-        // Calculate recent accuracy from indices
-        const recentHistory = history.slice(-5);
+        // Calculate recent accuracy from indices (chronological)
+        const recentHistory = sortedHistory.slice(-5);
         const recentCorrect = recentHistory.filter(h => h.isCorrect).length;
         const recentTotal = recentHistory.length;
         const recentRate = recentTotal > 0 ? Math.round((recentCorrect / recentTotal) * 100) : 0;
