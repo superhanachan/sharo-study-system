@@ -340,6 +340,106 @@ h2,
     text-align: left;
 }
 
+/* Nightly Review Theme - Cozy Lounge */
+.nightly-review-mode {
+    --bg-dark: #120a06; /* Deep mahogany */
+    --bg-card: rgba(45, 25, 15, 0.85);
+    --accent: #ffb703; /* Amber/Gold */
+    --accent-hover: #fb8500;
+    --text-primary: #f8f1e5;
+    --text-secondary: rgba(248, 241, 229, 0.7);
+    --glass-border: rgba(255, 183, 3, 0.2);
+    background-image: radial-gradient(circle at center, #2d190f 0%, #0c0604 100%) !important;
+}
+
+.nightly-review-mode::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: 
+        radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 40px),
+        radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 30px),
+        radial-gradient(white, rgba(255,255,255,.1) 2px, transparent 40px);
+    background-size: 550px 550px, 350px 350px, 250px 250px;
+    background-position: 0 0, 40px 60px, 130px 270px;
+    opacity: 0.15;
+    pointer-events: none;
+    z-index: -1;
+}
+
+.nightly-review-mode .home-dashboard,
+.nightly-review-mode .quiz-wrapper,
+.nightly-review-mode .quiz-container {
+    border-color: rgba(255, 183, 3, 0.3) !important;
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.7), 0 0 30px rgba(255, 183, 3, 0.15) !important;
+    background: rgba(30, 15, 10, 0.8) !important;
+}
+
+.nightly-review-mode .welcome-title,
+.nightly-review-mode .quiz-title {
+    background: linear-gradient(135deg, #f8f1e5 0%, #ffb703 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 20px rgba(255, 183, 3, 0.3);
+}
+
+.nightly-review-mode .clause-blank {
+    border-bottom: 2px solid #ffb703 !important;
+}
+
+.nightly-review-mode .clause-blank.filled {
+    color: #ffb703 !important;
+}
+
+.nightly-review-mode .badge {
+    box-shadow: 0 0 10px rgba(255, 183, 3, 0.2);
+}
+
+.main-stat-card.nightly-card {
+    background: linear-gradient(135deg, rgba(255, 183, 3, 0.15) 0%, rgba(0, 0, 0, 0.4) 100%);
+    border: 1px solid rgba(255, 183, 3, 0.3);
+    transition: all 0.3s ease;
+}
+
+.main-stat-card.nightly-card:hover {
+    border-color: rgba(255, 183, 3, 0.6);
+    box-shadow: 0 0 25px rgba(255, 183, 3, 0.2);
+}
+
+.nightly-btn {
+    background: linear-gradient(135deg, #ffb703, #fb8500) !important;
+    color: #120a06 !important;
+    border: none !important;
+    box-shadow: 0 4px 15px rgba(255, 183, 3, 0.4) !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.5px;
+}
+
+.nightly-btn:hover {
+    transform: scale(1.05) !important;
+    filter: brightness(1.1) !important;
+    box-shadow: 0 6px 20px rgba(255, 183, 3, 0.6) !important;
+}
+
+.nightly-review-mode .mini-btn {
+    opacity: 0.9;
+}
+
+.nightly-review-mode .mini-btn:hover {
+    opacity: 1;
+}
+
+.nightly-review-mode .sidebar {
+    background: #0c0604 !important;
+    border-right-color: rgba(255, 183, 3, 0.2) !important;
+}
+
+.nightly-review-mode .tab-btn.active {
+    background: #ffb703 !important;
+    color: #120a06 !important;
+}
+
 .large-bar {
     height: 16px;
     margin: 1.5rem 0;
