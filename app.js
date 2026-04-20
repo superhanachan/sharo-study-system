@@ -1247,21 +1247,14 @@ class QuizApp {
         });
 
         const data = history.map((h, index) => {
-            // 直近5回分（自分を含む）の正答率を計算
-            const start = Math.max(0, index - 4);
-            const window = history.slice(start, index + 1);
-            const correctInWindow = window.filter(x => x.isCorrect).length;
-            return Math.round((correctInWindow / window.length) * 100);
+            return h.level !== undefined ? h.level : 0;
         });
 
         const pointColors = history.map(h => h.isCorrect ? '#4ade80' : '#f72585');
 
-        // 直近5回の正答率を取得（最新のデータから）
-        const recentAccuracy = data.length > 0 ? data[data.length - 1] : 0;
-
         if (nextReview) {
             labels.push(`次回 (${(nextReview.getMonth() + 1)}/${nextReview.getDate()})`);
-            data.push(recentAccuracy);
+            data.push(stat.srsLevel || 0);
             pointColors.push('#ffd166');
         }
 
@@ -1281,7 +1274,7 @@ class QuizApp {
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: '正答率 (%)',
+                        label: '習熟Lv',
                         data: data,
                         borderColor: '#4cc9f0',
                         backgroundColor: 'rgba(76, 201, 240, 0.2)',
@@ -1303,12 +1296,12 @@ class QuizApp {
                         },
                         y: {
                             beginAtZero: true,
-                            max: 100,
+                            max: 10,
                             grid: { color: 'rgba(255,255,255,0.05)' },
                             ticks: {
                                 color: 'rgba(255,255,255,0.8)',
-                                stepSize: 20,
-                                callback: (value) => value + '%'
+                                stepSize: 1,
+                                callback: (value) => 'Lv.' + value
                             }
                         }
                     },
@@ -1319,9 +1312,9 @@ class QuizApp {
                                 label: (context) => {
                                     const idx = context.dataIndex;
                                     if (idx < history.length) {
-                                        return `正答率: ${context.raw}% (${history[idx].isCorrect ? '正解' : '不正解'})`;
+                                        return `習熟度: Lv.${context.raw} (${history[idx].isCorrect ? '正解' : '不正解'})`;
                                     }
-                                    return `現在の正答率: ${context.raw}%`;
+                                    return `現在の習熟度: Lv.${context.raw}`;
                                 }
                             }
                         }
@@ -1348,7 +1341,7 @@ class QuizApp {
                 </div>
             </div>
             <p style="margin-top: 0.5rem; opacity: 0.6; font-size: 0.75rem; text-align: right;">累計成績: ${stat.correct}/${stat.total} (${stat.total > 0 ? Math.round((stat.correct / stat.total) * 100) : 0}%)</p>
-            <p style="margin-top: 1rem; opacity: 0.7; font-size: 0.8rem;">※グラフは直近5回分の移動平均を表示しています。 <span style="color:#4ade80">●</span> が正解、<span style="color:#f72585">●</span> が不正解です。</p>
+            <p style="margin-top: 1rem; opacity: 0.7; font-size: 0.8rem;">※グラフは習熟レベル（Lv.0〜10）の推移を表示しています。 <span style="color:#4ade80">●</span> が正解、<span style="color:#f72585">●</span> が不正解です。</p>
         `;
     }
 
