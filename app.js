@@ -3498,7 +3498,6 @@ class QuizApp {
         const todayStr = this.formatDateStr(now);
         const errorIds = new Set();
 
-        // 1. Find all questions that had an error today
         Object.entries(this.questionStats).forEach(([id, stat]) => {
             if (!stat.history) return;
             const hadErrorToday = stat.history.some(h => {
@@ -3509,15 +3508,19 @@ class QuizApp {
                 } catch (e) { return false; }
             });
             if (hadErrorToday) {
-                // If it's a clause-summary key, we just need the base ID
+                let baseId = id;
                 if (id.startsWith('clause-summary-')) {
-                    errorIds.add(id.replace('clause-summary-', ''));
-                } else if (id.includes('-')) {
-                    // It's an individual blank, get the question ID
-                    errorIds.add(id.split('-')[0]);
-                } else {
-                    errorIds.add(id);
+                    baseId = id.replace('clause-summary-', '');
+                } else if (id.startsWith('clause-')) {
+                    // individual blank: clause-BASEID-INDEX
+                    const parts = id.split('-');
+                    parts.shift(); // remove 'clause'
+                    parts.pop(); // remove 'INDEX'
+                    baseId = parts.join('-');
                 }
+                
+                // Final strip of any generic prefixes
+                errorIds.add(this.getQuestionBaseId(baseId));
             }
         });
 
