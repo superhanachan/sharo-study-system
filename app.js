@@ -1732,6 +1732,10 @@ class QuizApp {
                     });
 
                     let allRowBlanksCorrect = true;
+                    let rowAnsweredBlanks = 0;
+                    let rowCorrectBlanks = 0;
+                    let rowAutoFilledCount = 0;
+
                     keywordData.forEach((kwInfo, idx) => {
                         const key = `${q.id}-${idx}`;
                         const val = (this.userAnswers[key] || "").toString();
