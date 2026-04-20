@@ -973,6 +973,7 @@ class QuizApp {
      */
     updateSRS(stat, isCorrect) {
         if (!stat) return;
+        if (this.currentSetId === 'auto-nightly-review') return;
         if (stat.srsLevel === undefined) stat.srsLevel = 0;
         if (!stat.history) stat.history = [];
 
@@ -1861,8 +1862,8 @@ class QuizApp {
 
         this.scoreDisplay.textContent = `正解数: ${correctCount} / ${answeredCount} (合計: ${totalItems})`;
 
-        // Only add to history if the user manually answered at least one question
-        if (answeredCount > 0) {
+        // Only add to history if the user manually answered at least one question and NOT in nightly review mode
+        if (answeredCount > 0 && this.currentSetId !== 'auto-nightly-review') {
             this.history.unshift({
                 timestamp: new Date().toLocaleString(),
                 isoDate: new Date().toISOString(),
