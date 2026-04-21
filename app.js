@@ -2068,6 +2068,17 @@ class QuizApp {
             const srsLevel = g.summarySrsLevel !== undefined ? g.summarySrsLevel : Math.round(g.srsLevelSum / g.srsLevelCount);
             // 解答数をセッション数（復習回数）に置き換え
             const displayTotal = g.sessionCount || Math.round(g.total / (g.srsLevelCount || 1));
+
+            const history = (this.questionStats[g.modalKey] || {}).history || [];
+            let slope = 0;
+            if (history.length > 0) {
+                const firstDate = new Date(history[0].date);
+                const now = new Date();
+                const diffTime = Math.abs(now - firstDate);
+                const diffDays = Math.max(1, diffTime / (1000 * 60 * 60 * 24));
+                slope = Math.round((srsLevel / diffDays) * 100) / 100; // Round to 2 decimal places
+            }
+
             const stagnantScore = displayTotal / (srsLevel + 1);
             return {
                 ...g,
@@ -2077,6 +2088,7 @@ class QuizApp {
                 errorCount: g.errorCount,
                 accuracy,
                 srsLevel,
+                slope,
                 stagnantScore
             };
         })
@@ -2096,7 +2108,7 @@ class QuizApp {
         .slice(0, 100);
 
         // Update Sort Icons in headers
-        ['total', 'errorCount', 'srsLevel', 'accuracy'].forEach(key => {
+        ['total', 'errorCount', 'srsLevel', 'slope', 'accuracy'].forEach(key => {
             const el = document.getElementById(`stagnant-sort-${key}`);
             if (el) {
                 const icon = el.querySelector('.sort-icon');
@@ -2122,9 +2134,10 @@ class QuizApp {
                 <td>${s.total}回</td>
                 <td><span style="color: ${s.errorCount > 0 ? 'var(--error)' : 'var(--text-secondary)'}">${s.errorCount}個</span></td>
                 <td><span class="srs-badge level-${s.srsLevel}">Lv.${s.srsLevel}</span></td>
+                <td style="color: ${s.slope < 0.1 ? 'var(--error)' : 'var(--text-primary)'}">${s.slope}</td>
                 <td style="color: ${s.accuracy < 50 ? 'var(--error)' : 'var(--text-primary)'}">${s.accuracy}%</td>
             </tr>`;
-        }).join('') || '<tr><td colspan="5">条件に合う問題がまだありません</td></tr>';
+        }).join('') || '<tr><td colspan="6">条件に合う問題がまだありません</td></tr>';
 
         // Sync auto-fill UI settings
         if (this.autoFillToggle) this.autoFillToggle.checked = this.autoFillEnabled;
@@ -2139,7 +2152,9 @@ class QuizApp {
             this.stagnantSortOrder *= -1;
         } else {
             this.stagnantSortKey = key;
-            this.stagnantSortOrder = -1; // New key defaults to descending
+            // For stats where "smaller is worse" (like Slope and Accuracy), default to ascending (1).
+            // For others like Total or ErrorCount, default to descending (-1).
+            this.stagnantSortOrder = (key === 'slope' || key === 'accuracy' || key === 'srsLevel') ? 1 : -1;
         }
         this.renderStats();
     }
