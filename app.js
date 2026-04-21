@@ -59,6 +59,32 @@ class QuizApp {
         this.stagnantSortKey = 'stagnantScore'; // Default sorting
         this.stagnantSortOrder = -1; // -1 for desc, 1 for asc
 
+        // --- ONE-TIME DATA RECOVERY ---
+        const repairKey = 'sharoDataRepair_20260421v3';
+        if (!localStorage.getItem(repairKey)) {
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            tomorrow.setHours(0, 0, 0, 0);
+
+            Object.values(this.questionStats).forEach(stat => {
+                if (stat.nextReview && stat.history && stat.history.length > 0) {
+                    const last = stat.history[stat.history.length - 1];
+                    if (last.date) {
+                        const lastDate = new Date(last.date);
+                        const days = SRS_INTERVALS[stat.srsLevel || 0] || 0;
+                        const newNext = new Date(lastDate);
+                        newNext.setDate(newNext.getDate() + days);
+                        newNext.setHours(0, 0, 0, 0);
+                        if (newNext < tomorrow) stat.nextReview = tomorrow.toISOString();
+                        else stat.nextReview = newNext.toISOString();
+                    }
+                }
+            });
+            localStorage.setItem(repairKey, 'done');
+            setTimeout(() => { this.saveQuestionStats(); this.updateDashboard(); }, 1000);
+        }
+        // -----------------------------
+
         this.chartMode = 'accuracy';
         this.statsChart = null;
         this.srsProjectionChart = null;
