@@ -59,29 +59,43 @@ class QuizApp {
         this.stagnantSortKey = 'stagnantScore'; // Default sorting
         this.stagnantSortOrder = -1; // -1 for desc, 1 for asc
 
-        // --- ONE-TIME DATA RECOVERY ---
-        const repairKey = 'sharoDataRepair_20260421v3';
+        // --- REFINED DATA RECOVERY ---
+        const repairKey = 'sharoDataRepair_20260421v4_distributed';
         if (!localStorage.getItem(repairKey)) {
-            const tomorrow = new Date();
+            console.log("Starting refined data recovery with distribution...");
+            const now = new Date();
+            const tomorrow = new Date(now);
             tomorrow.setDate(tomorrow.getDate() + 1);
             tomorrow.setHours(0, 0, 0, 0);
 
+            let spreadCounter = 0;
             Object.values(this.questionStats).forEach(stat => {
                 if (stat.nextReview && stat.history && stat.history.length > 0) {
                     const last = stat.history[stat.history.length - 1];
                     if (last.date) {
                         const lastDate = new Date(last.date);
                         const days = SRS_INTERVALS[stat.srsLevel || 0] || 0;
-                        const newNext = new Date(lastDate);
-                        newNext.setDate(newNext.getDate() + days);
-                        newNext.setHours(0, 0, 0, 0);
-                        if (newNext < tomorrow) stat.nextReview = tomorrow.toISOString();
-                        else stat.nextReview = newNext.toISOString();
+                        const originalNext = new Date(lastDate);
+                        originalNext.setDate(originalNext.getDate() + days);
+                        originalNext.setHours(0, 0, 0, 0);
+                        
+                        if (originalNext < tomorrow) {
+                            // If it's overdue, spread it gently over the next 14 days
+                            const offset = (spreadCounter % 14) + 1; // 1 to 14 days from now
+                            const distributedNext = new Date(now);
+                            distributedNext.setDate(distributedNext.getDate() + offset);
+                            distributedNext.setHours(0, 0, 0, 0);
+                            stat.nextReview = distributedNext.toISOString();
+                            spreadCounter++;
+                        } else {
+                            // Keep the future date if it was originally in the future
+                            stat.nextReview = originalNext.toISOString();
+                        }
                     }
                 }
             });
             localStorage.setItem(repairKey, 'done');
-            setTimeout(() => { this.saveQuestionStats(); this.updateDashboard(); }, 1000);
+            setTimeout(() => { this.saveQuestionStats(); this.updateDashboard(); }, 1200);
         }
         // -----------------------------
 
