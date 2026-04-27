@@ -475,6 +475,7 @@ class QuizApp {
         this.selectAllPoolBtn = document.getElementById('select-all-pool-btn');
         this.collapseAllBtn = document.getElementById('collapse-all-btn');
         this.expandAllBtn = document.getElementById('expand-all-btn');
+        this.showSelectedGraphBtn = document.getElementById('show-selected-graph-btn');
         this.globalKeywordBank = document.getElementById('global-keyword-bank');
 
         // GitHub Sync UI
@@ -537,6 +538,9 @@ class QuizApp {
         }
         if (this.expandAllBtn) {
             this.expandAllBtn.addEventListener('click', () => this.expandAllFolders());
+        }
+        if (this.showSelectedGraphBtn) {
+            this.showSelectedGraphBtn.addEventListener('click', () => this.showSelectedProgressGraph());
         }
         if (this.editModeToggle) {
             this.editModeToggle.addEventListener('change', (e) => {
@@ -1259,58 +1263,107 @@ class QuizApp {
         }
     }
 
-    showSRSDetail(statKey) {
-        const stat = this.questionStats[statKey];
-        if (!stat) return;
+    showSRSDetail(statKeyOrKeys) {
+        const isMulti = Array.isArray(statKeyOrKeys);
+        const statKeys = isMulti ? statKeyOrKeys : [statKeyOrKeys];
+        
+        const statsToRender = [];
+        statKeys.forEach(key => {
+            const stat = this.questionStats[key];
+            if (!stat) return;
+
+            // Ensure history exists or reconstruct from recent for legacy data
+            let historySource = stat.history || [];
+            if (historySource.length === 0 && stat.recent && stat.recent.length > 0) {
+                historySource = stat.recent.map((isCorrect, i) => ({
+                    date: new Date(Date.now() - (stat.recent.length - 1 - i) * 60000).toISOString(),
+                    isCorrect: !!isCorrect
+                }));
+                stat.history = historySource;
+                this.saveQuestionStats();
+            }
+
+            if (historySource.length > 0) {
+                statsToRender.push({ key, stat });
+            }
+        });
+
+        if (statsToRender.length === 0) {
+            if (isMulti) {
+                alert('選択した問題に学習履歴がありません。一度解答してからお試しください。');
+            }
+            return;
+        }
 
         this.srsModal.classList.remove('hidden');
-        this.srsModalTitle.textContent = `記憶定着の推移: ${stat.text.substring(0, 40)}${stat.text.length > 40 ? '...' : ''}`;
-
-        // Ensure history exists or reconstruct from recent for legacy data
-        let history = stat.history || [];
-        if (history.length === 0 && stat.recent && stat.recent.length > 0) {
-            history = stat.recent.map((isCorrect, i) => ({
-                date: new Date(Date.now() - (stat.recent.length - 1 - i) * 60000).toISOString(),
-                isCorrect: !!isCorrect
-            }));
-            // Persist the reconstructed history so it shows up next time and is synced
-            stat.history = history;
-            this.saveQuestionStats();
+        
+        if (isMulti) {
+            this.srsModalTitle.textContent = `習熟度の推移比較 (${statsToRender.length}件)`;
+        } else {
+            const stat = statsToRender[0].stat;
+            const text = stat.text || '問題';
+            this.srsModalTitle.textContent = `記憶定着の推移: ${text.substring(0, 40)}${text.length > 40 ? '...' : ''}`;
         }
 
-        // Sort history by date internally for graph display (ascending: oldest to newest)
-        const sortedHistory = [...history].sort((a, b) => {
-            const da = new Date(a.date);
-            const db = new Date(b.date);
-            return (isNaN(da) ? 0 : da) - (isNaN(db) ? 0 : db);
+        // Find the maximum number of attempts across all stats to define the X-axis
+        let maxAttempts = 0;
+        statsToRender.forEach(item => {
+            maxAttempts = Math.max(maxAttempts, (item.stat.history || []).length + (item.stat.nextReview ? 1 : 0));
         });
 
-        const nextReview = stat.nextReview ? new Date(stat.nextReview) : null;
-
-        const labels = sortedHistory.map((h, i) => {
-            const d = new Date(h.date);
-            const dateStr = isNaN(d) ? '?' : (d.getMonth() + 1) + '/' + d.getDate();
-            return `${i + 1}回目 (${dateStr})`;
-        });
-
-        const data = sortedHistory.map((h, index) => {
-            return h.level !== undefined ? h.level : 0;
-        });
-
-        const pointColors = sortedHistory.map(h => h.isCorrect ? '#4ade80' : '#f72585');
-
-        if (nextReview) {
-            labels.push(`次回 (${(nextReview.getMonth() + 1)}/${nextReview.getDate()})`);
-            data.push(stat.srsLevel || 0);
-            pointColors.push('#ffd166');
+        const labels = Array.from({ length: maxAttempts }, (_, i) => `${i + 1}回目`);
+        // If it's a single stat, add the date to the label like before
+        if (!isMulti) {
+            const stat = statsToRender[0].stat;
+            const sortedHistory = [...(stat.history || [])].sort((a, b) => new Date(a.date) - new Date(b.date));
+            sortedHistory.forEach((h, i) => {
+                const d = new Date(h.date);
+                const dateStr = isNaN(d) ? '?' : (d.getMonth() + 1) + '/' + d.getDate();
+                labels[i] = `${i + 1}回目 (${dateStr})`;
+            });
+            if (stat.nextReview) {
+                const nr = new Date(stat.nextReview);
+                labels[sortedHistory.length] = `次回 (${nr.getMonth() + 1}/${nr.getDate()})`;
+            }
         }
+
+        const colorPalette = [
+            '#4cc9f0', '#4ade80', '#f72585', '#ffd166', '#f3722c', 
+            '#b5179e', '#7209b7', '#3f37c9', '#4895ef', '#4361ee',
+            '#b5e48c', '#d9ed92', '#1a759f', '#1e6091', '#184e77'
+        ];
+
+        const datasets = statsToRender.map((item, idx) => {
+            const stat = item.stat;
+            const sortedHistory = [...(stat.history || [])].sort((a, b) => new Date(a.date) - new Date(b.date));
+            
+            const data = sortedHistory.map(h => h.level !== undefined ? h.level : 0);
+            if (stat.nextReview) {
+                data.push(stat.srsLevel || 0);
+            }
+
+            const color = colorPalette[idx % colorPalette.length];
+            const name = stat.text ? (stat.text.substring(0, 20) + (stat.text.length > 20 ? '...' : '')) : `問題 ${idx+1}`;
+
+            return {
+                label: name,
+                data: data,
+                borderColor: color,
+                backgroundColor: color + '33', // 20% opacity
+                fill: !isMulti, // Only fill if single line
+                tension: 0.1,
+                pointBackgroundColor: sortedHistory.map(h => h.isCorrect ? '#4ade80' : '#f72585').concat(stat.nextReview ? ['#ffd166'] : []),
+                pointRadius: isMulti ? 4 : 6,
+                pointHoverRadius: isMulti ? 6 : 8,
+                showLine: true
+            };
+        });
 
         if (this.srsDetailChart) {
             this.srsDetailChart.destroy();
             this.srsDetailChart = null;
         }
 
-        // Use a short delay to ensure canvas is ready and sized
         setTimeout(() => {
             const canvas = document.getElementById('srsDetailChart');
             if (!canvas) return;
@@ -1320,18 +1373,7 @@ class QuizApp {
                 type: 'line',
                 data: {
                     labels: labels,
-                    datasets: [{
-                        label: '習熟Lv',
-                        data: data,
-                        borderColor: '#4cc9f0',
-                        backgroundColor: 'rgba(76, 201, 240, 0.2)',
-                        fill: true,
-                        tension: 0.1, // Reduced tension to avoid weird curves with few points
-                        pointBackgroundColor: pointColors,
-                        pointRadius: 6,
-                        pointHoverRadius: 8,
-                        showLine: true
-                    }]
+                    datasets: datasets
                 },
                 options: {
                     responsive: true,
@@ -1353,15 +1395,30 @@ class QuizApp {
                         }
                     },
                     plugins: {
-                        legend: { display: false },
+                        legend: { 
+                            display: isMulti,
+                            position: 'bottom',
+                            labels: {
+                                color: 'rgba(255,255,255,0.8)',
+                                boxWidth: 12,
+                                font: { size: 10 }
+                            }
+                        },
                         tooltip: {
                             callbacks: {
                                 label: (context) => {
+                                    const ds = datasets[context.datasetIndex];
+                                    const stat = statsToRender[context.datasetIndex].stat;
+                                    const sortedHistory = [...(stat.history || [])].sort((a, b) => new Date(a.date) - new Date(b.date));
                                     const idx = context.dataIndex;
+                                    
                                     if (idx < sortedHistory.length) {
-                                        return `習熟度: Lv.${context.raw} (${sortedHistory[idx].isCorrect ? '正解' : '不正解'})`;
+                                        const h = sortedHistory[idx];
+                                        const d = new Date(h.date);
+                                        const dateStr = isNaN(d) ? '' : ` (${d.getMonth()+1}/${d.getDate()})`;
+                                        return `${ds.label}: Lv.${context.raw}${dateStr} [${h.isCorrect ? '正解' : '不正解'}]`;
                                     }
-                                    return `現在の習熟度: Lv.${context.raw}`;
+                                    return `${ds.label}: Lv.${context.raw} (次回予定)`;
                                 }
                             }
                         }
@@ -1370,26 +1427,69 @@ class QuizApp {
             });
         }, 100);
 
-        // Calculate recent accuracy from indices (chronological)
-        const recentHistory = sortedHistory.slice(-5);
-        const recentCorrect = recentHistory.filter(h => h.isCorrect).length;
-        const recentTotal = recentHistory.length;
-        const recentRate = recentTotal > 0 ? Math.round((recentCorrect / recentTotal) * 100) : 0;
+        if (!isMulti) {
+            const stat = statsToRender[0].stat;
+            const sortedHistory = [...(stat.history || [])].sort((a, b) => new Date(a.date) - new Date(b.date));
+            const nextReview = stat.nextReview ? new Date(stat.nextReview) : null;
+            const recentHistory = sortedHistory.slice(-5);
+            const recentCorrect = recentHistory.filter(h => h.isCorrect).length;
+            const recentTotal = recentHistory.length;
+            const recentRate = recentTotal > 0 ? Math.round((recentCorrect / recentTotal) * 100) : 0;
 
-        this.srsInfo.innerHTML = `
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 12px;">
-                <div>
-                    <p><strong>現在の習熟度:</strong> Lv.${stat.srsLevel || 0}</p>
-                    <p><strong>復習間隔:</strong> ${SRS_INTERVALS[stat.srsLevel || 0]} 日</p>
+            this.srsInfo.innerHTML = `
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 12px;">
+                    <div>
+                        <p><strong>現在の習熟度:</strong> Lv.${stat.srsLevel || 0}</p>
+                        <p><strong>復習間隔:</strong> ${SRS_INTERVALS[stat.srsLevel || 0]} 日</p>
+                    </div>
+                    <div>
+                        <p><strong>次回の復習予定:</strong> ${nextReview ? nextReview.toLocaleDateString() : '未定'}</p>
+                        <p><strong>直近5回の成績:</strong> ${recentCorrect}/${recentTotal} (${recentRate}%)</p>
+                    </div>
                 </div>
-                <div>
-                    <p><strong>次回の復習予定:</strong> ${nextReview ? nextReview.toLocaleDateString() : '未定'}</p>
-                    <p><strong>直近5回の成績:</strong> ${recentCorrect}/${recentTotal} (${recentRate}%)</p>
+                <p style="margin-top: 0.5rem; opacity: 0.6; font-size: 0.75rem; text-align: right;">累計成績: ${stat.correct}/${stat.total} (${stat.total > 0 ? Math.round((stat.correct / stat.total) * 100) : 0}%)</p>
+                <p style="margin-top: 1rem; opacity: 0.7; font-size: 0.8rem;">※グラフは習熟レベル（Lv.0〜10）の推移を表示しています。 <span style="color:#4ade80">●</span> が正解、<span style="color:#f72585">●</span> が不正解です。</p>
+            `;
+        } else {
+            this.srsInfo.innerHTML = `
+                <div style="margin-top: 1rem; background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 12px;">
+                    <p style="font-size: 0.9rem;">選択された ${statsToRender.length} 件の問題の到達レベルを比較しています。</p>
+                    <p style="font-size: 0.8rem; opacity: 0.7; margin-top: 0.5rem;">※横軸は解答回数を表します。問題ごとに実施タイミングが異なる場合があります。</p>
                 </div>
-            </div>
-            <p style="margin-top: 0.5rem; opacity: 0.6; font-size: 0.75rem; text-align: right;">累計成績: ${stat.correct}/${stat.total} (${stat.total > 0 ? Math.round((stat.correct / stat.total) * 100) : 0}%)</p>
-            <p style="margin-top: 1rem; opacity: 0.7; font-size: 0.8rem;">※グラフは習熟レベル（Lv.0〜10）の推移を表示しています。 <span style="color:#4ade80">●</span> が正解、<span style="color:#f72585">●</span> が不正解です。</p>
-        `;
+            `;
+        }
+    }
+
+    showSelectedProgressGraph() {
+        this.rebuildPoolCache();
+        
+        // Find all stat keys that are in the active pool and have history
+        const selectedKeys = Object.keys(this.questionStats).filter(key => {
+            const stat = this.questionStats[key];
+            if (!stat || !stat.history || stat.history.length === 0) return false;
+            
+            // Only include top-level summaries or standalone questions (avoid individual blanks duplication)
+            if (key.startsWith('clause-') && !key.startsWith('clause-summary-')) return false;
+
+            return this.isStatInActivePool(key);
+        });
+
+        if (selectedKeys.length === 0) {
+            alert('特訓対象（チェックが入っている問題）の中に、学習履歴のあるものがありません。');
+            return;
+        }
+
+        // Sort by most recently practiced to pick the most relevant ones if too many
+        const sortedKeys = selectedKeys.sort((a, b) => {
+            const dateA = new Date(this.questionStats[a].history.slice(-1)[0].date);
+            const dateB = new Date(this.questionStats[b].history.slice(-1)[0].date);
+            return dateB - dateA;
+        });
+
+        // Limit to top 20 for readability
+        const finalKeys = sortedKeys.slice(0, 20);
+        
+        this.showSRSDetail(finalKeys);
     }
 
 
