@@ -156,10 +156,12 @@
 
                     <div class="projection-section">
                         <div class="chart-header">
-                            <h3>今後の復習スケジュール (3ヶ月)</h3>
+                            <h3>今後の復習スケジュール (1年)</h3>
                         </div>
-                        <div class="projection-chart-container">
-                            <canvas id="srsProjectionChart"></canvas>
+                        <div class="projection-chart-container" style="overflow-x: auto; overflow-y: hidden;">
+                            <div id="srsChartWrapper" style="height: 100%; min-width: 100%;">
+                                <canvas id="srsProjectionChart"></canvas>
+                            </div>
                         </div>
                     </div>
 

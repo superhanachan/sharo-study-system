@@ -547,6 +547,26 @@ h2,
     height: 300px;
     position: relative;
     width: 100%;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(76, 201, 240, 0.4) transparent;
+}
+
+.projection-chart-container::-webkit-scrollbar {
+    height: 8px;
+}
+
+.projection-chart-container::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+}
+
+.projection-chart-container::-webkit-scrollbar-thumb {
+    background: rgba(76, 201, 240, 0.4);
+    border-radius: 4px;
+}
+
+.projection-chart-container::-webkit-scrollbar-thumb:hover {
+    background: var(--accent);
 }
 
 /* SRS Config Display */

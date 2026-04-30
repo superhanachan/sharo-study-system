@@ -3041,7 +3041,7 @@ class QuizApp {
         try {
             const now = new Date();
             const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-            const endOfThreeMonths = new Date(now.getFullYear(), now.getMonth() + 3, 0);
+            const endOfPeriod = new Date(now.getFullYear(), now.getMonth() + 12, 0);
 
             // Prepare data buckets (More granular levels as requested)
             const datasets = {
@@ -3061,7 +3061,7 @@ class QuizApp {
             const todayStr = formatDateStr(now);
 
             let iter = new Date(startOfThisMonth);
-            while (iter <= endOfThreeMonths) {
+            while (iter <= endOfPeriod) {
                 const dateStr = formatDateStr(iter);
                 labels.push(dateStr);
                 // Initialize all buckets
@@ -3103,6 +3103,13 @@ class QuizApp {
 
             if (this.srsProjectionChart) {
                 this.srsProjectionChart.destroy();
+            }
+
+            const wrapper = document.getElementById('srsChartWrapper');
+            if (wrapper) {
+                // Minimum width 4px per day to prevent squishing, plus some margin
+                const minWidth = Math.max(800, labels.length * 4.5);
+                wrapper.style.minWidth = minWidth + 'px';
             }
 
             const ctx = canvas.getContext('2d');
