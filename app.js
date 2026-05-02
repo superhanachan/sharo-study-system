@@ -431,6 +431,8 @@ class QuizApp {
         this.genWeakClauseBtn = document.getElementById('gen-weak-clause-btn');
         this.genRareBtn = document.getElementById('gen-rare-btn');
         this.genRandomBtn = document.getElementById('gen-random-btn');
+        this.genMasteryBtn = document.getElementById('gen-mastery-btn');
+        this.masteryLevelSelect = document.getElementById('mastery-level-select');
         this.genSRSClauseBtn = document.getElementById('gen-srs-clause-btn');
         this.genSRSPageBtn = document.getElementById('gen-srs-page-btn');
         this.sidebarGenSRSClauseBtn = document.getElementById('sidebar-gen-srs-clause-btn');
@@ -665,6 +667,7 @@ class QuizApp {
         }
         if (this.genRareBtn) this.genRareBtn.addEventListener('click', () => this.generateSpecialQuiz('rare'));
         if (this.genRandomBtn) this.genRandomBtn.addEventListener('click', () => this.generateSpecialQuiz('random'));
+        if (this.genMasteryBtn) this.genMasteryBtn.addEventListener('click', () => this.generateSpecialQuiz('mastery'));
         if (this.genSRSClauseBtn) this.genSRSClauseBtn.addEventListener('click', () => this.generateSpecialQuiz('srs-clause'));
         if (this.genSRSPageBtn) this.genSRSPageBtn.addEventListener('click', () => this.generateSpecialQuiz('srs-page'));
         if (this.sidebarGenSRSClauseBtn) this.sidebarGenSRSClauseBtn.addEventListener('click', () => this.generateSpecialQuiz('srs-clause'));
@@ -999,6 +1002,70 @@ class QuizApp {
             });
         }
         return result;
+    }
+
+    updateSRS(stat, isCorrect) {
+        if (!stat.srsLevel) stat.srsLevel = 0;
+        if (isCorrect) {
+            stat.srsLevel = Math.min(stat.srsLevel + 1, SRS_INTERVALS.length - 1);
+        } else {
+            stat.srsLevel = Math.max(0, stat.srsLevel - 2);
+        }
+        
+        const days = SRS_INTERVALS[stat.srsLevel];
+        const nextDate = new Date();
+        nextDate.setDate(nextDate.getDate() + days);
+        nextDate.setHours(0, 0, 0, 0);
+        stat.nextReview = nextDate.toISOString();
+
+        if (!stat.history) stat.history = [];
+        stat.history.push({ date: new Date().toISOString(), isCorrect, level: stat.srsLevel });
+    }
+
+    manuallySetSrsLevel(statKey, newLevel) {
+        const stat = this.questionStats[statKey];
+        if (!stat) return;
+        
+        const level = parseInt(newLevel);
+        if (isNaN(level) || level < 0 || level >= SRS_INTERVALS.length) {
+            alert(`無効なレベルです。0から${SRS_INTERVALS.length - 1}の範囲で指定してください。`);
+            return;
+        }
+
+        stat.srsLevel = level;
+        const days = SRS_INTERVALS[stat.srsLevel];
+        const nextDate = new Date();
+        nextDate.setDate(nextDate.getDate() + days);
+        nextDate.setHours(0, 0, 0, 0);
+        stat.nextReview = nextDate.toISOString();
+
+        // Add a special entry to history to track manual override
+        if (!stat.history) stat.history = [];
+        stat.history.push({ 
+            date: new Date().toISOString(), 
+            isCorrect: true, 
+            level: stat.srsLevel,
+            isManual: true 
+        });
+
+        this.saveQuestionStats(true);
+        this.updateDashboard();
+        this.renderStats();
+        
+        // If the due list is open, refresh it
+        if (this.dueListContainer && !this.dueListContainer.classList.contains('hidden')) {
+            this.toggleDueList(); // This will close it
+            this.toggleDueList(); // This will re-open and re-render it
+        }
+    }
+
+    promptSetSrsLevel(statKey) {
+        const stat = this.questionStats[statKey];
+        const current = stat ? (stat.srsLevel || 0) : 0;
+        const val = prompt(`習熟Lvを手動で指定してください (0-${SRS_INTERVALS.length - 1})\n現在のLv: ${current}`, current);
+        if (val !== null) {
+            this.manuallySetSrsLevel(statKey, val);
+        }
     }
 
     normalizeInput(str) {
@@ -2214,8 +2281,8 @@ class QuizApp {
             const nextRev = s.nextReview ? new Date(s.nextReview) : null;
             const isDue = nextRev && nextRev <= new Date();
             const srsStatus = nextRev
-                ? `<span class="srs-badge level-${s.srsLevel} ${isDue ? 'due' : ''}">${s.srsLevel} (${nextRev.toLocaleDateString()})</span>`
-                : '<span class="srs-badge level-0">新規</span>';
+                ? `<span class="srs-badge level-${s.srsLevel} ${isDue ? 'due' : ''}" onclick="event.stopPropagation(); app.promptSetSrsLevel('${s.id}')" title="クリックしてLvを変更">${s.srsLevel} (${nextRev.toLocaleDateString()})</span>`
+                : `<span class="srs-badge level-0" onclick="event.stopPropagation(); app.promptSetSrsLevel('${s.id}')" title="クリックしてLvを変更">新規</span>`;
 
             return `<tr>
                 <td style="text-align: left;">
@@ -2359,7 +2426,7 @@ class QuizApp {
                 <td>${s.page}</td>
                 <td>${s.total}回</td>
                 <td><span style="color: ${s.errorCount > 0 ? 'var(--error)' : 'var(--text-secondary)'}">${s.errorCount}個</span></td>
-                <td><span class="srs-badge level-${s.srsLevel}">Lv.${s.srsLevel}</span></td>
+                <td><span class="srs-badge level-${s.srsLevel}" onclick="event.stopPropagation(); app.promptSetSrsLevel('${s.id}')" title="クリックしてLvを変更">Lv.${s.srsLevel}</span></td>
                 <td style="color: ${s.slope < 0.1 ? 'var(--error)' : 'var(--text-primary)'}">${s.slope}</td>
                 <td style="color: ${s.accuracy < 50 ? 'var(--error)' : 'var(--text-primary)'}">${s.accuracy}%</td>
             </tr>`;
@@ -3332,13 +3399,18 @@ class QuizApp {
             return;
         }
 
-        this.dueListBody.innerHTML = dueItems.map(item => `
+        this.dueListBody.innerHTML = dueItems.map(item => {
+            const stat = this.questionStats[item.id] || {};
+            const lv = stat.srsLevel || 0;
+            return `
             <tr>
                 <td><span class="badge ${item.type === 'clause' ? 'srs-clause' : 'srs-page'}">${item.type === 'clause' ? '条文' : '選択'}</span></td>
                 <td><div class="due-text" title="${item.text}">${item.text.substring(0, 50)}${item.text.length > 50 ? '...' : ''}</div><div class="due-source">${item.setName}</div></td>
+                <td><span class="srs-badge level-${lv}" onclick="event.stopPropagation(); app.promptSetSrsLevel('${item.id}')" title="クリックしてLvを変更">Lv.${lv}</span></td>
                 <td><button class="secondary-btn mini-btn" onclick="app.navigateToQuestion('${item.fullSet.id}')">移動</button></td>
             </tr>
-        `).join('');
+        `;
+        }).join('');
         this.dueListContainer.classList.remove('hidden');
     }
 
@@ -3701,6 +3773,16 @@ class QuizApp {
         } else if (type === 'random') {
             title = "特訓：全問題からランダム10問";
             filtered = allQuestions.sort(() => Math.random() - 0.5).slice(0, 10);
+        } else if (type === 'mastery') {
+            const lv = parseInt(this.masteryLevelSelect ? this.masteryLevelSelect.value : 0);
+            title = `特訓：習熟Lv.${lv}の問題`;
+            filtered = allQuestions.filter(q => (q.srsLevel || 0) === lv);
+            if (filtered.length === 0) {
+                alert(`現在、習熟Lv.${lv}の問題はありません。`);
+                return;
+            }
+            // Shuffle and limit to 20 for a reasonable quiz length
+            filtered = filtered.sort(() => Math.random() - 0.5).slice(0, 20);
         } else {
             title = "特訓：未学習・低頻度な問題10問";
             filtered = allQuestions.sort((a, b) => {

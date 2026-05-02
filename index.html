@@ -183,6 +183,7 @@
                                     <tr>
                                         <th>ジャンル</th>
                                         <th>問題内容</th>
+                                        <th>習熟Lv</th>
                                         <th>操作</th>
                                     </tr>
                                 </thead>
@@ -412,6 +413,24 @@
                         <button id="gen-stagnant-btn" class="primary-btn" style="background: #e63946;">攻略難航中の問題リストを表示</button>
                         <button id="gen-rare-btn" class="primary-btn">未学習・久しぶりの問題</button>
                         <button id="gen-random-btn" class="primary-btn">全問題からランダムに出題</button>
+                    </div>
+
+                    <div class="form-group" style="margin-top: 1.5rem; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+                        <label style="font-weight: bold; color: var(--accent);">習熟Lvで絞り込み:</label>
+                        <select id="mastery-level-select" style="padding: 0.5rem; border-radius: 8px; background: rgba(0,0,0,0.2); color: white; border: 1px solid var(--glass-border);">
+                            <option value="0">Lv.0 (未着手/忘却)</option>
+                            <option value="1">Lv.1</option>
+                            <option value="2">Lv.2</option>
+                            <option value="3">Lv.3</option>
+                            <option value="4">Lv.4</option>
+                            <option value="5">Lv.5</option>
+                            <option value="6">Lv.6</option>
+                            <option value="7">Lv.7</option>
+                            <option value="8">Lv.8</option>
+                            <option value="9">Lv.9</option>
+                            <option value="10">Lv.10 (定着)</option>
+                        </select>
+                        <button id="gen-mastery-btn" class="primary-btn" style="background: #7209b7; color: white; margin: 0;">このLvの問題で特訓作成</button>
                     </div>
 
                 </div>
