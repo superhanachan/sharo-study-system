@@ -136,9 +136,13 @@
                                         (10題)</button>
                                 </div>
                             </div>
-                            <div class="main-stat-card">
+                            <div class="main-stat-card ripple-card" id="tomorrow-card">
                                 <span class="card-label">明日の復習待ち</span>
                                 <span id="srs-tomorrow-count" class="card-value">0</span>
+                                <div class="card-actions">
+                                    <button id="start-tomorrow-clause-review-btn" class="mini-btn srs-clause hidden">明日の条文復習</button>
+                                    <button id="start-tomorrow-page-review-btn" class="mini-btn srs-page hidden">明日の選択式復習</button>
+                                </div>
                             </div>
                             <div class="main-stat-card">
                                 <span class="card-label">全問題暗記率</span>
@@ -418,12 +422,15 @@
                     <div class="form-group" style="margin-top: 1.5rem; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
                         <label style="font-weight: bold; color: var(--accent);">習熟Lvで絞り込み:</label>
                         <select id="mastery-level-select" style="padding: 0.5rem; border-radius: 8px; background: rgba(0,0,0,0.2); color: white; border: 1px solid var(--glass-border);">
+                            <option value="all">すべて (全Lv)</option>
                             <option value="0">Lv.0 (未着手/忘却)</option>
                             <option value="1">Lv.1</option>
                             <option value="2">Lv.2</option>
                             <option value="3">Lv.3</option>
                             <option value="4">Lv.4</option>
                             <option value="5">Lv.5</option>
+                            <option value="2-below">Lv.2以下 (苦手重点)</option>
+                            <option value="5-below">Lv.5以下 (未習熟)</option>
                             <option value="6">Lv.6</option>
                             <option value="7">Lv.7</option>
                             <option value="8">Lv.8</option>

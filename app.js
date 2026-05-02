@@ -416,6 +416,8 @@ class QuizApp {
         this.startClauseOneReviewBtn = document.getElementById('start-clause-one-review-btn');
         this.startClauseReviewBtn = document.getElementById('start-clause-review-btn');
         this.startPageReviewBtn = document.getElementById('start-page-review-btn');
+        this.startTomorrowClauseReviewBtn = document.getElementById('start-tomorrow-clause-review-btn');
+        this.startTomorrowPageReviewBtn = document.getElementById('start-tomorrow-page-review-btn');
         this.sidebarSrsDueCount = document.getElementById('sidebar-srs-due-count');
         this.sidebarStartClauseOneReviewBtn = document.getElementById('sidebar-start-clause-one-review-btn');
         this.sidebarStartClauseReviewBtn = document.getElementById('sidebar-start-clause-review-btn');
@@ -774,6 +776,12 @@ class QuizApp {
         }
         if (this.startPageReviewBtn) {
             this.startPageReviewBtn.addEventListener('click', () => this.generateDueReview('page', 10));
+        }
+        if (this.startTomorrowClauseReviewBtn) {
+            this.startTomorrowClauseReviewBtn.addEventListener('click', () => this.generateDueReview('clause', 3, 1));
+        }
+        if (this.startTomorrowPageReviewBtn) {
+            this.startTomorrowPageReviewBtn.addEventListener('click', () => this.generateDueReview('page', 10, 1));
         }
         if (this.sidebarStartPageReviewBtn) {
             this.sidebarStartPageReviewBtn.addEventListener('click', () => this.generateDueReview('page', 10));
@@ -3081,6 +3089,16 @@ class QuizApp {
         if (this.startPageReviewBtn) this.startPageReviewBtn.classList.toggle('hidden', !hasPages);
         if (this.sidebarStartPageReviewBtn) this.sidebarStartPageReviewBtn.classList.toggle('hidden', !hasPages);
 
+        // Tomorrow's buttons visibility
+        const tomorrowItems = this.getDueQuestions(1);
+        const hasTomorrowClauses = tomorrowItems.some(i => i.type === 'clause') || (tomorrowSpecificCount > 0); 
+        const hasTomorrowPages = tomorrowItems.some(i => i.type === 'page') || (tomorrowSpecificCount > 0); 
+        
+        if (this.startTomorrowClauseReviewBtn) this.startTomorrowClauseReviewBtn.classList.toggle('hidden', !hasTomorrowClauses);
+        if (this.startTomorrowPageReviewBtn) this.startTomorrowPageReviewBtn.classList.toggle('hidden', !hasTomorrowPages);
+        const tomorrowCard = document.getElementById('tomorrow-card');
+        if (tomorrowCard) tomorrowCard.classList.toggle('due-active', tomorrowSpecificCount > 0);
+
         if (this.sidebarSrsDueCount) {
             this.sidebarSrsDueCount.textContent = dueCount;
             const section = document.getElementById('sidebar-review-section');
@@ -3346,8 +3364,11 @@ class QuizApp {
     }
 
 
-    getDueQuestions() {
-        const now = new Date();
+    getDueQuestions(daysAhead = 0) {
+        const targetDate = new Date();
+        targetDate.setDate(targetDate.getDate() + daysAhead);
+        targetDate.setHours(23, 59, 59, 999);
+        
         const due = [];
         // Helper to find question in quizData
         const findQuestion = (qId) => {
@@ -3368,7 +3389,7 @@ class QuizApp {
             // Ignore individual blanks for due list (Summaries only)
             if (id.startsWith('clause-') && !id.startsWith('clause-summary-')) return;
 
-            if (stat.nextReview && new Date(stat.nextReview) <= now) {
+            if (stat.nextReview && new Date(stat.nextReview) <= targetDate) {
                 const found = findQuestion(id);
                 if (found && found.set.isInPool !== false) {
                     due.push({
@@ -3414,9 +3435,28 @@ class QuizApp {
         this.dueListContainer.classList.remove('hidden');
     }
 
-    generateDueReview(type, limit) {
-        const dueItems = this.getDueQuestions().filter(i => i.type === type);
-        if (dueItems.length === 0) return;
+    generateDueReview(type, limit, daysAhead = 0) {
+        let dueItems = this.getDueQuestions(daysAhead).filter(i => i.type === type);
+        
+        // Apply Mastery Level Filter
+        const filterLv = this.masteryLevelSelect ? this.masteryLevelSelect.value : 'all';
+        if (filterLv !== 'all') {
+            dueItems = dueItems.filter(item => {
+                const stat = this.questionStats[item.id] || {};
+                const lv = stat.srsLevel || 0;
+                if (filterLv.endsWith('-below')) {
+                    return lv <= parseInt(filterLv);
+                }
+                return lv === parseInt(filterLv);
+            });
+        }
+
+        if (dueItems.length === 0) {
+            const lvMsg = filterLv === 'all' ? '' : `（指定されたLv.${filterLv}の範囲で）`;
+            const dayMsg = daysAhead === 1 ? '明日' : '今日';
+            alert(`${dayMsg}の復習が必要な問題${lvMsg}はありません。`);
+            return;
+        }
 
         // Shuffle and Slice
         const shuffled = dueItems.sort(() => 0.5 - Math.random());
@@ -3730,15 +3770,30 @@ class QuizApp {
             // Pick and slightly shuffle for variety
             filtered = candidates.slice(0, 20).sort(() => Math.random() - 0.5).slice(0, 10);
         } else if (type.startsWith('srs')) {
+            const isTomorrow = type.endsWith('-tomorrow');
             const mode = type.split('-')[1];
-            title = mode === 'clause' ? "特訓：忘却曲線（条文穴埋め）" : "特訓：忘却曲線（選択式）";
-            const now = new Date();
+            title = (mode === 'clause' ? "特訓：忘却曲線（条文穴埋め）" : "特訓：忘却曲線（選択式）") + (isTomorrow ? " [先取]" : "");
+            
+            const daysAhead = isTomorrow ? 1 : 0;
+            const filterLv = this.masteryLevelSelect ? this.masteryLevelSelect.value : 'all';
+            
             filtered = allQuestions.filter(q => {
-                if (!q.nextReview) return true;
-                return new Date(q.nextReview) <= now;
+                const dueItems = this.getDueQuestions(daysAhead);
+                const isDue = dueItems.some(item => item.id === q.id);
+                if (!isDue) return false;
+
+                if (filterLv === 'all') return true;
+                const lv = q.srsLevel || 0;
+                if (filterLv.endsWith('-below')) {
+                    const maxLv = parseInt(filterLv);
+                    return lv <= maxLv;
+                }
+                return lv === parseInt(filterLv);
             });
+
             if (filtered.length === 0) {
-                alert('現在、復習が必要な問題はありません。素晴らしいですね！');
+                const lvMsg = filterLv === 'all' ? '' : `（指定されたLv.${filterLv}の範囲で）`;
+                alert(`現在、復習が必要な問題${lvMsg}はありません。素晴らしいですね！`);
                 return;
             }
             // Shuffle and limit
@@ -3774,11 +3829,22 @@ class QuizApp {
             title = "特訓：全問題からランダム10問";
             filtered = allQuestions.sort(() => Math.random() - 0.5).slice(0, 10);
         } else if (type === 'mastery') {
-            const lv = parseInt(this.masteryLevelSelect ? this.masteryLevelSelect.value : 0);
-            title = `特訓：習熟Lv.${lv}の問題`;
-            filtered = allQuestions.filter(q => (q.srsLevel || 0) === lv);
+            const filterLv = this.masteryLevelSelect ? this.masteryLevelSelect.value : 'all';
+            if (filterLv === 'all') {
+                title = "特訓：全レベル対象ランダム";
+                filtered = allQuestions;
+            } else if (filterLv.endsWith('-below')) {
+                const maxLv = parseInt(filterLv);
+                title = `特訓：習熟Lv.${maxLv}以下の問題`;
+                filtered = allQuestions.filter(q => (q.srsLevel || 0) <= maxLv);
+            } else {
+                const lv = parseInt(filterLv);
+                title = `特訓：習熟Lv.${lv}の問題`;
+                filtered = allQuestions.filter(q => (q.srsLevel || 0) === lv);
+            }
+
             if (filtered.length === 0) {
-                alert(`現在、習熟Lv.${lv}の問題はありません。`);
+                alert(`対象となる問題はありませんでした。`);
                 return;
             }
             // Shuffle and limit to 20 for a reasonable quiz length
