@@ -4651,6 +4651,9 @@ class QuizApp {
         const todayStr = this.formatDateStr(now);
         const counts = {};
 
+        // Get filter from dashboard if available
+        const todayFilter = this.todayMasterySelect ? this.todayMasterySelect.value : 'all';
+
         const inPoolSets = new Set();
         const qToSet = new Map();
         this.quizData.forEach(set => {
@@ -4669,6 +4672,16 @@ class QuizApp {
             if (key.startsWith('clause-') && !key.startsWith('clause-summary-')) return;
             
             if (this.formatDateStr(new Date(s.nextReview)) <= todayStr) {
+                // Apply mastery filter
+                if (todayFilter !== 'all') {
+                    const lv = s.srsLevel || 0;
+                    if (todayFilter.endsWith('-below')) {
+                        if (lv > parseInt(todayFilter)) return;
+                    } else if (lv !== parseInt(todayFilter)) {
+                        return;
+                    }
+                }
+
                 let itemId = s.pageId;
                 if (!itemId) {
                     if (key.startsWith('clause-summary-')) itemId = key.replace('clause-summary-', '');
