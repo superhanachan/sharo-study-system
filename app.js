@@ -514,6 +514,8 @@ class QuizApp {
             accMax: document.getElementById('stagnant-filter-acc-max'),
             accVal: document.getElementById('stagnant-filter-acc-val')
         };
+        this.todayMasterySelect = document.getElementById('today-mastery-select');
+        this.tomorrowMasterySelect = document.getElementById('tomorrow-mastery-select');
     }
 
     bindEvents() {
@@ -597,6 +599,12 @@ class QuizApp {
                 this.updateAutoFillShortcutUI();
                 this.resetQuiz(); // Refresh current queston/page with new auto-fill state
             });
+        }
+        if (this.todayMasterySelect) {
+            this.todayMasterySelect.addEventListener('change', () => this.updateDashboard());
+        }
+        if (this.tomorrowMasterySelect) {
+            this.tomorrowMasterySelect.addEventListener('change', () => this.updateDashboard());
         }
         if (this.addFolderBtn) this.addFolderBtn.addEventListener('click', () => this.addNewFolder());
         if (this.addPageBtn) this.addPageBtn.addEventListener('click', () => this.addNewPage());
@@ -2989,11 +2997,18 @@ class QuizApp {
 
         this.rebuildPoolCache();
 
+        const todayFilter = this.todayMasterySelect ? this.todayMasterySelect.value : 'all';
         const dueTodayTotal = Object.entries(this.questionStats).filter(([key, s]) => {
             if (!s.nextReview || !this.isStatInActivePool(key)) return false;
             if (key.startsWith('clause-') && !key.startsWith('clause-summary-')) return false;
             const reviewDate = new Date(s.nextReview);
-            return this.formatDateStr(reviewDate) <= todayStr;
+            if (this.formatDateStr(reviewDate) > todayStr) return false;
+
+            // Apply filter
+            if (todayFilter === 'all') return true;
+            const lv = s.srsLevel || 0;
+            if (todayFilter.endsWith('-below')) return lv <= parseInt(todayFilter);
+            return lv === parseInt(todayFilter);
         }).length;
 
         // Current Due NOW (for the active learning buttons)
@@ -3008,10 +3023,17 @@ class QuizApp {
         tomorrow.setDate(tomorrow.getDate() + 1);
         const tomorrowStr = this.formatDateStr(tomorrow);
 
+        const tomorrowFilter = this.tomorrowMasterySelect ? this.tomorrowMasterySelect.value : 'all';
         const tomorrowSpecificCount = Object.entries(this.questionStats).filter(([key, s]) => {
             if (!s.nextReview || !this.isStatInActivePool(key)) return false;
             if (key.startsWith('clause-') && !key.startsWith('clause-summary-')) return false;
-            return this.formatDateStr(new Date(s.nextReview)) === tomorrowStr;
+            if (this.formatDateStr(new Date(s.nextReview)) !== tomorrowStr) return false;
+
+            // Apply filter
+            if (tomorrowFilter === 'all') return true;
+            const lv = s.srsLevel || 0;
+            if (tomorrowFilter.endsWith('-below')) return lv <= parseInt(tomorrowFilter);
+            return lv === parseInt(tomorrowFilter);
         }).length;
 
         // Today's Error Count for Nightly Review
@@ -3414,7 +3436,18 @@ class QuizApp {
             return;
         }
 
-        const dueItems = this.getDueQuestions();
+        let dueItems = this.getDueQuestions();
+        
+        // Apply Mastery Level Filter
+        const filterLv = this.todayMasterySelect ? this.todayMasterySelect.value : 'all';
+        if (filterLv !== 'all') {
+            dueItems = dueItems.filter(item => {
+                const stat = this.questionStats[item.id] || {};
+                const lv = stat.srsLevel || 0;
+                if (filterLv.endsWith('-below')) return lv <= parseInt(filterLv);
+                return lv === parseInt(filterLv);
+            });
+        }
         if (dueItems.length === 0) {
             alert("現在、復習待ちの問題はありません。");
             return;
@@ -3438,8 +3471,12 @@ class QuizApp {
     generateDueReview(type, limit, daysAhead = 0) {
         let dueItems = this.getDueQuestions(daysAhead).filter(i => i.type === type);
         
-        // Apply Mastery Level Filter
-        const filterLv = this.masteryLevelSelect ? this.masteryLevelSelect.value : 'all';
+        // Apply Mastery Level Filter (Priority: Dashboard card selector > Stats view selector)
+        let filterLv = 'all';
+        if (daysAhead === 0 && this.todayMasterySelect) filterLv = this.todayMasterySelect.value;
+        else if (daysAhead === 1 && this.tomorrowMasterySelect) filterLv = this.tomorrowMasterySelect.value;
+        else if (this.masteryLevelSelect) filterLv = this.masteryLevelSelect.value;
+
         if (filterLv !== 'all') {
             dueItems = dueItems.filter(item => {
                 const stat = this.questionStats[item.id] || {};

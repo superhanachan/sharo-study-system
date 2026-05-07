@@ -333,6 +333,31 @@ h2,
     color: white;
 }
 
+.card-filter-section {
+    margin: 0.5rem 0;
+    padding: 0.5rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    border: 1px solid var(--glass-border);
+}
+
+.card-mastery-select {
+    width: 100%;
+    background: transparent;
+    border: none;
+    color: var(--accent);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    outline: none;
+    text-align: center;
+}
+
+.card-mastery-select option {
+    background: #1a1c27;
+    color: white;
+}
+
 .main-daily-row {
     background: rgba(255, 255, 255, 0.03);
     padding: 2rem;

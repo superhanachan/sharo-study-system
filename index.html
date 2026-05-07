@@ -127,6 +127,24 @@
                             <div class="main-stat-card ripple-card" id="due-card">
                                 <span class="card-label">本日の復習待ち</span>
                                 <span id="srs-due-count" class="card-value">0</span>
+                                <div class="card-filter-section" onclick="event.stopPropagation()">
+                                    <select id="today-mastery-select" class="card-mastery-select" title="習熟Lvで絞り込み">
+                                        <option value="all">すべて (全Lv)</option>
+                                        <option value="0">Lv.0 (未着手/忘却)</option>
+                                        <option value="1">Lv.1</option>
+                                        <option value="2">Lv.2</option>
+                                        <option value="3">Lv.3</option>
+                                        <option value="4">Lv.4</option>
+                                        <option value="5">Lv.5</option>
+                                        <option value="2-below">Lv.2以下</option>
+                                        <option value="5-below">Lv.5以下</option>
+                                        <option value="6">Lv.6</option>
+                                        <option value="7">Lv.7</option>
+                                        <option value="8">Lv.8</option>
+                                        <option value="9">Lv.9</option>
+                                        <option value="10">Lv.10</option>
+                                    </select>
+                                </div>
                                 <div class="card-actions">
                                     <button id="start-clause-one-review-btn" class="mini-btn srs-clause hidden">穴埋め式復習
                                         (1題)</button>
@@ -139,6 +157,24 @@
                             <div class="main-stat-card ripple-card" id="tomorrow-card">
                                 <span class="card-label">明日の復習待ち</span>
                                 <span id="srs-tomorrow-count" class="card-value">0</span>
+                                <div class="card-filter-section" onclick="event.stopPropagation()">
+                                    <select id="tomorrow-mastery-select" class="card-mastery-select" title="習熟Lvで絞り込み">
+                                        <option value="all">すべて (全Lv)</option>
+                                        <option value="0">Lv.0 (未着手/忘却)</option>
+                                        <option value="1">Lv.1</option>
+                                        <option value="2">Lv.2</option>
+                                        <option value="3">Lv.3</option>
+                                        <option value="4">Lv.4</option>
+                                        <option value="5">Lv.5</option>
+                                        <option value="2-below">Lv.2以下</option>
+                                        <option value="5-below">Lv.5以下</option>
+                                        <option value="6">Lv.6</option>
+                                        <option value="7">Lv.7</option>
+                                        <option value="8">Lv.8</option>
+                                        <option value="9">Lv.9</option>
+                                        <option value="10">Lv.10</option>
+                                    </select>
+                                </div>
                                 <div class="card-actions">
                                     <button id="start-tomorrow-clause-review-btn" class="mini-btn srs-clause hidden">明日の条文復習</button>
                                     <button id="start-tomorrow-page-review-btn" class="mini-btn srs-page hidden">明日の選択式復習</button>
