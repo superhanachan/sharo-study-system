@@ -136,6 +136,7 @@ class QuizApp {
 
         this.migrateData();
         this.cacheDOM();
+        this.initMasteryFilters();
         this.bindEvents();
         if (this.closeModalBtn) {
             this.closeModalBtn.addEventListener('click', () => this.srsModal.classList.add('hidden'));
@@ -159,6 +160,61 @@ class QuizApp {
         this.updateDashboard();
         this.initRecoveryButtons();
         this.updateBuildInfoWithCommitDate();
+    }
+
+    initMasteryFilters() {
+        const selects = [this.todayMasterySelect, this.tomorrowMasterySelect, this.masteryLevelSelect];
+        const options = [];
+        options.push({ val: 'all', text: 'すべて (全Lv)' });
+        
+        // Single levels
+        for (let i = 0; i <= 10; i++) {
+            let text = `Lv.${i}`;
+            if (i === 0) text += ' (未着手/忘却)';
+            if (i === 10) text += ' (定着)';
+            options.push({ val: i.toString(), text });
+        }
+        
+        // Ranges: Above
+        options.push({ val: 'divider-above', text: '──────────', disabled: true });
+        for (let i = 1; i <= 9; i++) {
+            options.push({ val: `${i}-above`, text: `Lv.${i} 以上` });
+        }
+        
+        // Ranges: Below
+        options.push({ val: 'divider-below', text: '──────────', disabled: true });
+        for (let i = 1; i <= 9; i++) {
+            options.push({ val: `${i}-below`, text: `Lv.${i} 以下` });
+        }
+
+        selects.forEach(select => {
+            if (!select) return;
+            const cur = select.value;
+            select.innerHTML = '';
+            options.forEach(opt => {
+                const el = document.createElement('option');
+                if (opt.disabled) {
+                    el.disabled = true;
+                    el.textContent = opt.text;
+                } else {
+                    el.value = opt.val;
+                    el.textContent = opt.text;
+                }
+                select.appendChild(el);
+            });
+            // Try to restore value if it still exists
+            if (cur && [...select.options].some(o => o.value === cur)) {
+                select.value = cur;
+            }
+        });
+    }
+
+    checkMasteryFilter(lv, filter) {
+        if (!filter || filter === 'all') return true;
+        const targetLv = parseInt(filter);
+        if (filter.endsWith('-below')) return lv <= targetLv;
+        if (filter.endsWith('-above')) return lv >= targetLv;
+        return lv === targetLv;
     }
 
     initRecoveryButtons() {
@@ -3005,10 +3061,7 @@ class QuizApp {
             if (this.formatDateStr(reviewDate) > todayStr) return false;
 
             // Apply filter
-            if (todayFilter === 'all') return true;
-            const lv = s.srsLevel || 0;
-            if (todayFilter.endsWith('-below')) return lv <= parseInt(todayFilter);
-            return lv === parseInt(todayFilter);
+            return this.checkMasteryFilter(s.srsLevel || 0, todayFilter);
         }).length;
 
         // Current Due NOW (for the active learning buttons)
@@ -3030,10 +3083,7 @@ class QuizApp {
             if (this.formatDateStr(new Date(s.nextReview)) !== tomorrowStr) return false;
 
             // Apply filter
-            if (tomorrowFilter === 'all') return true;
-            const lv = s.srsLevel || 0;
-            if (tomorrowFilter.endsWith('-below')) return lv <= parseInt(tomorrowFilter);
-            return lv === parseInt(tomorrowFilter);
+            return this.checkMasteryFilter(s.srsLevel || 0, tomorrowFilter);
         }).length;
 
         // Today's Error Count for Nightly Review
@@ -3480,11 +3530,7 @@ class QuizApp {
         if (filterLv !== 'all') {
             dueItems = dueItems.filter(item => {
                 const stat = this.questionStats[item.id] || {};
-                const lv = stat.srsLevel || 0;
-                if (filterLv.endsWith('-below')) {
-                    return lv <= parseInt(filterLv);
-                }
-                return lv === parseInt(filterLv);
+                return this.checkMasteryFilter(stat.srsLevel || 0, filterLv);
             });
         }
 
@@ -3819,13 +3865,7 @@ class QuizApp {
                 const isDue = dueItems.some(item => item.id === q.id);
                 if (!isDue) return false;
 
-                if (filterLv === 'all') return true;
-                const lv = q.srsLevel || 0;
-                if (filterLv.endsWith('-below')) {
-                    const maxLv = parseInt(filterLv);
-                    return lv <= maxLv;
-                }
-                return lv === parseInt(filterLv);
+                return this.checkMasteryFilter(q.srsLevel || 0, filterLv);
             });
 
             if (filtered.length === 0) {
@@ -3866,19 +3906,8 @@ class QuizApp {
             title = "特訓：全問題からランダム10問";
             filtered = allQuestions.sort(() => Math.random() - 0.5).slice(0, 10);
         } else if (type === 'mastery') {
-            const filterLv = this.masteryLevelSelect ? this.masteryLevelSelect.value : 'all';
-            if (filterLv === 'all') {
-                title = "特訓：全レベル対象ランダム";
-                filtered = allQuestions;
-            } else if (filterLv.endsWith('-below')) {
-                const maxLv = parseInt(filterLv);
-                title = `特訓：習熟Lv.${maxLv}以下の問題`;
-                filtered = allQuestions.filter(q => (q.srsLevel || 0) <= maxLv);
-            } else {
-                const lv = parseInt(filterLv);
-                title = `特訓：習熟Lv.${lv}の問題`;
-                filtered = allQuestions.filter(q => (q.srsLevel || 0) === lv);
-            }
+            title = filterLv === 'all' ? "特訓：全レベル対象ランダム" : `特訓：習熟Lv.${filterLv}の問題（範囲指定）`;
+            filtered = allQuestions.filter(q => this.checkMasteryFilter(q.srsLevel || 0, filterLv));
 
             if (filtered.length === 0) {
                 alert(`対象となる問題はありませんでした。`);
@@ -4673,14 +4702,7 @@ class QuizApp {
             
             if (this.formatDateStr(new Date(s.nextReview)) <= todayStr) {
                 // Apply mastery filter
-                if (todayFilter !== 'all') {
-                    const lv = s.srsLevel || 0;
-                    if (todayFilter.endsWith('-below')) {
-                        if (lv > parseInt(todayFilter)) return;
-                    } else if (lv !== parseInt(todayFilter)) {
-                        return;
-                    }
-                }
+                if (!this.checkMasteryFilter(s.srsLevel || 0, todayFilter)) return;
 
                 let itemId = s.pageId;
                 if (!itemId) {
