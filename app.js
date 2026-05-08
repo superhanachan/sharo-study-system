@@ -1076,23 +1076,6 @@ class QuizApp {
         return result;
     }
 
-    updateSRS(stat, isCorrect) {
-        if (!stat.srsLevel) stat.srsLevel = 0;
-        if (isCorrect) {
-            stat.srsLevel = Math.min(stat.srsLevel + 1, SRS_INTERVALS.length - 1);
-        } else {
-            stat.srsLevel = Math.max(0, stat.srsLevel - 2);
-        }
-        
-        const days = SRS_INTERVALS[stat.srsLevel];
-        const nextDate = new Date();
-        nextDate.setDate(nextDate.getDate() + days);
-        nextDate.setHours(0, 0, 0, 0);
-        stat.nextReview = nextDate.toISOString();
-
-        if (!stat.history) stat.history = [];
-        stat.history.push({ date: new Date().toISOString(), isCorrect, level: stat.srsLevel });
-    }
 
     manuallySetSrsLevel(statKey, newLevel) {
         const stat = this.questionStats[statKey];
@@ -2059,7 +2042,10 @@ class QuizApp {
                 stat.recent.push(isCorrect ? 1 : 0);
                 if (stat.recent.length > 20) stat.recent.shift();
                 stat.text = `穴埋め: ${kwInfo.text}`; stat.page = set.title;
-                this.updateSRS(stat, isCorrect);
+                // SRSレベルの更新は行わず、正解数/実施数のみを記録（二重減算防止）
+                if (!stat.history) stat.history = [];
+                stat.history.push({ date: new Date().toISOString(), isCorrect, level: stat.srsLevel });
+                if (stat.history.length > 20) stat.history.shift();
             });
 
 
@@ -2081,6 +2067,7 @@ class QuizApp {
                 summaryStat.recent.push(allBlanksCorrect ? 1 : 0);
                 if (summaryStat.recent.length > 5) summaryStat.recent.shift();
                 summaryStat.text = `条文全体: ${set.title}`; summaryStat.page = set.title;
+                // 条文全体のSRS更新（全問正解なら+1、一部でも不正解なら-2）
                 this.updateSRS(summaryStat, allBlanksCorrect);
             }
         } else {
@@ -2105,6 +2092,7 @@ class QuizApp {
                     let rowAnsweredBlanks = 0;
                     let rowCorrectBlanks = 0;
                     let rowAutoFilledCount = 0;
+                    let totalBlanksInRow = keywordData.length;
 
                     keywordData.forEach((kwInfo, idx) => {
                         const key = `${q.id}-${idx}`;
@@ -2149,7 +2137,10 @@ class QuizApp {
                         bStat.recent.push(isKwCorrect ? 1 : 0);
                         if (bStat.recent.length > 20) bStat.recent.shift();
                         bStat.text = `穴埋め: ${kwInfo.text}`; bStat.page = q.origPage || set.title;
-                        this.updateSRS(bStat, isKwCorrect);
+                        // SRSレベルの更新は行わず、正解数/実施数のみを記録（二重減算防止）
+                        if (!bStat.history) bStat.history = [];
+                        bStat.history.push({ date: new Date().toISOString(), isCorrect: isKwCorrect, level: bStat.srsLevel });
+                        if (bStat.history.length > 20) bStat.history.shift();
                     });
 
                     answeredCount += rowAnsweredBlanks;
