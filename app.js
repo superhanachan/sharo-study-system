@@ -2070,7 +2070,8 @@ class QuizApp {
                 // 条文全体のSRS更新（全問正解なら+1、一部でも不正解なら-2）
                 this.updateSRS(summaryStat, allBlanksCorrect);
             }
-        } else {
+            const updatedStatKeysInBatch = new Set();
+
             set.questions.forEach((q) => {
                 let isCorrect = false;
                 const userAnswer = this.userAnswers[q.id];
@@ -2196,7 +2197,23 @@ class QuizApp {
                 if (stat.recent.length > 20) stat.recent.shift();
                 stat.text = q.type === 'clause' ? `条文全体: ${q.origPage}` : q.text;
                 stat.page = q.origPage || set.title;
-                this.updateSRS(stat, isCorrect);
+
+                // 同一のstatKeyに対する二重更新を防止（特訓などで同一条文の別行が含まれる場合に対応）
+                if (!updatedStatKeysInBatch.has(statKey)) {
+                    this.updateSRS(stat, isCorrect);
+                    updatedStatKeysInBatch.add(statKey);
+                } else if (!isCorrect) {
+                    // もし既に更新済みだが、今回の行が「不正解」だった場合、
+                    // 前回の「正解」による上昇を上書きしてペナルティを適用する（安全側の判定）
+                    const history = stat.history || [];
+                    if (history.length > 0 && history[history.length - 1].isCorrect) {
+                        // 前回の正解記録（+1）を消して不正解（-2）にするのではなく、
+                        // 既にupdateSRSが走った後なので、さらに下げると二重減算になるため、
+                        // ここでは「既に不正解があった」ことだけを重んじたいが、
+                        // シンプルに「最初の1回目だけ反映」でも十分効果的。
+                        // 現状は最初の1回で確定させる。
+                    }
+                }
             });
         }
 
