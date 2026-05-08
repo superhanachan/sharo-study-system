@@ -1981,8 +1981,9 @@ class QuizApp {
             return;
         }
 
-        this.shuffledCache = {}; // Trigger re-shuffle for when it's next displayed
+        this.shuffledCache = {}; 
         let correctCount = 0; let answeredCount = 0;
+        const updatedStatKeysInBatch = new Set();
 
         if (set.type === 'clause') {
             const keywordData = [];
@@ -2067,11 +2068,13 @@ class QuizApp {
                 summaryStat.recent.push(allBlanksCorrect ? 1 : 0);
                 if (summaryStat.recent.length > 5) summaryStat.recent.shift();
                 summaryStat.text = `条文全体: ${set.title}`; summaryStat.page = set.title;
-                // 条文全体のSRS更新（全問正解なら+1、一部でも不正解なら-2）
+                // 条文全体のSRS更新
                 this.updateSRS(summaryStat, allBlanksCorrect);
+                updatedStatKeysInBatch.add(summaryKey);
             }
-            const updatedStatKeysInBatch = new Set();
+        }
 
+        if (set.questions) {
             set.questions.forEach((q) => {
                 let isCorrect = false;
                 const userAnswer = this.userAnswers[q.id];
@@ -2101,9 +2104,8 @@ class QuizApp {
                         const isAutoFilled = this.autoFilledAnswers.has(key);
                         if (isAutoFilled) rowAutoFilledCount++;
 
-                        // Single view logic for overall correctness:
-                        // 1. If empty and not auto-filled, we mark row as incomplete/wrong for summary purposes 
-                        //    only if it was required to be answered.
+                        if (onlyManual && (isAutoFilled || !val)) return;
+
                         if (!val) {
                             allRowBlanksCorrect = false;
                             return;
