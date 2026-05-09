@@ -1591,7 +1591,7 @@ td:first-child {
     font-weight: 600;
 }
 
-.pool-cell {
+.pool-cell, .select-cell {
     width: 60px;
     text-align: center;
 }

@@ -296,6 +296,7 @@
                     </div>
 
                     <div class="table-controls hidden-quiz">
+                        <button id="batch-delete-btn" class="danger-btn">選択した問題を一括削除</button>
                         <button id="clear-data-btn" class="danger-btn">データをリセット</button>
                     </div>
                 </div>
@@ -627,6 +628,7 @@
         <div id="ctx-add-clause" class="context-menu-item" onclick="app.ctxAction('add-clause')">🔤 条文穴埋めを追加</div>
         <div id="ctx-batch-add-clause" class="context-menu-item" onclick="app.ctxAction('batch-add-clause')">🔤 条文を一括追加</div>
         <hr id="ctx-divider-1">
+        <div class="context-menu-item" onclick="app.ctxAction('rename')">✏️ 名前を変更</div>
         <div class="context-menu-item" onclick="app.ctxAction('move-up')">▲ 上に移動</div>
         <div class="context-menu-item" onclick="app.ctxAction('move-down')">▼ 下に移動</div>
         <hr>
