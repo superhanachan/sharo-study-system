@@ -449,6 +449,7 @@ class QuizApp {
         this.addFolderBtn = document.getElementById('add-folder-btn');
         this.addPageBtn = document.getElementById('add-page-btn');
         this.addClauseBtn = document.getElementById('add-clause-btn');
+        this.batchAddClauseBtn = document.getElementById('batch-add-clause-btn');
         this.addRowBtn = document.getElementById('add-row-btn');
         this.addColumnBtn = document.getElementById('add-column-btn');
         this.clearDataBtn = document.getElementById('clear-data-btn');
@@ -522,6 +523,10 @@ class QuizApp {
         this.srsModalTitle = document.getElementById('srs-modal-title');
         this.closeModalBtn = document.getElementById('close-modal');
         this.srsDetailChart = null;
+        this.batchAddModal = document.getElementById('batch-add-modal');
+        this.batchAddText = document.getElementById('batch-add-text');
+        this.executeBatchAddBtn = document.getElementById('execute-batch-add-btn');
+        this.closeBatchModalBtn = document.getElementById('close-batch-modal');
         this.clauseEditor = document.getElementById('clause-editor');
 
         this.clauseTextEditor = document.getElementById('clause-text-editor');
@@ -665,6 +670,11 @@ class QuizApp {
         if (this.addFolderBtn) this.addFolderBtn.addEventListener('click', () => this.addNewFolder());
         if (this.addPageBtn) this.addPageBtn.addEventListener('click', () => this.addNewPage());
         if (this.addClauseBtn) this.addClauseBtn.addEventListener('click', () => this.addNewClausePage());
+        if (this.batchAddClauseBtn) this.batchAddClauseBtn.addEventListener('click', () => this.showBatchAddModal());
+        if (this.executeBatchAddBtn) this.executeBatchAddBtn.addEventListener('click', () => this.executeBatchAdd());
+        if (this.closeBatchModalBtn) this.closeBatchModalBtn.addEventListener('click', () => {
+            if (this.batchAddModal) this.batchAddModal.classList.add('hidden');
+        });
         if (this.addRowBtn) this.addRowBtn.addEventListener('click', () => this.addNewRow());
         if (this.addColumnBtn) this.addColumnBtn.addEventListener('click', () => this.addNewColumn());
         if (this.clearDataBtn) this.clearDataBtn.addEventListener('click', () => this.clearData());
@@ -4972,6 +4982,7 @@ class QuizApp {
             case 'add-folder': this.addNewFolder(parentId); break;
             case 'add-page': this.addNewPage(parentId); break;
             case 'add-clause': this.addNewClausePage(parentId); break;
+            case 'batch-add-clause': this.showBatchAddModal(parentId); break;
             case 'move-up': this.movePageById(id, -1); break;
             case 'move-down': this.movePageById(id, 1); break;
             case 'delete':
@@ -5176,6 +5187,55 @@ class QuizApp {
             const newElem = this.tocList.querySelector(`a[href="#${id}"]`);
             if (newElem) newElem.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }, 100);
+    }
+    showBatchAddModal(parentId = null) {
+        this.lastBatchParentId = parentId;
+        if (this.batchAddModal) {
+            this.batchAddModal.classList.remove('hidden');
+            if (this.batchAddText) {
+                this.batchAddText.value = '';
+                this.batchAddText.focus();
+            }
+        }
+    }
+    executeBatchAdd() {
+        const text = this.batchAddText.value;
+        if (!text) {
+            if (this.batchAddModal) this.batchAddModal.classList.add('hidden');
+            return;
+        }
+        const blocks = text.split('""').map(b => b.trim()).filter(b => b.length > 0);
+        if (blocks.length === 0) {
+            if (this.batchAddModal) this.batchAddModal.classList.add('hidden');
+            return;
+        }
+        let firstId = null;
+        blocks.forEach((block, index) => {
+            const lines = block.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+            if (lines.length === 0) return;
+            let title = lines[0].replace(/\[\[(.*?)\]\]|［［(.*?)］］|\(\((.*?)\)\)|（（(.*?)））/g, '$1$2$3$4');
+            if (title.length > 50) title = title.substring(0, 47) + '...';
+            const id = 'p-' + Date.now() + '-' + index;
+            if (!firstId) firstId = id;
+            const newPage = {
+                id, title, type: 'clause', parentId: this.lastBatchParentId || null,
+                text: block,
+                dummies: [],
+                isInPool: true
+            };
+            this.quizData.push(newPage);
+        });
+        this.saveData();
+        this.renderTOC();
+        if (this.batchAddModal) this.batchAddModal.classList.add('hidden');
+        this.batchAddText.value = '';
+        if (firstId) {
+            this.loadSet(firstId);
+            setTimeout(() => {
+                const newElem = this.tocList.querySelector(`a[href="#${firstId}"]`);
+                if (newElem) newElem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+        }
     }
 
     addNewRow() {

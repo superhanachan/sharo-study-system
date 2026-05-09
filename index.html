@@ -77,6 +77,7 @@
                         <button id="add-folder-btn" class="secondary-btn add-btn">+ フォルダ追加</button>
                         <button id="add-page-btn" class="secondary-btn add-btn">+ ページ追加</button>
                         <button id="add-clause-btn" class="secondary-btn add-btn">+ 条文穴埋め追加</button>
+                        <button id="batch-add-clause-btn" class="secondary-btn add-btn">+ 条文一括追加</button>
                     </div>
                 </nav>
             </div>
@@ -600,12 +601,31 @@
             </div>
         </div>
     </div>
+    <div id="batch-add-modal" class="modal hidden">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h3>条文穴埋め一括追加</h3>
+                <span id="close-batch-modal" class="close-btn">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom: 1rem; font-size: 0.9rem; color: var(--accent);">
+                    複数の問題を「""」で区切って入力してください。各ブロックの最初の1行がタイトルになります。<br>
+                    （例： ⑴ 労働力人口 ... "" ⑵ 労働力率 ...）
+                </p>
+                <textarea id="batch-add-text" style="width: 100%; min-height: 400px; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); color: var(--text-primary); padding: 1rem; border-radius: 12px; font-family: inherit; line-height: 1.6;" placeholder="ここに複数の条文を貼り付けてください..."></textarea>
+                <div style="margin-top: 1rem; text-align: right;">
+                    <button id="execute-batch-add-btn" class="primary-btn">一括作成を実行</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <script src="app.js?v=20260317"></script>
 
     <div id="context-menu" class="context-menu hidden">
         <div id="ctx-add-folder" class="context-menu-item" onclick="app.ctxAction('add-folder')">📁 子フォルダを追加</div>
         <div id="ctx-add-page" class="context-menu-item" onclick="app.ctxAction('add-page')">📄 子ページを追加</div>
         <div id="ctx-add-clause" class="context-menu-item" onclick="app.ctxAction('add-clause')">🔤 条文穴埋めを追加</div>
+        <div id="ctx-batch-add-clause" class="context-menu-item" onclick="app.ctxAction('batch-add-clause')">🔤 条文を一括追加</div>
         <hr id="ctx-divider-1">
         <div class="context-menu-item" onclick="app.ctxAction('move-up')">▲ 上に移動</div>
         <div class="context-menu-item" onclick="app.ctxAction('move-down')">▼ 下に移動</div>
