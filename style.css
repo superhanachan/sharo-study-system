@@ -3343,3 +3343,14 @@ th[onclick]:hover {
     cursor: pointer;
     box-shadow: 0 0 10px rgba(76, 201, 240, 0.5);
 }
+
+.next-btn-highlight {
+    animation: next-btn-glow 2s infinite;
+    box-shadow: 0 0 15px var(--accent) !important;
+}
+
+@keyframes next-btn-glow {
+    0% { transform: scale(1); box-shadow: 0 0 5px var(--accent); }
+    50% { transform: scale(1.05); box-shadow: 0 0 20px var(--accent); }
+    100% { transform: scale(1); box-shadow: 0 0 5px var(--accent); }
+}
