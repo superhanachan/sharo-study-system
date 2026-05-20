@@ -1715,17 +1715,9 @@ class QuizApp {
         this.flashModeBtn.innerHTML = '⏹ フラッシュ暗記を停止';
         this.flashModeBtn.classList.add('active');
         this.flashModeBtn.style.background = '#e63946';
-        if (this.globalKeywordBank) {
-            this.globalKeywordBank.classList.add('hidden');
-            this.globalKeywordBank.classList.remove('active-bank');
-        }
         
-        // Force answers to be revealed during flash mode
-        document.body.classList.add('answers-revealed');
-        if (this.peekAnswersBtn) {
-            this.peekAnswersBtn.innerHTML = '👁️ 答えを隠す';
-            this.peekAnswersBtn.classList.add('active');
-        }
+        // Minimize the bank instead of hiding it completely
+        this.isBankMinimized = true;
 
         this.flashTimer = setInterval(() => {
             this.resetAllBtn.click();
@@ -1743,13 +1735,8 @@ class QuizApp {
             this.flashModeBtn.style.background = '#ffb703';
         }
         
-        // Remove forced answers revealed when stopping
-        document.body.classList.remove('answers-revealed');
-        if (this.peekAnswersBtn) {
-            this.peekAnswersBtn.innerHTML = '👁️ 答えを表示する';
-            this.peekAnswersBtn.classList.remove('active');
-        }
-
+        // Restore bank minimization state
+        this.isBankMinimized = false;
         setTimeout(() => this.activateFirstVisibleBank(), 100);
     }
 
@@ -1875,19 +1862,10 @@ class QuizApp {
         this.isChecked = false;
         this.userAnswers = {};
         // Do NOT touch autoFilledAnswers here - applyAutoFill() will restore/update it correctly.
-        
-        if (this.flashTimer) {
-            document.body.classList.add('answers-revealed');
-            if (this.peekAnswersBtn) {
-                this.peekAnswersBtn.innerHTML = '👁️ 答えを隠す';
-                this.peekAnswersBtn.classList.add('active');
-            }
-        } else {
-            document.body.classList.remove('answers-revealed');
-            if (this.peekAnswersBtn) {
-                this.peekAnswersBtn.innerHTML = '👁️ 答えを表示する';
-                this.peekAnswersBtn.classList.remove('active');
-            }
+        document.body.classList.remove('answers-revealed');
+        if (this.peekAnswersBtn) {
+            this.peekAnswersBtn.innerHTML = '👁️ 答えを表示する';
+            this.peekAnswersBtn.classList.remove('active');
         }
 
         this.shuffledCache = {};
@@ -5985,8 +5963,8 @@ class QuizApp {
     updateGlobalKeywordBank(row) {
         if (!this.globalKeywordBank) return;
 
-        // Hide bank if we are in "isChecked" mode, Edit mode, or Flash mode
-        if (this.isChecked || this.isEditMode || this.flashTimer || !row || !row.dataset.keywords) {
+        // Hide bank if we are in "isChecked" mode or Edit mode
+        if (this.isChecked || this.isEditMode || !row || !row.dataset.keywords) {
             this.globalKeywordBank.classList.add('hidden');
             this.globalKeywordBank.classList.remove('active-bank');
             this._currentActiveRowId = null;
