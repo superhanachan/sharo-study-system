@@ -293,6 +293,7 @@
                         <button id="reset-wrong-btn" class="secondary-btn">間違えた問題だけ解き直す</button>
                         <button id="reset-min-streak-btn" class="secondary-btn">🔥が最も小さい問題のみ解き直す</button>
                         <button id="reset-all-btn" class="secondary-btn">すべての問題を解き直す</button>
+                        <button id="flash-mode-btn" class="secondary-btn" style="background: #ffb703; color: var(--bg-dark); font-weight: bold;">⚡ フラッシュ暗記を開始</button>
                         <button id="peek-answers-btn" class="secondary-btn">👁️ 答えを表示する</button>
                         <button id="next-page-btn" class="primary-btn" style="background: linear-gradient(135deg, #4cc9f0 0%, #4361ee 100%); margin-left: auto;">次の問題へ ➔</button>
                     </div>
@@ -407,6 +408,12 @@
                             <input type="number" id="max-displayed-choices" min="1" max="100" value="10"
                                 style="width: 80px;">
                             <small>※これを超える選択肢がある場合、ランダムに抽出して表示し、残りは自動入力します。</small>
+                        </div>
+                        <div class="form-group">
+                            <label>フラッシュ暗記の更新間隔 (秒):</label>
+                            <input type="number" id="flash-interval-input" min="1" max="60" value="5"
+                                style="width: 80px;">
+                            <small>※フラッシュ暗記機能で「すべての問題を解き直す」を自動実行する間隔を設定します。</small>
                         </div>
                     </div>
                 </div>

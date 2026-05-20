@@ -114,6 +114,8 @@ class QuizApp {
 
         const storedThreshold = localStorage.getItem('sharoAutoFillThreshold');
         this.autoFillThreshold = storedThreshold !== null ? parseInt(storedThreshold) : 5;
+        this.flashInterval = parseInt(localStorage.getItem('sharoFlashInterval') || '5', 10);
+        this.flashTimer = null;
 
         const storedIgnore = localStorage.getItem('sharoAutoFillIgnoreStats');
         this.autoFillIgnoreStats = storedIgnore !== null ? JSON.parse(storedIgnore) : true;
@@ -461,6 +463,7 @@ class QuizApp {
         this.resetWrongBtn = document.getElementById('reset-wrong-btn');
         this.resetMinStreakBtn = document.getElementById('reset-min-streak-btn');
         this.resetAllBtn = document.getElementById('reset-all-btn');
+        this.flashModeBtn = document.getElementById('flash-mode-btn');
         this.peekAnswersBtn = document.getElementById('peek-answers-btn');
         this.masteryBoard = document.getElementById('mastery-board');
         this.autoFillShortcutBtn = document.getElementById('auto-fill-shortcut-btn-sidebar');
@@ -558,6 +561,7 @@ class QuizApp {
         this.autoFillThresholdInput = document.getElementById('auto-fill-threshold');
         this.autoFillIgnoreStatsToggle = document.getElementById('auto-fill-ignore-stats');
         this.maxChoicesInput = document.getElementById('max-displayed-choices');
+        this.flashIntervalInput = document.getElementById('flash-interval-input');
         this.autoBracketToggle = document.getElementById('auto-bracket-toggle');
         this.srsIntervalsDisplay = document.getElementById('srs-intervals-display');
         this.contextMenu = document.getElementById('context-menu');
@@ -636,6 +640,15 @@ class QuizApp {
             this.saveAutoFilledAnswers();
             this.resetQuiz();
         });
+        if (this.flashModeBtn) {
+            this.flashModeBtn.addEventListener('click', () => {
+                if (this.flashTimer) {
+                    this.stopFlashMode();
+                } else {
+                    this.startFlashMode();
+                }
+            });
+        }
         if (this.peekAnswersBtn) {
             this.peekAnswersBtn.addEventListener('click', () => {
                 const isRevealed = document.body.classList.toggle('answers-revealed');
@@ -929,6 +942,18 @@ class QuizApp {
                 localStorage.setItem('sharoMaxDisplayedChoices', this.MAX_DISPLAYED_CHOICES);
                 this.shuffledCache = {}; 
                 this.renderTable();
+            };
+        }
+        if (this.flashIntervalInput) {
+            this.flashIntervalInput.value = this.flashInterval;
+            this.flashIntervalInput.onchange = () => {
+                const val = parseInt(this.flashIntervalInput.value);
+                this.flashInterval = !isNaN(val) && val > 0 ? val : 5;
+                localStorage.setItem('sharoFlashInterval', this.flashInterval);
+                if (this.flashTimer) {
+                    this.stopFlashMode();
+                    this.startFlashMode();
+                }
             };
         }
 
@@ -1685,7 +1710,30 @@ class QuizApp {
         }
     }
 
+    startFlashMode() {
+        if (!this.flashModeBtn || !this.resetAllBtn) return;
+        this.flashModeBtn.innerHTML = '⏹ フラッシュ暗記を停止';
+        this.flashModeBtn.classList.add('active');
+        this.flashModeBtn.style.background = '#e63946';
+        this.flashTimer = setInterval(() => {
+            this.resetAllBtn.click();
+        }, this.flashInterval * 1000);
+    }
+
+    stopFlashMode() {
+        if (this.flashTimer) {
+            clearInterval(this.flashTimer);
+            this.flashTimer = null;
+        }
+        if (this.flashModeBtn) {
+            this.flashModeBtn.innerHTML = '⚡ フラッシュ暗記を開始';
+            this.flashModeBtn.classList.remove('active');
+            this.flashModeBtn.style.background = '#ffb703';
+        }
+    }
+
     loadSet(id) {
+        this.stopFlashMode();
         if (id === null) {
             this.currentSetId = null;
             if (this.quizTitle) this.quizTitle.textContent = "ホーム / 富士登山";
