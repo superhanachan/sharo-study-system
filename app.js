@@ -1715,6 +1715,10 @@ class QuizApp {
         this.flashModeBtn.innerHTML = '⏹ フラッシュ暗記を停止';
         this.flashModeBtn.classList.add('active');
         this.flashModeBtn.style.background = '#e63946';
+        if (this.globalKeywordBank) {
+            this.globalKeywordBank.classList.add('hidden');
+            this.globalKeywordBank.classList.remove('active-bank');
+        }
         this.flashTimer = setInterval(() => {
             this.resetAllBtn.click();
         }, this.flashInterval * 1000);
@@ -1730,6 +1734,7 @@ class QuizApp {
             this.flashModeBtn.classList.remove('active');
             this.flashModeBtn.style.background = '#ffb703';
         }
+        setTimeout(() => this.activateFirstVisibleBank(), 100);
     }
 
     loadSet(id) {
@@ -5954,8 +5959,8 @@ class QuizApp {
     updateGlobalKeywordBank(row) {
         if (!this.globalKeywordBank) return;
 
-        // Hide bank if we are in "isChecked" mode or Edit mode
-        if (this.isChecked || this.isEditMode || !row || !row.dataset.keywords) {
+        // Hide bank if we are in "isChecked" mode, Edit mode, or Flash mode
+        if (this.isChecked || this.isEditMode || this.flashTimer || !row || !row.dataset.keywords) {
             this.globalKeywordBank.classList.add('hidden');
             this.globalKeywordBank.classList.remove('active-bank');
             this._currentActiveRowId = null;
