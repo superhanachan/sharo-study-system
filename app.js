@@ -1719,6 +1719,14 @@ class QuizApp {
             this.globalKeywordBank.classList.add('hidden');
             this.globalKeywordBank.classList.remove('active-bank');
         }
+        
+        // Force answers to be revealed during flash mode
+        document.body.classList.add('answers-revealed');
+        if (this.peekAnswersBtn) {
+            this.peekAnswersBtn.innerHTML = '👁️ 答えを隠す';
+            this.peekAnswersBtn.classList.add('active');
+        }
+
         this.flashTimer = setInterval(() => {
             this.resetAllBtn.click();
         }, this.flashInterval * 1000);
@@ -1734,6 +1742,14 @@ class QuizApp {
             this.flashModeBtn.classList.remove('active');
             this.flashModeBtn.style.background = '#ffb703';
         }
+        
+        // Remove forced answers revealed when stopping
+        document.body.classList.remove('answers-revealed');
+        if (this.peekAnswersBtn) {
+            this.peekAnswersBtn.innerHTML = '👁️ 答えを表示する';
+            this.peekAnswersBtn.classList.remove('active');
+        }
+
         setTimeout(() => this.activateFirstVisibleBank(), 100);
     }
 
@@ -1859,11 +1875,21 @@ class QuizApp {
         this.isChecked = false;
         this.userAnswers = {};
         // Do NOT touch autoFilledAnswers here - applyAutoFill() will restore/update it correctly.
-        document.body.classList.remove('answers-revealed');
-        if (this.peekAnswersBtn) {
-            this.peekAnswersBtn.innerHTML = '👁️ 答えを表示する';
-            this.peekAnswersBtn.classList.remove('active');
+        
+        if (this.flashTimer) {
+            document.body.classList.add('answers-revealed');
+            if (this.peekAnswersBtn) {
+                this.peekAnswersBtn.innerHTML = '👁️ 答えを隠す';
+                this.peekAnswersBtn.classList.add('active');
+            }
+        } else {
+            document.body.classList.remove('answers-revealed');
+            if (this.peekAnswersBtn) {
+                this.peekAnswersBtn.innerHTML = '👁️ 答えを表示する';
+                this.peekAnswersBtn.classList.remove('active');
+            }
         }
+
         this.shuffledCache = {};
         this.selectedKeyword = null; // Reset selected keyword
         this.scoreDisplay.textContent = "正解数: 0 / 0";
