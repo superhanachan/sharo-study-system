@@ -1230,6 +1230,68 @@ class QuizApp {
         stat.nextReview = nextDate.toISOString();
     }
 
+    resetQuestionHistory(q) {
+        if (!q || !q.id) return;
+        const baseId = this.getQuestionBaseId(q.id);
+        
+        let deletedCount = 0;
+        const keys = Object.keys(this.questionStats);
+        
+        keys.forEach(key => {
+            if (q.type === 'clause' || q.id.startsWith('clause-')) {
+                if (key === `clause-summary-${baseId}` || key.startsWith(`clause-${baseId}-`)) {
+                    delete this.questionStats[key];
+                    deletedCount++;
+                }
+            } else {
+                if (key === baseId) {
+                    delete this.questionStats[key];
+                    deletedCount++;
+                }
+            }
+        });
+        
+        if (deletedCount === 0) {
+            alert('この問題にはリセットできる学習履歴がありません。');
+            return;
+        }
+
+        this.saveData();
+        
+        // Remove from autoFilledAnswers if present
+        let autoFillChanged = false;
+        if (q.type === 'clause' || q.id.startsWith('clause-')) {
+            const allKeys = [...this.autoFilledAnswers];
+            allKeys.forEach(k => {
+                if (k.startsWith(`${q.id}-`)) {
+                    this.autoFilledAnswers.delete(k);
+                    autoFillChanged = true;
+                }
+            });
+        } else {
+            if (this.autoFilledAnswers.has(q.id)) {
+                this.autoFilledAnswers.delete(q.id);
+                autoFillChanged = true;
+            }
+        }
+        
+        if (autoFillChanged) {
+            this.saveAutoFilledAnswers();
+        }
+
+        if (this.currentSetId) {
+            const set = this.quizData.find(s => s.id === this.currentSetId);
+            if (set && set.type === 'clause') {
+                this.renderClauseView(set);
+            } else {
+                this.renderTable();
+            }
+        } else {
+            this.renderTable();
+        }
+        alert('学習履歴をリセットし、新規学習状態に戻しました。');
+    }
+
     overrideCorrect(statKey, callback) {
         const stat = this.questionStats[statKey];
         if (!stat || !stat.history || stat.history.length === 0) return;
@@ -2807,6 +2869,18 @@ class QuizApp {
             historyBtn.innerHTML = '📈 正答率の推移を確認';
             historyBtn.onclick = () => this.showSRSDetail(summaryKey);
             container.appendChild(historyBtn);
+        } else {
+            const resetBtn = document.createElement('button');
+            resetBtn.className = 'clause-history-btn reset-history-btn';
+            resetBtn.innerHTML = '🔄 学習履歴をリセット';
+            resetBtn.style.color = '#fff';
+            resetBtn.style.background = '#e63946';
+            resetBtn.onclick = () => {
+                if(confirm('この条文の学習履歴（SRSスケジュール含む）をリセットしますか？この操作は取り消せません。')) {
+                    this.resetQuestionHistory(set);
+                }
+            };
+            container.appendChild(resetBtn);
         }
 
         // Add Title
@@ -4635,6 +4709,25 @@ class QuizApp {
                     tdQ.appendChild(overrideBtn);
                 }
             }
+
+            if (this.isEditMode && !isAuto) {
+                const resetBtn = document.createElement('span');
+                resetBtn.className = 'history-icon-btn reset-history-btn';
+                resetBtn.innerHTML = ' 🔄リセット';
+                resetBtn.style.color = '#e63946';
+                resetBtn.style.cursor = 'pointer';
+                resetBtn.style.marginLeft = '10px';
+                resetBtn.style.fontSize = '12px';
+                resetBtn.title = 'この問題の学習履歴を初期化します';
+                resetBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    if(confirm('この問題の学習履歴（SRSスケジュール含む）をリセットしますか？この操作は取り消せません。')) {
+                        this.resetQuestionHistory(q);
+                    }
+                };
+                tdQ.appendChild(resetBtn);
+            }
+
             tr.appendChild(tdQ);
 
             if (q.type !== 'clause') {
