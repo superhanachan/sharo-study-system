@@ -1,6 +1,6 @@
 @echo off
 echo =========================================
-echo   Starting GitHub Push Process
+echo   Starting GitHub Sync Process
 echo =========================================
 echo.
 
@@ -13,6 +13,10 @@ echo.
 git commit -m "%msg%"
 echo.
 
+echo Pulling latest changes from GitHub...
+git pull --rebase
+
+echo.
 echo Pushing to GitHub...
 git push
 
