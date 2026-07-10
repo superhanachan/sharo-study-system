@@ -71,6 +71,7 @@
                         <button id="sidebar-gen-srs-clause-btn" class="sidebar-gen-btn srs-clause">忘却曲線：条文穴埋め (1題)</button>
                         <button id="sidebar-gen-srs-page-btn" class="sidebar-gen-btn srs-page">忘却曲線：選択式</button>
                         <button id="sidebar-gen-stagnant-btn" class="sidebar-gen-btn" style="background: #e63946; color: white;">攻略難航中の問題リスト</button>
+                        <button id="sidebar-whiteboard-btn" class="sidebar-gen-btn" style="background: #ffffff; color: #000000; border: 2px solid var(--accent); margin-top: 0.8rem; font-weight: bold;">🖊️ 手書きメモを開く</button>
                     </div>
                     <ul id="toc-list"></ul>
                     <div class="sidebar-actions hidden-quiz">
@@ -650,7 +651,23 @@
             </div>
         </div>
     </div>
+
+    <!-- Whiteboard Overlay -->
+    <div id="whiteboard-overlay" class="hidden">
+        <div class="wb-toolbar">
+            <button id="wb-color-white" class="wb-tool active" style="background: white;" title="白ペン"></button>
+            <button id="wb-color-red" class="wb-tool" style="background: #f72585;" title="赤ペン"></button>
+            <button id="wb-color-blue" class="wb-tool" style="background: #4cc9f0;" title="青ペン"></button>
+            <div class="wb-divider"></div>
+            <button id="wb-eraser" class="wb-tool-icon" title="消しゴム">🧽</button>
+            <button id="wb-clear" class="wb-tool-icon" title="全消去">🗑️</button>
+            <button id="wb-close" class="wb-tool-icon" style="margin-left: auto;" title="閉じる">❌</button>
+        </div>
+        <canvas id="wb-canvas"></canvas>
+    </div>
+
     <script src="app.js?v=20260317"></script>
+    <script src="whiteboard.js?v=1"></script>
 
     <div id="context-menu" class="context-menu hidden">
         <div id="ctx-add-folder" class="context-menu-item" onclick="app.ctxAction('add-folder')">📁 子フォルダを追加</div>
