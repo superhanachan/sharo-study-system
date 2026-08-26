@@ -4971,23 +4971,61 @@ class QuizApp {
             const xmlDoc = parser.parseFromString(xmlText, "text/xml");
             
             // Get Law Name
-            const lawNameEl = xmlDoc.querySelector("LawName");
+            const lawNameEl = xmlDoc.querySelector("LawTitle") || xmlDoc.querySelector("LawName");
             if (lawNameEl) titleEl.textContent = lawNameEl.textContent;
 
             // Find target element by anchor
             let targetNode = null;
+            
+            const findArticleInList = (articleList, targetNumStr) => {
+                for (let i = 0; i < articleList.length; i++) {
+                    const num = articleList[i].getAttribute("Num");
+                    if (num === targetNumStr) return articleList[i];
+                    if (num && num.includes(':')) {
+                        const parts = num.split(':');
+                        const s = parseInt(parts[0]);
+                        const e = parseInt(parts[1]);
+                        const t = parseInt(targetNumStr);
+                        if (!isNaN(s) && !isNaN(e) && !isNaN(t) && t >= s && t <= e) {
+                            return articleList[i];
+                        }
+                    }
+                }
+                return null;
+            };
+
             if (anchor.startsWith('Mp-At_')) {
                 // Main Provision - Article
                 const articleNum = anchor.replace('Mp-At_', '');
-                // Basic search for <Article Num="X">
                 const articles = xmlDoc.querySelectorAll("Article");
-                for (let i = 0; i < articles.length; i++) {
-                    if (articles[i].getAttribute("Num") === articleNum) {
-                        targetNode = articles[i];
-                        break;
+                targetNode = findArticleInList(articles, articleNum);
+            } else if (anchor.startsWith('Sp')) {
+                // Supplementary Provisions
+                const amendMatch = anchor.match(/^Sp_?([^-]*)/);
+                const amendNum = amendMatch && amendMatch[1] ? amendMatch[1] : null;
+                
+                let targetSp = null;
+                const spNodes = xmlDoc.querySelectorAll("SupplProvision");
+                for (let i = 0; i < spNodes.length; i++) {
+                    if (!amendNum && !spNodes[i].hasAttribute("AmendLawNum")) {
+                        targetSp = spNodes[i]; break;
+                    }
+                    if (amendNum && spNodes[i].getAttribute("AmendLawNum") === amendNum) {
+                        targetSp = spNodes[i]; break;
                     }
                 }
-            } else {
+                
+                if (targetSp) {
+                    const atMatch = anchor.match(/-At_([0-9_]+)/);
+                    if (atMatch) {
+                        const spArticles = targetSp.querySelectorAll("Article");
+                        targetNode = findArticleInList(spArticles, atMatch[1]);
+                    }
+                    if (!targetNode) targetNode = targetSp; // fallback to whole SupplProvision
+                }
+            }
+
+            if (!targetNode) {
                 // If it's a general law link or unsupported anchor, just show the first article or a message
                 const firstArticle = xmlDoc.querySelector("Article");
                 if (firstArticle) {
