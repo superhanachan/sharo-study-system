@@ -3425,3 +3425,50 @@ th[onclick]:hover {
     touch-action: none;
     cursor: crosshair;
 }
+
+/* e-Gov API Preview Styles */
+@keyframes pulse {
+    0% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.95); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+.egov-link, .external-link {
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+}
+.egov-link:hover, .external-link:hover {
+    color: #fff;
+    text-shadow: 0 0 8px var(--accent);
+}
+
+.egov-paragraph {
+    margin-bottom: 1rem;
+    padding-left: 1rem;
+    text-indent: -1rem;
+}
+.egov-item {
+    margin-bottom: 0.5rem;
+    padding-left: 2rem;
+    text-indent: -1rem;
+}
+.egov-caption {
+    font-weight: bold;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+    display: block;
+}
+.egov-title {
+    font-weight: bold;
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid var(--glass-border);
+    padding-bottom: 0.5rem;
+}
+

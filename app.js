@@ -3840,7 +3840,17 @@ class QuizApp {
 
     renderWithMarkdown(text) {
         if (!text) return '';
-        const lines = text.split('\n');
+
+        // Auto-linkify URLs (ignore existing tags just in case, though we don't expect them)
+        const urlRegex = /(https?:\/\/[^\s<]+[^<.,:;"')\]\s])/g;
+        let processedText = text.replace(urlRegex, (url) => {
+            const isEGov = url.includes('elaws.e-gov.go.jp') || url.includes('laws.e-gov.go.jp');
+            const className = isEGov ? 'egov-link' : 'external-link';
+            const icon = isEGov ? '🏛️ ' : '🔗 ';
+            return `<a href="${url}" target="_blank" class="${className}" onclick="if('${isEGov}' === 'true') { event.preventDefault(); app.openEGovModal('${url}'); }">${icon}${url}</a>`;
+        });
+
+        const lines = processedText.split('\n');
         let processedHtml = '';
         let tableLines = [];
 
@@ -4663,14 +4673,17 @@ class QuizApp {
                 }
                 if (isAuto && q.origPage) { const tag = document.createElement('div'); tag.className = 'page-tag'; tag.innerHTML = `<span class="source-label">出典:</span> ${q.origPage}`; tdQ.appendChild(tag); }
 
-                const spanText = document.createElement('span'); spanText.textContent = q.text;
+                const spanText = document.createElement('span'); 
                 if (this.isEditMode) { 
+                    spanText.textContent = q.text;
                     spanText.contentEditable = true; 
                     spanText.onblur = () => { 
                         q.text = spanText.textContent.trim(); 
                         if (isAuto) this.updateOriginalQuestion(q.id, 'text', q.text);
                         else this.saveData(); 
                     }; 
+                } else {
+                    spanText.innerHTML = this.renderWithMarkdown(q.text);
                 }
                 tdQ.appendChild(spanText);
 
@@ -4836,6 +4849,126 @@ class QuizApp {
         });
     }
 
+
+    async openEGovModal(url) {
+        const modal = document.getElementById('egov-modal');
+        const contentArea = document.getElementById('egov-content');
+        const loadingArea = document.getElementById('egov-loading');
+        const extLink = document.getElementById('egov-external-link');
+        const titleEl = document.getElementById('egov-modal-law-name');
+        
+        modal.classList.remove('hidden');
+        contentArea.innerHTML = '';
+        contentArea.style.display = 'none';
+        loadingArea.style.display = 'block';
+        extLink.href = url;
+        titleEl.textContent = "法令プレビュー";
+
+        // Setup close handler
+        const closeBtn = document.getElementById('close-egov-modal');
+        const closeModal = () => modal.classList.add('hidden');
+        closeBtn.onclick = closeModal;
+        modal.onclick = (e) => { if (e.target === modal) closeModal(); };
+
+        try {
+            // Parse URL
+            const urlObj = new URL(url);
+            const lawId = urlObj.searchParams.get('lawid');
+            const anchor = urlObj.hash.replace('#', '');
+            
+            if (!lawId) throw new Error("法令IDが見つかりません");
+
+            // Fetch XML from e-Gov API
+            const apiUrl = `https://laws.e-gov.go.jp/api/1/lawdata/${lawId}`;
+            const response = await fetch(apiUrl);
+            if (!response.ok) throw new Error("APIレスポンスエラー: " + response.status);
+            const xmlText = await response.text();
+            
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+            
+            // Get Law Name
+            const lawNameEl = xmlDoc.querySelector("LawName");
+            if (lawNameEl) titleEl.textContent = lawNameEl.textContent;
+
+            // Find target element by anchor
+            let targetNode = null;
+            if (anchor.startsWith('Mp-At_')) {
+                // Main Provision - Article
+                const articleNum = anchor.replace('Mp-At_', '');
+                // Basic search for <Article Num="X">
+                const articles = xmlDoc.querySelectorAll("Article");
+                for (let i = 0; i < articles.length; i++) {
+                    if (articles[i].getAttribute("Num") === articleNum) {
+                        targetNode = articles[i];
+                        break;
+                    }
+                }
+            } else {
+                // If it's a general law link or unsupported anchor, just show the first article or a message
+                const firstArticle = xmlDoc.querySelector("Article");
+                if (firstArticle) {
+                    targetNode = firstArticle;
+                    titleEl.textContent += " (先頭部分)";
+                }
+            }
+
+            if (!targetNode) {
+                contentArea.innerHTML = '<div style="color:var(--error);">指定された条文が見つかりませんでした。お手数ですが「別タブで開く」から公式ページをご確認ください。</div>';
+            } else {
+                // Simple recursive XML to HTML converter for e-Gov standard tags
+                const parseEGovNode = (node) => {
+                    let html = '';
+                    if (node.nodeType === Node.TEXT_NODE) {
+                        return node.textContent;
+                    }
+                    if (node.nodeType === Node.ELEMENT_NODE) {
+                        switch (node.tagName) {
+                            case 'ArticleCaption':
+                                html += `<div class="egov-caption">【${node.textContent}】</div>`;
+                                break;
+                            case 'ArticleTitle':
+                                html += `<div class="egov-title">${node.textContent}</div>`;
+                                break;
+                            case 'Paragraph':
+                                html += `<div class="egov-paragraph">`;
+                                Array.from(node.childNodes).forEach(child => html += parseEGovNode(child));
+                                html += `</div>`;
+                                break;
+                            case 'ParagraphNum':
+                                html += `<span style="margin-right: 0.5rem; font-weight: bold;">${node.textContent || ''}</span>`;
+                                break;
+                            case 'Item':
+                                html += `<div class="egov-item">`;
+                                Array.from(node.childNodes).forEach(child => html += parseEGovNode(child));
+                                html += `</div>`;
+                                break;
+                            case 'ItemTitle':
+                                html += `<span style="margin-right: 0.5rem; font-weight: bold;">${node.textContent}</span>`;
+                                break;
+                            case 'Sentence':
+                            case 'ParagraphSentence':
+                            case 'ItemSentence':
+                                Array.from(node.childNodes).forEach(child => html += parseEGovNode(child));
+                                break;
+                            default:
+                                Array.from(node.childNodes).forEach(child => html += parseEGovNode(child));
+                                break;
+                        }
+                    }
+                    return html;
+                };
+
+                contentArea.innerHTML = parseEGovNode(targetNode);
+            }
+        } catch (error) {
+            console.error("e-Gov API fetch error:", error);
+            contentArea.innerHTML = `<div style="color:var(--error);">データの取得に失敗しました。<br>お手数ですが右下の「別タブで開く」ボタンからご確認ください。<br><small>${error.message}</small></div>`;
+        } finally {
+            loadingArea.style.display = 'none';
+            contentArea.style.display = 'block';
+        }
+    }
 
     deleteRow(id) {
         if (this.isAutoGenerated) return;

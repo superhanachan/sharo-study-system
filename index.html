@@ -652,6 +652,30 @@
         </div>
     </div>
 
+    <div id="egov-modal" class="modal hidden">
+        <div class="modal-content" style="max-width: 800px; max-height: 90vh; display: flex; flex-direction: column;">
+            <div class="modal-header">
+                <h3 id="egov-modal-title" style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span style="font-size: 1.2rem;">🏛️</span> 
+                    <span id="egov-modal-law-name">法令プレビュー</span>
+                </h3>
+                <span id="close-egov-modal" class="close-btn">&times;</span>
+            </div>
+            <div class="modal-body" style="flex: 1; overflow-y: auto; position: relative;">
+                <div id="egov-loading" style="display: none; text-align: center; padding: 2rem;">
+                    <div style="font-size: 2rem; margin-bottom: 1rem; animation: pulse 1.5s infinite;">⏳</div>
+                    <div style="color: var(--text-secondary);">e-Govから条文データを取得中...</div>
+                </div>
+                <div id="egov-content" style="font-family: 'Yu Mincho', 'MS Mincho', serif; line-height: 1.8; color: var(--text-primary); padding: 1rem; background: var(--bg-dark); border-radius: 8px; border: 1px solid var(--glass-border);">
+                    <!-- XML parsed content will go here -->
+                </div>
+            </div>
+            <div class="modal-footer" style="padding: 1rem; border-top: 1px solid var(--glass-border); text-align: right;">
+                <a id="egov-external-link" href="#" target="_blank" class="secondary-btn" style="text-decoration: none; display: inline-block;">別タブで開く (e-Gov公式)</a>
+            </div>
+        </div>
+    </div>
+
     <!-- Whiteboard Overlay -->
     <div id="whiteboard-overlay" class="hidden">
         <div class="wb-toolbar">
