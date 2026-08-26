@@ -4942,8 +4942,21 @@ class QuizApp {
 
         try {
             // Parse URL
-            const urlObj = new URL(url);
-            const lawId = urlObj.searchParams.get('lawid');
+            let rawUrl = url;
+            // Clean up accidental trailing characters like ] if they snuck in
+            if (rawUrl.endsWith(']')) rawUrl = rawUrl.slice(0, -1);
+            
+            const urlObj = new URL(rawUrl);
+            let lawId = urlObj.searchParams.get('lawid');
+            
+            // If lawid is not in query params, check the path for the new format: /law/349AC0000000116
+            if (!lawId && urlObj.pathname.startsWith('/law/')) {
+                const parts = urlObj.pathname.split('/');
+                if (parts.length >= 3) {
+                    lawId = parts[2];
+                }
+            }
+
             const anchor = urlObj.hash.replace('#', '');
             
             if (!lawId) throw new Error("法令IDが見つかりません");
