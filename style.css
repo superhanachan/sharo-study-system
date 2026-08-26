@@ -1,4 +1,4 @@
-:root {
+﻿:root {
     --bg-dark: #0f1117;
     --bg-card: rgba(30, 32, 45, 0.7);
     --text-primary: #ffffff;
@@ -1536,7 +1536,7 @@ th:hover {
 }
 
 th::after {
-    content: '↕';
+    content: '竊・;
     position: absolute;
     right: 0.5rem;
     opacity: 0.3;
@@ -1544,13 +1544,13 @@ th::after {
 }
 
 th.sort-asc::after {
-    content: '↑';
+    content: '竊・;
     opacity: 1;
     color: var(--accent);
 }
 
 th.sort-desc::after {
-    content: '↓';
+    content: '竊・;
     opacity: 1;
     color: var(--accent);
 }
@@ -1620,7 +1620,7 @@ td:last-child {
     font-weight: 700;
 }
 
-/* 髢馴＆縺医◆譎ゑｿｽE豢ｾ謇九↑陦ｨ遉ｺ */
+/* 鬮｢鬥ｴ・・ｸｺ蛹ｻ笳・ｭ弱ｑ・ｿ・ｽE雎｢・ｾ隰・ｹ昶・髯ｦ・ｨ驕会ｽｺ */
 .row-wrong {
     background: rgba(247, 37, 133, 0.08) !important;
     animation: shake 0.5s cubic-bezier(.36, .07, .19, .97) both;
@@ -1630,33 +1630,6 @@ td:last-child {
 .row-wrong td {
     border-top: 1px solid rgba(247, 37, 133, 0.3) !important;
     border-bottom: 1px solid rgba(247, 37, 133, 0.3) !important;
-}
-
-/* 髢馴＆縺医◆陦鯉ｿｽE荳ｭ縺ｮ縲梧悽譚･縺ｮ豁｣隗｣縲阪ｒ繧医ｊ逶ｮ遶九◆縺帙ｋ */
-.row-wrong .choice-cell.correct {
-    background: var(--success) !important;
-    color: var(--bg-dark) !important;
-    box-shadow: 0 0 15px var(--success);
-    transform: scale(1.05);
-    z-index: 10;
-    position: relative;
-    border: none !important;
-}
-
-/* 髢馴＆縺医◆陦鯉ｿｽE荳ｭ縺ｮ縲梧ｭ｣隗｣縲搾ｿｽE繝ｼ繧ｯ・ｽE・ｽ螟夐㍾驕ｸ謚樒畑縺ｪ縺ｩ・ｽE・ｽE*/
-.row-wrong .choice-cell.correct::after {
-    content: '豁｣隗｣';
-    position: absolute;
-    top: -10px;
-    right: -10px;
-    background: #000;
-    color: var(--success);
-    font-size: 0.6rem;
-    padding: 2px 4px;
-    border-radius: 4px;
-    border: 1px solid var(--success);
-    font-weight: bold;
-    z-index: 20;
 }
 
 @keyframes shake {
@@ -3471,4 +3444,33 @@ th[onclick]:hover {
     border-bottom: 1px solid var(--glass-border);
     padding-bottom: 0.5rem;
 }
+
+
+/* OK / NG Badges for rows */
+.row-correct .question-cell::before {
+    content: "OK!";
+    display: inline-block;
+    background: var(--success);
+    color: var(--bg-dark);
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-right: 8px;
+    font-size: 0.85rem;
+    vertical-align: middle;
+}
+
+.row-wrong .question-cell::before {
+    content: "NG!";
+    display: inline-block;
+    background: var(--error);
+    color: white;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-right: 8px;
+    font-size: 0.85rem;
+    vertical-align: middle;
+}
+
 

@@ -4423,15 +4423,15 @@ class QuizApp {
 
             if (this.isChecked) {
                 const userAnswer = this.userAnswers[q.id];
+                let isAllCorrect = false;
                 if (userAnswer && (!Array.isArray(userAnswer) || userAnswer.length > 0)) {
-                    let isAllCorrect = false;
                     if (isQMulti) {
                         const correctSet = new Set(q.answer); const userSet = new Set(userAnswer);
                         isAllCorrect = (correctSet.size === userSet.size && [...correctSet].every(item => userSet.has(item)));
                     } else { isAllCorrect = userAnswer === q.answer; }
-                    tr.classList.add(isAllCorrect ? 'row-correct' : 'row-wrong');
-                    tr.dataset.isWrong = !isAllCorrect;
                 }
+                tr.classList.add(isAllCorrect ? 'row-correct' : 'row-wrong');
+                tr.dataset.isWrong = !isAllCorrect;
             }
 
             // Pool inclusion checkbox cell (REQUIRED FOR ALIGNMENT in edit mode)
