@@ -4460,198 +4460,268 @@ class QuizApp {
 
             const tdQ = document.createElement('td'); tdQ.className = 'question-cell';
 
-            // Treat any question with [[...]] or ((...)) (including full-width) as a clause/blank type
             if (q.type === 'clause' || /\[\[|［［|\(\(|（（/.test(q.text)) {
                 const wrapper = document.createElement('div'); wrapper.className = 'table-clause-wrapper';
                 const badge = document.createElement('span'); badge.className = 'clause-badge'; badge.textContent = q.origPage || "条文";
                 wrapper.appendChild(badge);
 
-                const cText = document.createElement('div'); cText.className = 'clause-text-mini';
-                let htmlContent = this.renderWithMarkdown(q.text);
-
-                const rowKeywords = []; let blankIdx = 0;
-                // Combined drag/input support (including full-width)
-                const finalHtml = htmlContent.replace(/\[\[(.*?)\]\]|［［(.*?)］］|\(\((.*?)\)\)|（（(.*?)））/g, (match, p1, p2, p3, p4) => {
-                    const keyword = p1 || p2 || p3 || p4;
-                    const type = (p1 || p2) ? 'drag' : 'input';
-                    rowKeywords.push({ text: keyword, type: type });
-                    return `<span class="blank-placeholder" data-idx="${blankIdx++}"></span>`;
-                });
-                cText.innerHTML = finalHtml;
-
-                const placeholders = cText.querySelectorAll('.blank-placeholder');
-                placeholders.forEach((placeholder) => {
-                    const currentBlankIdx = parseInt(placeholder.dataset.idx);
-                    const kwInfo = rowKeywords[currentBlankIdx];
-                    const baseId = this.getQuestionBaseId(q.id);
-                    const statKey = this.getBlankStatKey(baseId, currentBlankIdx);
-                    const savedAnswer = this.userAnswers[`${q.id}-${currentBlankIdx}`];
-                    const isAutoFilled = this.autoFilledAnswers.has(`${q.id}-${currentBlankIdx}`);
-
-                    if (kwInfo.type === 'drag') {
-                        const blank = document.createElement('div');
-                        blank.className = 'clause-blank';
-                        if (savedAnswer) {
-                            blank.textContent = savedAnswer;
-                            blank.classList.add('filled');
-                            if (isAutoFilled) blank.classList.add('auto-filled');
-                        } else {
-                            blank.innerHTML = '&nbsp;&nbsp;&nbsp;&nbsp;';
+                if (this.isEditMode) {
+                    const editArea = document.createElement('textarea');
+                    editArea.className = 'clause-text-editor-mini';
+                    editArea.style.width = '100%';
+                    editArea.style.minHeight = '80px';
+                    editArea.style.marginTop = '10px';
+                    editArea.style.fontFamily = 'monospace';
+                    editArea.style.padding = '0.5rem';
+                    editArea.style.background = 'var(--bg-dark)';
+                    editArea.style.color = 'var(--text-light)';
+                    editArea.style.border = '1px solid var(--glass-border)';
+                    editArea.style.borderRadius = '4px';
+                    editArea.value = q.text;
+                    editArea.onblur = () => {
+                        const val = editArea.value.trim();
+                        if (val !== q.text) {
+                            q.text = val;
+                            if (isAuto) this.updateOriginalQuestion(q.id, 'text', q.text);
+                            else this.saveData();
+                            this.renderTable();
                         }
+                    };
+                    wrapper.appendChild(editArea);
+                    
+                    const memoArea = document.createElement('textarea');
+                    memoArea.className = 'clause-text-editor-mini';
+                    memoArea.placeholder = 'メモ・解説...';
+                    memoArea.style.width = '100%';
+                    memoArea.style.minHeight = '40px';
+                    memoArea.style.marginTop = '5px';
+                    memoArea.style.padding = '0.5rem';
+                    memoArea.style.background = 'var(--bg-dark)';
+                    memoArea.style.color = 'var(--text-light)';
+                    memoArea.style.border = '1px solid var(--glass-border)';
+                    memoArea.style.borderRadius = '4px';
+                    memoArea.value = q.memo || '';
+                    memoArea.onblur = () => {
+                        const val = memoArea.value.trim();
+                        if (val !== (q.memo || '')) {
+                            q.memo = val;
+                            if (isAuto) this.updateOriginalQuestion(q.id, 'memo', q.memo);
+                            else this.saveData();
+                        }
+                    };
+                    wrapper.appendChild(memoArea);
+                    
+                    // Show dummies if they exist
+                    if (q.dummies && q.dummies.length > 0) {
+                        const dummiesArea = document.createElement('input');
+                        dummiesArea.type = 'text';
+                        dummiesArea.placeholder = 'ダミー選択肢 (カンマ区切り)';
+                        dummiesArea.style.width = '100%';
+                        dummiesArea.style.marginTop = '5px';
+                        dummiesArea.style.padding = '0.5rem';
+                        dummiesArea.style.background = 'var(--bg-dark)';
+                        dummiesArea.style.color = 'var(--text-light)';
+                        dummiesArea.style.border = '1px solid var(--glass-border)';
+                        dummiesArea.style.borderRadius = '4px';
+                        dummiesArea.value = q.dummies.join(', ');
+                        dummiesArea.onblur = () => {
+                            const val = dummiesArea.value.split(',').map(s => s.trim()).filter(Boolean);
+                            if (val.join(',') !== q.dummies.join(',')) {
+                                q.dummies = val;
+                                if (isAuto) this.updateOriginalQuestion(q.id, 'dummies', q.dummies);
+                                else this.saveData();
+                            }
+                        };
+                        wrapper.appendChild(dummiesArea);
+                    }
+                } else {
+                    const cText = document.createElement('div'); cText.className = 'clause-text-mini';
+                    let htmlContent = this.renderWithMarkdown(q.text);
 
-                        // Add streak count to data attribute for table blanks (strictly per ID)
-                        const streak = this.getStreakCount(statKey);
-                        blank.dataset.streak = streak;
+                    const rowKeywords = []; let blankIdx = 0;
+                    // Combined drag/input support (including full-width)
+                    const finalHtml = htmlContent.replace(/\[\[(.*?)\]\]|［［(.*?)］］|\(\((.*?)\)\)|（（(.*?)））/g, (match, p1, p2, p3, p4) => {
+                        const keyword = p1 || p2 || p3 || p4;
+                        const type = (p1 || p2) ? 'drag' : 'input';
+                        rowKeywords.push({ text: keyword, type: type });
+                        return `<span class="blank-placeholder" data-idx="${blankIdx++}"></span>`;
+                    });
+                    cText.innerHTML = finalHtml;
 
-                        if (!this.isChecked) {
-                            blank.ondragover = (e) => { e.preventDefault(); blank.classList.add('drag-over'); };
-                            blank.ondragleave = () => blank.classList.remove('drag-over');
-                            blank.ondrop = (e) => {
-                                e.preventDefault(); blank.classList.remove('drag-over');
-                                const text = e.dataTransfer.getData('text/plain');
-                                if (text) {
-                                    this.userAnswers[`${q.id}-${currentBlankIdx}`] = text;
-                                    this.autoFilledAnswers.delete(`${q.id}-${currentBlankIdx}`);
-                                    // Auto-fill other blanks with same correct answer
-                                    rowKeywords.forEach((otherKw, j) => {
-                                        if (otherKw.text === kwInfo.text) this.userAnswers[`${q.id}-${j}`] = text;
-                                    });
-                                    this.renderTable();
-                                    const trTarget = blank.closest('tr');
-                                    if (trTarget) this.updateGlobalKeywordBank(trTarget);
+                    const placeholders = cText.querySelectorAll('.blank-placeholder');
+                    placeholders.forEach((placeholder) => {
+                        const currentBlankIdx = parseInt(placeholder.dataset.idx);
+                        const kwInfo = rowKeywords[currentBlankIdx];
+                        const baseId = this.getQuestionBaseId(q.id);
+                        const statKey = this.getBlankStatKey(baseId, currentBlankIdx);
+                        const savedAnswer = this.userAnswers[`${q.id}-${currentBlankIdx}`];
+                        const isAutoFilled = this.autoFilledAnswers.has(`${q.id}-${currentBlankIdx}`);
+
+                        if (kwInfo.type === 'drag') {
+                            const blank = document.createElement('div');
+                            blank.className = 'clause-blank';
+                            if (savedAnswer) {
+                                blank.textContent = savedAnswer;
+                                blank.classList.add('filled');
+                                if (isAutoFilled) blank.classList.add('auto-filled');
+                            } else {
+                                blank.innerHTML = '&nbsp;&nbsp;&nbsp;&nbsp;';
+                            }
+
+                            // Add streak count to data attribute for table blanks (strictly per ID)
+                            const streak = this.getStreakCount(statKey);
+                            blank.dataset.streak = streak;
+
+                            if (!this.isChecked) {
+                                blank.ondragover = (e) => { e.preventDefault(); blank.classList.add('drag-over'); };
+                                blank.ondragleave = () => blank.classList.remove('drag-over');
+                                blank.ondrop = (e) => {
+                                    e.preventDefault(); blank.classList.remove('drag-over');
+                                    const text = e.dataTransfer.getData('text/plain');
+                                    if (text) {
+                                        this.userAnswers[`${q.id}-${currentBlankIdx}`] = text;
+                                        this.autoFilledAnswers.delete(`${q.id}-${currentBlankIdx}`);
+                                        // Auto-fill other blanks with same correct answer
+                                        rowKeywords.forEach((otherKw, j) => {
+                                            if (otherKw.text === kwInfo.text) this.userAnswers[`${q.id}-${j}`] = text;
+                                        });
+                                        this.renderTable();
+                                        const trTarget = blank.closest('tr');
+                                        if (trTarget) this.updateGlobalKeywordBank(trTarget);
+                                    }
+                                };
+                                blank.onclick = () => {
+                                    if (this.selectedKeyword) {
+                                        // Click-to-Fill logic
+                                        const val = this.selectedKeyword;
+                                        this.userAnswers[`${q.id}-${currentBlankIdx}`] = val;
+                                        this.autoFilledAnswers.delete(`${q.id}-${currentBlankIdx}`);
+                                        // Auto-fill other blanks with same correct answer
+                                        rowKeywords.forEach((otherKw, j) => {
+                                            if (otherKw.text === kwInfo.text) this.userAnswers[`${q.id}-${j}`] = val;
+                                        });
+                                        this.selectedKeyword = null;
+                                        this.renderTable();
+                                    } else if (this.userAnswers[`${q.id}-${currentBlankIdx}`]) {
+                                        const val = this.userAnswers[`${q.id}-${currentBlankIdx}`];
+                                        delete this.userAnswers[`${q.id}-${currentBlankIdx}`];
+                                        // Sync removal
+                                        rowKeywords.forEach((otherKw, j) => {
+                                            if (otherKw.text === kwInfo.text && this.userAnswers[`${q.id}-${j}`] === val) {
+                                                delete this.userAnswers[`${q.id}-${j}`];
+                                            }
+                                        });
+                                        this.renderTable();
+                                        const trTarget = blank.closest('tr');
+                                        if (trTarget) this.updateGlobalKeywordBank(trTarget);
+                                    }
+                                };
+                            } else {
+                                const isCorrect = savedAnswer === kwInfo.text;
+                                blank.classList.add(isCorrect ? 'correct' : 'wrong');
+                                if (!isCorrect) {
+                                    const reveal = document.createElement('span');
+                                    reveal.className = 'reveal-correct'; reveal.textContent = ` (${kwInfo.text})`;
+                                    blank.appendChild(reveal);
+
+                                    // Oops button
+                                    const overrideBtn = document.createElement('span');
+                                    overrideBtn.className = 'override-btn';
+                                    overrideBtn.innerHTML = '↺';
+                                    overrideBtn.onclick = (e) => {
+                                        e.stopPropagation();
+                                        this.overrideCorrect(statKey, () => this.renderTable());
+                                    };
+                                    blank.appendChild(overrideBtn);
                                 }
-                            };
-                            blank.onclick = () => {
-                                if (this.selectedKeyword) {
-                                    // Click-to-Fill logic
-                                    const val = this.selectedKeyword;
+                            }
+
+
+
+                            const peek = document.createElement('span');
+                            peek.className = 'peek-answer';
+                            peek.textContent = `(${kwInfo.text})`;
+                            placeholder.replaceWith(blank, peek);
+                        } else {
+                            // Input type
+                            const input = document.createElement('input');
+                            input.type = 'text';
+                            input.className = 'clause-input-blank mini';
+                            input.dataset.blankIdx = currentBlankIdx;
+
+                            if (isAutoFilled) input.classList.add('auto-filled');
+
+                            const savedAnswer = this.userAnswers[`${q.id}-${currentBlankIdx}`] || '';
+                            input.value = savedAnswer;
+                            if (savedAnswer) input.classList.add('filled');
+
+                            if (!this.isChecked) {
+                                input.oninput = () => {
+                                    const val = input.value;
                                     this.userAnswers[`${q.id}-${currentBlankIdx}`] = val;
                                     this.autoFilledAnswers.delete(`${q.id}-${currentBlankIdx}`);
-                                    // Auto-fill other blanks with same correct answer
+                                    // Auto-fill other input blanks with same correct answer (matching normalized text)
                                     rowKeywords.forEach((otherKw, j) => {
-                                        if (otherKw.text === kwInfo.text) this.userAnswers[`${q.id}-${j}`] = val;
-                                    });
-                                    this.selectedKeyword = null;
-                                    this.renderTable();
-                                } else if (this.userAnswers[`${q.id}-${currentBlankIdx}`]) {
-                                    const val = this.userAnswers[`${q.id}-${currentBlankIdx}`];
-                                    delete this.userAnswers[`${q.id}-${currentBlankIdx}`];
-                                    // Sync removal
-                                    rowKeywords.forEach((otherKw, j) => {
-                                        if (otherKw.text === kwInfo.text && this.userAnswers[`${q.id}-${j}`] === val) {
-                                            delete this.userAnswers[`${q.id}-${j}`];
+                                        if (otherKw.type === 'input' && this.normalizeInput(otherKw.text) === this.normalizeInput(kwInfo.text)) {
+                                            this.userAnswers[`${q.id}-${j}`] = val;
+                                            this.autoFilledAnswers.delete(`${q.id}-${j}`);
+                                            const otherInput = cText.querySelector(`.clause-input-blank[data-blank-idx="${j}"]`);
+                                            if (otherInput && otherInput !== input) {
+                                                otherInput.value = val;
+                                            }
                                         }
                                     });
-                                    this.renderTable();
-                                    const trTarget = blank.closest('tr');
-                                    if (trTarget) this.updateGlobalKeywordBank(trTarget);
+                                };
+                            } else {
+                                input.disabled = true;
+                                const isCorrect = this.normalizeInput(savedAnswer) === this.normalizeInput(kwInfo.text);
+                                input.classList.add(isCorrect ? 'correct' : 'wrong');
+                                if (!isCorrect) {
+                                    const tip = document.createElement('span');
+                                    tip.className = 'reveal-correct';
+                                    tip.textContent = ` (${kwInfo.text})`;
+                                    placeholder.parentNode.insertBefore(tip, placeholder.nextSibling);
+
+                                    // Oops button
+                                    const overrideBtn = document.createElement('span');
+                                    overrideBtn.className = 'override-btn';
+                                    overrideBtn.innerHTML = '↺';
+                                    overrideBtn.onclick = (e) => {
+                                        e.stopPropagation();
+                                        this.overrideCorrect(statKey, () => this.renderTable());
+                                    };
+                                    placeholder.parentNode.insertBefore(overrideBtn, tip.nextSibling);
                                 }
-                            };
-                        } else {
-                            const isCorrect = savedAnswer === kwInfo.text;
-                            blank.classList.add(isCorrect ? 'correct' : 'wrong');
-                            if (!isCorrect) {
-                                const reveal = document.createElement('span');
-                                reveal.className = 'reveal-correct'; reveal.textContent = ` (${kwInfo.text})`;
-                                blank.appendChild(reveal);
-
-                                // Oops button
-                                const overrideBtn = document.createElement('span');
-                                overrideBtn.className = 'override-btn';
-                                overrideBtn.innerHTML = '↺';
-                                overrideBtn.onclick = (e) => {
-                                    e.stopPropagation();
-                                    this.overrideCorrect(statKey, () => this.renderTable());
-                                };
-                                blank.appendChild(overrideBtn);
                             }
-                        }
 
+                            const wrapper = document.createElement('span');
+                            wrapper.className = 'clause-input-wrapper';
 
-
-                        const peek = document.createElement('span');
-                        peek.className = 'peek-answer';
-                        peek.textContent = `(${kwInfo.text})`;
-                        placeholder.replaceWith(blank, peek);
-                    } else {
-                        // Input type
-                        const input = document.createElement('input');
-                        input.type = 'text';
-                        input.className = 'clause-input-blank mini';
-                        input.dataset.blankIdx = currentBlankIdx;
-
-                        if (isAutoFilled) input.classList.add('auto-filled');
-
-                        const savedAnswer = this.userAnswers[`${q.id}-${currentBlankIdx}`] || '';
-                        input.value = savedAnswer;
-                        if (savedAnswer) input.classList.add('filled');
-
-                        if (!this.isChecked) {
-                            input.oninput = () => {
-                                const val = input.value;
-                                this.userAnswers[`${q.id}-${currentBlankIdx}`] = val;
-                                this.autoFilledAnswers.delete(`${q.id}-${currentBlankIdx}`);
-                                // Auto-fill other input blanks with same correct answer (matching normalized text)
-                                rowKeywords.forEach((otherKw, j) => {
-                                    if (otherKw.type === 'input' && this.normalizeInput(otherKw.text) === this.normalizeInput(kwInfo.text)) {
-                                        this.userAnswers[`${q.id}-${j}`] = val;
-                                        this.autoFilledAnswers.delete(`${q.id}-${j}`);
-                                        const otherInput = cText.querySelector(`.clause-input-blank[data-blank-idx="${j}"]`);
-                                        if (otherInput && otherInput !== input) {
-                                            otherInput.value = val;
-                                        }
-                                    }
-                                });
-                            };
-                        } else {
-                            input.disabled = true;
-                            const isCorrect = this.normalizeInput(savedAnswer) === this.normalizeInput(kwInfo.text);
-                            input.classList.add(isCorrect ? 'correct' : 'wrong');
-                            if (!isCorrect) {
-                                const tip = document.createElement('span');
-                                tip.className = 'reveal-correct';
-                                tip.textContent = ` (${kwInfo.text})`;
-                                placeholder.parentNode.insertBefore(tip, placeholder.nextSibling);
-
-                                // Oops button
-                                const overrideBtn = document.createElement('span');
-                                overrideBtn.className = 'override-btn';
-                                overrideBtn.innerHTML = '↺';
-                                overrideBtn.onclick = (e) => {
+                            // Add streak count badge (strictly per ID)
+                            const streak = this.getStreakCount(statKey);
+                            wrapper.dataset.streak = streak;
+                            if (streak > 0) {
+                                const badge = document.createElement('span');
+                                badge.className = 'streak-badge';
+                                badge.innerHTML = `🔥${streak}`;
+                                badge.onclick = (e) => {
                                     e.stopPropagation();
-                                    this.overrideCorrect(statKey, () => this.renderTable());
+                                    this.showSRSDetail(statKey);
                                 };
-                                placeholder.parentNode.insertBefore(overrideBtn, tip.nextSibling);
+                                wrapper.appendChild(badge);
                             }
+
+                            wrapper.appendChild(input);
+
+                            const peek = document.createElement('span');
+                            peek.className = 'peek-answer';
+                            peek.textContent = `(${kwInfo.text})`;
+
+                            placeholder.replaceWith(wrapper, peek);
                         }
-
-                        const wrapper = document.createElement('span');
-                        wrapper.className = 'clause-input-wrapper';
-
-                        // Add streak count badge (strictly per ID)
-                        const streak = this.getStreakCount(statKey);
-                        wrapper.dataset.streak = streak;
-                        if (streak > 0) {
-                            const badge = document.createElement('span');
-                            badge.className = 'streak-badge';
-                            badge.innerHTML = `🔥${streak}`;
-                            badge.onclick = (e) => {
-                                e.stopPropagation();
-                                this.showSRSDetail(statKey);
-                            };
-                            wrapper.appendChild(badge);
-                        }
-
-                        wrapper.appendChild(input);
-
-                        const peek = document.createElement('span');
-                        peek.className = 'peek-answer';
-                        peek.textContent = `(${kwInfo.text})`;
-
-                        placeholder.replaceWith(wrapper, peek);
-                    }
-                });
-                wrapper.appendChild(cText);
+                    });
+                    wrapper.appendChild(cText);
+                }
                 tdQ.appendChild(wrapper);
 
                 if (!this.isChecked) {
