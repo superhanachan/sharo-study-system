@@ -1971,7 +1971,7 @@ class QuizApp {
             });
         } else {
             set.questions.forEach((q) => {
-                if (q.type === 'clause' || /\[\[|［［|\(\(|（（/.test(q.text)) {
+                if (q.type === 'clause' || /\[\[|［［|\(\(|（（/.test(String(q.text || ''))) {
                     const keywordData = [];
                     const parts = q.text.split(/(\[\[.*?\]\]|［［.*?］］|\(\(.*?\)\)|（（.*?））)/g);
                     parts.forEach(part => {
@@ -4453,8 +4453,8 @@ class QuizApp {
         }
         thead.appendChild(headTr);
 
-        // Rows Rendering
         questions.forEach((q) => {
+            try {
             const tr = document.createElement('tr'); tr.id = `row-${q.id}`;
             const isQMulti = isAuto ? q.isMultiSelect : set.isMultiSelect;
 
@@ -4953,6 +4953,16 @@ class QuizApp {
                 }
             }
             tbody.appendChild(tr);
+            } catch(e) {
+                const errTr = document.createElement('tr');
+                const errTd = document.createElement('td');
+                errTd.colSpan = 10;
+                errTd.style.color = 'red';
+                errTd.textContent = String(e.stack || e);
+                errTr.appendChild(errTd);
+                tbody.appendChild(errTr);
+                console.error(e);
+            }
         });
     }
 
