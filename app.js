@@ -4497,7 +4497,7 @@ class QuizApp {
 
             const tdQ = document.createElement('td'); tdQ.className = 'question-cell';
 
-            if (q.type === 'clause' || /\[\[|［［|\(\(|（（/.test(String(q.text || '')))) {
+            if (q.type === 'clause' || /\[\[|［［|\(\(|（（/.test(String(q.text || ''))) {
                 const wrapper = document.createElement('div'); wrapper.className = 'table-clause-wrapper';
                 const badge = document.createElement('span'); badge.className = 'clause-badge'; badge.textContent = q.origPage || "条文";
                 wrapper.appendChild(badge);
