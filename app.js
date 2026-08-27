@@ -3750,6 +3750,7 @@ class QuizApp {
                 q.id = item.id.startsWith('clause-summary-') ? item.id.replace('clause-summary-', '') : item.id;
                 q.type = 'clause';
                 q.origPage = item.setName;
+                q.text = item.text || q.text;
                 return q;
             });
 
@@ -3770,7 +3771,8 @@ class QuizApp {
                         ...JSON.parse(JSON.stringify(i.qObj)),
                         origPage: i.fullSet.title,
                         columns: i.fullSet.columns,
-                        isMultiSelect: i.fullSet.isMultiSelect
+                        isMultiSelect: i.fullSet.isMultiSelect,
+                        text: i.text || i.qObj.text
                     };
                 }),
                 isMultiSelect: selected.some(i => i.fullSet.isMultiSelect)
