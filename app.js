@@ -3221,15 +3221,22 @@ class QuizApp {
         this.rebuildPoolCache();
 
         const todayFilter = this.todayMasterySelect ? this.todayMasterySelect.value : 'all';
-        const dueItemsToday = this.getDueQuestions(0);
-        
-        const dueTodayTotal = dueItemsToday.filter(item => {
-            const stat = this.questionStats[item.id] || {};
-            return this.checkMasteryFilter(stat.srsLevel || 0, todayFilter);
+        const dueTodayTotal = Object.entries(this.questionStats).filter(([key, s]) => {
+            if (!s.nextReview || !this.isStatInActivePool(key)) return false;
+            if (key.startsWith('clause-') && !key.startsWith('clause-summary-')) return false;
+            const reviewDate = new Date(s.nextReview);
+            if (this.formatDateStr(reviewDate) > todayStr) return false;
+
+            // Apply filter
+            return this.checkMasteryFilter(s.srsLevel || 0, todayFilter);
         }).length;
 
-        // Current Due NOW (for the active learning buttons) - same as today total for unstudied inclusion
-        const dueCount = dueItemsToday.length;
+        // Current Due NOW (for the active learning buttons)
+        const dueCount = Object.entries(this.questionStats).filter(([key, s]) => {
+            if (!s.nextReview || !this.isStatInActivePool(key)) return false;
+            if (key.startsWith('clause-') && !key.startsWith('clause-summary-')) return false;
+            return new Date(s.nextReview) <= now;
+        }).length;
 
         // SRS Due Tomorrow calculation (Specific to that day, to match the bar)
         const tomorrow = new Date(now);
@@ -3237,12 +3244,13 @@ class QuizApp {
         const tomorrowStr = this.formatDateStr(tomorrow);
 
         const tomorrowFilter = this.tomorrowMasterySelect ? this.tomorrowMasterySelect.value : 'all';
-        const dueItemsTomorrow = this.getDueQuestions(1);
-        const tomorrowSpecificCount = dueItemsTomorrow.filter(item => {
-            const stat = this.questionStats[item.id] || {};
-            if (!stat.nextReview) return false; // Unstudied is due today, not specific to tomorrow
-            if (this.formatDateStr(new Date(stat.nextReview)) !== tomorrowStr) return false;
-            return this.checkMasteryFilter(stat.srsLevel || 0, tomorrowFilter);
+        const tomorrowSpecificCount = Object.entries(this.questionStats).filter(([key, s]) => {
+            if (!s.nextReview || !this.isStatInActivePool(key)) return false;
+            if (key.startsWith('clause-') && !key.startsWith('clause-summary-')) return false;
+            if (this.formatDateStr(new Date(s.nextReview)) !== tomorrowStr) return false;
+
+            // Apply filter
+            return this.checkMasteryFilter(s.srsLevel || 0, tomorrowFilter);
         }).length;
 
         // Today's Error Count for Nightly Review
@@ -3616,7 +3624,6 @@ class QuizApp {
             return null;
         };
 
-        // 1. Add scheduled items
         Object.entries(this.questionStats).forEach(([id, stat]) => {
             // Ignore individual blanks for due list (Summaries only)
             if (id.startsWith('clause-') && !id.startsWith('clause-summary-')) return;
@@ -3635,41 +3642,6 @@ class QuizApp {
                 }
             }
         });
-
-        // 2. Add completely new (unstudied) items as "due today" (Lv0)
-        if (daysAhead === 0) {
-            this.quizData.forEach(set => {
-                if (set.isInPool === false) return;
-                
-                if (set.type === 'clause') {
-                    const summaryId = `clause-summary-${set.id}`;
-                    if (!this.questionStats[summaryId]) {
-                        due.push({
-                            id: summaryId,
-                            type: 'clause',
-                            text: set.text || set.title,
-                            setName: set.title,
-                            fullSet: set,
-                            qObj: set
-                        });
-                    }
-                } else if (set.type === 'page' && set.questions) {
-                    set.questions.forEach(q => {
-                        if (!this.questionStats[q.id]) {
-                            due.push({
-                                id: q.id,
-                                type: 'page',
-                                text: q.text || set.title,
-                                setName: set.title,
-                                fullSet: set,
-                                qObj: q
-                            });
-                        }
-                    });
-                }
-            });
-        }
-
         return due;
     }
 
@@ -3750,7 +3722,6 @@ class QuizApp {
                 q.id = item.id.startsWith('clause-summary-') ? item.id.replace('clause-summary-', '') : item.id;
                 q.type = 'clause';
                 q.origPage = item.setName;
-                q.text = item.text || q.text;
                 return q;
             });
 
@@ -3771,8 +3742,7 @@ class QuizApp {
                         ...JSON.parse(JSON.stringify(i.qObj)),
                         origPage: i.fullSet.title,
                         columns: i.fullSet.columns,
-                        isMultiSelect: i.fullSet.isMultiSelect,
-                        text: i.text || i.qObj.text
+                        isMultiSelect: i.fullSet.isMultiSelect
                     };
                 }),
                 isMultiSelect: selected.some(i => i.fullSet.isMultiSelect)
@@ -4448,6 +4418,74 @@ class QuizApp {
 
         // Rows Rendering
         questions.forEach((q) => {
+            const tr = document.createElement('tr'); tr.id = `row-${q.id}`;
+            const isQMulti = isAuto ? q.isMultiSelect : set.isMultiSelect;
+
+            if (this.isChecked) {
+                const userAnswer = this.userAnswers[q.id];
+                let isAllCorrect = false;
+                if (userAnswer && (!Array.isArray(userAnswer) || userAnswer.length > 0)) {
+                    if (isQMulti) {
+                        const correctSet = new Set(q.answer); const userSet = new Set(userAnswer);
+                        isAllCorrect = (correctSet.size === userSet.size && [...correctSet].every(item => userSet.has(item)));
+                    } else { isAllCorrect = userAnswer === q.answer; }
+                }
+                tr.classList.add(isAllCorrect ? 'row-correct' : 'row-wrong');
+                tr.dataset.isWrong = !isAllCorrect;
+            }
+
+            // Pool inclusion checkbox cell (REQUIRED FOR ALIGNMENT in edit mode)
+            if (!isAuto && this.isEditMode) {
+                const tdSelect = document.createElement('td');
+                tdSelect.className = 'select-cell';
+                const rowCheck = document.createElement('input');
+                rowCheck.type = 'checkbox';
+                rowCheck.className = 'row-select-checkbox';
+                rowCheck.dataset.id = q.id;
+                tdSelect.appendChild(rowCheck);
+                tr.appendChild(tdSelect);
+
+                const tdPool = document.createElement('td');
+                tdPool.className = 'pool-cell';
+                const poolCheck = document.createElement('input');
+                poolCheck.type = 'checkbox';
+                poolCheck.checked = q.isInPool !== false;
+                poolCheck.onchange = (e) => {
+                    q.isInPool = e.target.checked;
+                    this.saveData();
+                };
+                tdPool.appendChild(poolCheck);
+                tr.appendChild(tdPool);
+            }
+
+            const tdQ = document.createElement('td'); tdQ.className = 'question-cell';
+
+            if (q.type === 'clause' || /\[\[|［［|\(\(|（（/.test(q.text)) {
+                const wrapper = document.createElement('div'); wrapper.className = 'table-clause-wrapper';
+                const badge = document.createElement('span'); badge.className = 'clause-badge'; badge.textContent = q.origPage || "条文";
+                wrapper.appendChild(badge);
+
+                if (this.isEditMode) {
+                    const editArea = document.createElement('textarea');
+                    editArea.className = 'clause-text-editor-mini';
+                    editArea.style.width = '100%';
+                    editArea.style.minHeight = '80px';
+                    editArea.style.marginTop = '10px';
+                    editArea.style.fontFamily = 'monospace';
+                    editArea.style.padding = '0.5rem';
+                    editArea.style.background = 'var(--bg-dark)';
+                    editArea.style.color = 'var(--text-light)';
+                    editArea.style.border = '1px solid var(--glass-border)';
+                    editArea.style.borderRadius = '4px';
+                    editArea.value = q.text;
+                    editArea.onblur = () => {
+                        const val = editArea.value.trim();
+                        if (val !== q.text) {
+                            q.text = val;
+                            if (isAuto) this.updateOriginalQuestion(q.id, 'text', q.text);
+                            else this.saveData();
+                            this.renderTable();
+                        }
                     };
                     wrapper.appendChild(editArea);
                     
