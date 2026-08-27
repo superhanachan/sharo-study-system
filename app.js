@@ -1458,7 +1458,7 @@ class QuizApp {
         } else if (set.questions) {
             set.questions.forEach(q => {
                 const baseId = this.getQuestionBaseId(q.id);
-                if (q.type === 'clause' || /\[\[|［［|\(\(|（（/.test(q.text)) {
+                if (q.type === 'clause' || /\[\[|［［|\(\(|（（/.test(String(q.text || ''))) {
                     const keywordData = this.extractKeywords(q.text);
                     keywordData.forEach((kw, idx) => {
                         const cellKey = `${q.id}-${idx}`;
@@ -3634,7 +3634,7 @@ class QuizApp {
                     due.push({
                         id,
                         type: found.set.type === 'clause' ? 'clause' : 'page',
-                        text: found.q.text || found.set.title,
+                        text: typeof found.q.text === 'string' ? found.q.text : (found.set.text || found.set.title),
                         setName: found.set.title,
                         fullSet: found.set,
                         qObj: found.q
@@ -3642,6 +3642,41 @@ class QuizApp {
                 }
             }
         });
+
+        // Add completely new (unstudied) items as "due today" (Lv0)
+        if (daysAhead === 0) {
+            this.quizData.forEach(set => {
+                if (set.isInPool === false) return;
+                
+                if (set.type === 'clause') {
+                    const summaryId = `clause-summary-${set.id}`;
+                    if (!this.questionStats[summaryId]) {
+                        due.push({
+                            id: summaryId,
+                            type: 'clause',
+                            text: typeof set.text === 'string' ? set.text : set.title,
+                            setName: set.title,
+                            fullSet: set,
+                            qObj: set
+                        });
+                    }
+                } else if (set.type === 'page' && set.questions) {
+                    set.questions.forEach(q => {
+                        if (!this.questionStats[q.id]) {
+                            due.push({
+                                id: q.id,
+                                type: 'page',
+                                text: typeof q.text === 'string' ? q.text : set.title,
+                                setName: set.title,
+                                fullSet: set,
+                                qObj: q
+                            });
+                        }
+                    });
+                }
+            });
+        }
+
         return due;
     }
 
@@ -3722,6 +3757,8 @@ class QuizApp {
                 q.id = item.id.startsWith('clause-summary-') ? item.id.replace('clause-summary-', '') : item.id;
                 q.type = 'clause';
                 q.origPage = item.setName;
+                q.text = typeof item.text === 'string' ? item.text : (typeof q.text === 'string' ? q.text : '');
+                q.dummies = Array.isArray(q.dummies) ? q.dummies : [];
                 return q;
             });
 
