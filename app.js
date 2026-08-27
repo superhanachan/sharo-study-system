@@ -3221,7 +3221,7 @@ class QuizApp {
         this.rebuildPoolCache();
 
         const todayFilter = this.todayMasterySelect ? this.todayMasterySelect.value : 'all';
-        const dueTodayTotal = Object.entries(this.questionStats).filter(([key, s]) => {
+        let dueTodayTotal = Object.entries(this.questionStats).filter(([key, s]) => {
             if (!s.nextReview || !this.isStatInActivePool(key)) return false;
             if (key.startsWith('clause-') && !key.startsWith('clause-summary-')) return false;
             const reviewDate = new Date(s.nextReview);
@@ -3231,12 +3231,27 @@ class QuizApp {
             return this.checkMasteryFilter(s.srsLevel || 0, todayFilter);
         }).length;
 
+        let lv0Count = 0;
+        this.quizData.forEach(set => {
+            if (set.isInPool === false) return;
+            if (set.type === 'clause') {
+                const summaryId = `clause-summary-${set.id}`;
+                if (!this.questionStats[summaryId]) lv0Count++;
+            } else if (set.type === 'page' && set.questions) {
+                set.questions.forEach(q => {
+                    if (!this.questionStats[q.id]) lv0Count++;
+                });
+            }
+        });
+        if (todayFilter === 'all' || todayFilter === '0') dueTodayTotal += lv0Count;
+
         // Current Due NOW (for the active learning buttons)
-        const dueCount = Object.entries(this.questionStats).filter(([key, s]) => {
+        let dueCount = Object.entries(this.questionStats).filter(([key, s]) => {
             if (!s.nextReview || !this.isStatInActivePool(key)) return false;
             if (key.startsWith('clause-') && !key.startsWith('clause-summary-')) return false;
             return new Date(s.nextReview) <= now;
         }).length;
+        if (todayFilter === 'all' || todayFilter === '0') dueCount += lv0Count;
 
         // SRS Due Tomorrow calculation (Specific to that day, to match the bar)
         const tomorrow = new Date(now);
@@ -5206,6 +5221,23 @@ class QuizApp {
             if (qToSet.has(key)) return inPoolSets.has(qToSet.get(key));
             return inPoolSets.has(key);
         };
+
+        // Add completely new (Lv0) items to counts
+        this.quizData.forEach(set => {
+            if (set.isInPool === false) return;
+            if (set.type === 'clause') {
+                const summaryId = `clause-summary-${set.id}`;
+                if (!this.questionStats[summaryId]) {
+                    counts[set.id] = (counts[set.id] || 0) + 1;
+                }
+            } else if (set.type === 'page' && set.questions) {
+                set.questions.forEach(q => {
+                    if (!this.questionStats[q.id]) {
+                        counts[set.id] = (counts[set.id] || 0) + 1;
+                    }
+                });
+            }
+        });
 
         Object.entries(this.questionStats).forEach(([key, s]) => {
             if (!s.nextReview || !isStatInActivePool(key)) return;
