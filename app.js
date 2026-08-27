@@ -4497,11 +4497,12 @@ class QuizApp {
 
             const tdQ = document.createElement('td'); tdQ.className = 'question-cell';
 
-            if (q.type === 'clause' || /\[\[|［［|\(\(|（（/.test(q.text)) {
+            if (q.type === 'clause' || /\[\[|［［|\(\(|（（/.test(String(q.text || '')))) {
                 const wrapper = document.createElement('div'); wrapper.className = 'table-clause-wrapper';
                 const badge = document.createElement('span'); badge.className = 'clause-badge'; badge.textContent = q.origPage || "条文";
                 wrapper.appendChild(badge);
 
+                let rowKeywords = [];
                 if (this.isEditMode) {
                     const editArea = document.createElement('textarea');
                     editArea.className = 'clause-text-editor-mini';
@@ -4575,7 +4576,7 @@ class QuizApp {
                     const cText = document.createElement('div'); cText.className = 'clause-text-mini';
                     let htmlContent = this.renderWithMarkdown(q.text);
 
-                    const rowKeywords = []; let blankIdx = 0;
+                    let blankIdx = 0;
                     // Combined drag/input support (including full-width)
                     const finalHtml = htmlContent.replace(/\[\[(.*?)\]\]|［［(.*?)］］|\(\((.*?)\)\)|（（(.*?)））/g, (match, p1, p2, p3, p4) => {
                         const keyword = p1 || p2 || p3 || p4;
