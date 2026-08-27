@@ -3221,22 +3221,15 @@ class QuizApp {
         this.rebuildPoolCache();
 
         const todayFilter = this.todayMasterySelect ? this.todayMasterySelect.value : 'all';
-        const dueTodayTotal = Object.entries(this.questionStats).filter(([key, s]) => {
-            if (!s.nextReview || !this.isStatInActivePool(key)) return false;
-            if (key.startsWith('clause-') && !key.startsWith('clause-summary-')) return false;
-            const reviewDate = new Date(s.nextReview);
-            if (this.formatDateStr(reviewDate) > todayStr) return false;
-
-            // Apply filter
-            return this.checkMasteryFilter(s.srsLevel || 0, todayFilter);
+        const dueItemsToday = this.getDueQuestions(0);
+        
+        const dueTodayTotal = dueItemsToday.filter(item => {
+            const stat = this.questionStats[item.id] || {};
+            return this.checkMasteryFilter(stat.srsLevel || 0, todayFilter);
         }).length;
 
-        // Current Due NOW (for the active learning buttons)
-        const dueCount = Object.entries(this.questionStats).filter(([key, s]) => {
-            if (!s.nextReview || !this.isStatInActivePool(key)) return false;
-            if (key.startsWith('clause-') && !key.startsWith('clause-summary-')) return false;
-            return new Date(s.nextReview) <= now;
-        }).length;
+        // Current Due NOW (for the active learning buttons) - same as today total for unstudied inclusion
+        const dueCount = dueItemsToday.length;
 
         // SRS Due Tomorrow calculation (Specific to that day, to match the bar)
         const tomorrow = new Date(now);
@@ -3244,13 +3237,12 @@ class QuizApp {
         const tomorrowStr = this.formatDateStr(tomorrow);
 
         const tomorrowFilter = this.tomorrowMasterySelect ? this.tomorrowMasterySelect.value : 'all';
-        const tomorrowSpecificCount = Object.entries(this.questionStats).filter(([key, s]) => {
-            if (!s.nextReview || !this.isStatInActivePool(key)) return false;
-            if (key.startsWith('clause-') && !key.startsWith('clause-summary-')) return false;
-            if (this.formatDateStr(new Date(s.nextReview)) !== tomorrowStr) return false;
-
-            // Apply filter
-            return this.checkMasteryFilter(s.srsLevel || 0, tomorrowFilter);
+        const dueItemsTomorrow = this.getDueQuestions(1);
+        const tomorrowSpecificCount = dueItemsTomorrow.filter(item => {
+            const stat = this.questionStats[item.id] || {};
+            if (!stat.nextReview) return false; // Unstudied is due today, not specific to tomorrow
+            if (this.formatDateStr(new Date(stat.nextReview)) !== tomorrowStr) return false;
+            return this.checkMasteryFilter(stat.srsLevel || 0, tomorrowFilter);
         }).length;
 
         // Today's Error Count for Nightly Review
@@ -3624,6 +3616,7 @@ class QuizApp {
             return null;
         };
 
+        // 1. Add scheduled items
         Object.entries(this.questionStats).forEach(([id, stat]) => {
             // Ignore individual blanks for due list (Summaries only)
             if (id.startsWith('clause-') && !id.startsWith('clause-summary-')) return;
@@ -3642,6 +3635,41 @@ class QuizApp {
                 }
             }
         });
+
+        // 2. Add completely new (unstudied) items as "due today" (Lv0)
+        if (daysAhead === 0) {
+            this.quizData.forEach(set => {
+                if (set.isInPool === false) return;
+                
+                if (set.type === 'clause') {
+                    const summaryId = `clause-summary-${set.id}`;
+                    if (!this.questionStats[summaryId]) {
+                        due.push({
+                            id: summaryId,
+                            type: 'clause',
+                            text: set.text || set.title,
+                            setName: set.title,
+                            fullSet: set,
+                            qObj: set
+                        });
+                    }
+                } else if (set.type === 'page' && set.questions) {
+                    set.questions.forEach(q => {
+                        if (!this.questionStats[q.id]) {
+                            due.push({
+                                id: q.id,
+                                type: 'page',
+                                text: q.text || set.title,
+                                setName: set.title,
+                                fullSet: set,
+                                qObj: q
+                            });
+                        }
+                    });
+                }
+            });
+        }
+
         return due;
     }
 
