@@ -4474,13 +4474,33 @@ class QuizApp {
             const isQMulti = isAuto ? q.isMultiSelect : set.isMultiSelect;
 
             if (this.isChecked) {
-                const userAnswer = this.userAnswers[q.id];
                 let isAllCorrect = false;
-                if (userAnswer && (!Array.isArray(userAnswer) || userAnswer.length > 0)) {
-                    if (isQMulti) {
-                        const correctSet = new Set(q.answer); const userSet = new Set(userAnswer);
-                        isAllCorrect = (correctSet.size === userSet.size && [...correctSet].every(item => userSet.has(item)));
-                    } else { isAllCorrect = userAnswer === q.answer; }
+                if (q.type === 'clause' || /\[\[|［［|\(\(|（（/.test(String(q.text || ''))) {
+                    const keywords = this.extractKeywords(String(q.text || ''));
+                    let rowCorrectBlanks = 0;
+                    let rowAnsweredBlanks = 0;
+                    keywords.forEach((kw, idx) => {
+                        const savedAnswer = this.userAnswers[`${q.id}-${idx}`];
+                        if (savedAnswer) {
+                            rowAnsweredBlanks++;
+                            if (this.normalizeInput(savedAnswer) === this.normalizeInput(kw.text)) {
+                                rowCorrectBlanks++;
+                            }
+                        }
+                    });
+                    if (keywords.length === 0) {
+                        isAllCorrect = true; // No blanks means it's just reading material
+                    } else if (rowAnsweredBlanks === keywords.length && rowCorrectBlanks === keywords.length) {
+                        isAllCorrect = true;
+                    }
+                } else {
+                    const userAnswer = this.userAnswers[q.id];
+                    if (userAnswer && (!Array.isArray(userAnswer) || userAnswer.length > 0)) {
+                        if (isQMulti) {
+                            const correctSet = new Set(q.answer); const userSet = new Set(userAnswer);
+                            isAllCorrect = (correctSet.size === userSet.size && [...correctSet].every(item => userSet.has(item)));
+                        } else { isAllCorrect = userAnswer === q.answer; }
+                    }
                 }
                 tr.classList.add(isAllCorrect ? 'row-correct' : 'row-wrong');
                 tr.dataset.isWrong = !isAllCorrect;
