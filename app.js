@@ -6058,6 +6058,27 @@ class QuizApp {
 
             if (confirm('現在のデータをすべて上書きして復旧しますか？\n（現在の問題・履歴・統計がすべて消え、ファイルの内容に置き換わります）')) {
                 this.quizData = data.quizData;
+                
+                // Auto-convert depth to parentId for AI-generated flat arrays
+                let currentParents = {};
+                this.quizData.forEach(item => {
+                    if (item.parentId === undefined && item.depth !== undefined) {
+                        item.parentId = item.depth > 0 ? (currentParents[item.depth - 1] || null) : null;
+                    }
+                    if (item.type === 'folder') {
+                        let d = item.depth;
+                        if (d === undefined) {
+                            let curr = item;
+                            d = 0;
+                            while (curr && curr.parentId) {
+                                d++;
+                                curr = this.quizData.find(x => x.id === curr.parentId);
+                            }
+                        }
+                        currentParents[d] = item.id;
+                    }
+                });
+
                 this.history = data.history || [];
                 this.questionStats = data.questionStats || {};
 
