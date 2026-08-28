@@ -3237,10 +3237,6 @@ body.answers-revealed .clause-input-blank {
     letter-spacing: normal;
 }
 
-.quiz-table tr:nth-child(even) td {
-    background: rgba(255, 255, 255, 0.04) !important;
-}
-
 .folder-due-badge {
     background: var(--error);
     color: white;
