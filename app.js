@@ -6962,12 +6962,14 @@ class QuizApp {
         container.innerHTML = '';
         if (!this.lawCaptionCache) this.lawCaptionCache = {};
         
+        if (!this.lawNameCache) this.lawNameCache = {};
+        
         const lawIds = Object.keys(index);
         if (lawIds.length === 0) {
             container.innerHTML = '<div style="color: #888; text-align: center; padding: 2rem;">法令URLが含まれる問題が見つかりません。</div>';
         } else {
             lawIds.forEach(lawId => {
-                const lawName = this.getKnownLawName(lawId);
+                const initialLawName = this.lawNameCache[lawId] || this.getKnownLawName(lawId);
                 const lawDiv = document.createElement('div');
                 lawDiv.style.marginBottom = '1rem';
                 
@@ -6978,7 +6980,7 @@ class QuizApp {
                 lawHeader.style.padding = '0.5rem 0';
                 lawHeader.style.borderBottom = '1px solid var(--glass-border)';
                 lawHeader.style.cursor = 'pointer';
-                lawHeader.innerHTML = `<span class="law-folder-icon" style="display:inline-block; transition:transform 0.2s; margin-right:5px;">▼</span>📁 ${lawName}`;
+                lawHeader.innerHTML = `<span class="law-folder-icon" style="display:inline-block; transition:transform 0.2s; margin-right:5px;">▼</span><span class="law-folder-name">📁 ${initialLawName}</span>`;
                 lawDiv.appendChild(lawHeader);
 
                 const articlesContainer = document.createElement('div');
@@ -7000,6 +7002,14 @@ class QuizApp {
                             const parser = new DOMParser();
                             const xmlDoc = parser.parseFromString(xmlText, "text/xml");
                             
+                            const lawNameNode = xmlDoc.querySelector("LawName");
+                            if (lawNameNode) {
+                                const realLawName = lawNameNode.textContent;
+                                this.lawNameCache[lawId] = realLawName;
+                                const nameSpan = lawHeader.querySelector('.law-folder-name');
+                                if (nameSpan) nameSpan.innerHTML = `📁 ${realLawName}`;
+                            }
+
                             const mainArticles = xmlDoc.querySelectorAll("MainProvision Article, MainProvision > Chapter > Article, MainProvision > Chapter > Section > Article");
                             mainArticles.forEach(art => {
                                 const num = art.getAttribute("Num");
@@ -7085,7 +7095,7 @@ class QuizApp {
                     `;
                     
                     anchorDiv.onclick = () => {
-                        this.startArticleDrill(lawId, lawName, anchor);
+                        this.startArticleDrill(lawId, initialLawName, anchor);
                     };
                     
                     articlesContainer.appendChild(anchorDiv);
@@ -7103,7 +7113,8 @@ class QuizApp {
         modal.onclick = (e) => { if (e.target === modal) modal.classList.add('hidden'); };
     }
 
-    startArticleDrill(lawId, lawName, anchor) {
+    startArticleDrill(lawId, fallbackLawName, anchor) {
+        const lawName = (this.lawNameCache && this.lawNameCache[lawId]) ? this.lawNameCache[lawId] : fallbackLawName;
         const questions = [];
         let maxCols = 2;
         let bestCols = ["項目", "選択肢"];
