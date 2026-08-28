@@ -6914,10 +6914,10 @@ class QuizApp {
 
     buildLawArticleIndex() {
         const index = {};
-        const urlRegex = /(https?:\/\/(?:e)?laws\.e-gov\.go\.jp\/[^\s<\]]+)/g;
 
         const scanText = (text, qObj, set) => {
             if (!text) return;
+            const urlRegex = /(https?:\/\/(?:e)?laws\.e-gov\.go\.jp\/[^\s<\]]+)/g;
             let match;
             while ((match = urlRegex.exec(text)) !== null) {
                 let rawUrl = match[1];
@@ -6943,7 +6943,7 @@ class QuizApp {
         this.quizData.forEach(set => {
             if (set.type === 'page' && set.questions) {
                 set.questions.forEach(q => {
-                    const combined = (q.text || '') + ' ' + (q.memo || '') + ' ' + (q.answer || '') + ' ' + (q.options ? q.options.join(' ') : '');
+                    const combined = (q.text || '') + ' ' + (q.memo || '') + ' ' + (q.answer || '') + ' ' + (Array.isArray(q.options) ? q.options.join(' ') : (q.options || ''));
                     scanText(combined, q, set);
                 });
             } else if (set.type === 'clause' && set.text) {
@@ -7022,9 +7022,9 @@ class QuizApp {
         let maxCols = 2;
         let bestCols = ["項目", "選択肢"];
 
-        const urlRegex = /(https?:\/\/(?:e)?laws\.e-gov\.go\.jp\/[^\s<\]]+)/g;
         const hasMatch = (text) => {
             if (!text) return false;
+            const urlRegex = /(https?:\/\/(?:e)?laws\.e-gov\.go\.jp\/[^\s<\]]+)/g;
             let m;
             while ((m = urlRegex.exec(text)) !== null) {
                 let rawUrl = m[1];
@@ -7047,7 +7047,7 @@ class QuizApp {
         this.quizData.forEach(set => {
             if (set.type === 'page' && set.questions) {
                 set.questions.forEach(q => {
-                    const combined = (q.text || '') + ' ' + (q.memo || '') + ' ' + (q.answer || '') + ' ' + (q.options ? q.options.join(' ') : '');
+                    const combined = (q.text || '') + ' ' + (q.memo || '') + ' ' + (q.answer || '') + ' ' + (Array.isArray(q.options) ? q.options.join(' ') : (q.options || ''));
                     if (hasMatch(combined)) {
                         questions.push({
                             ...JSON.parse(JSON.stringify(q)),
