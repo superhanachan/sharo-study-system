@@ -6943,7 +6943,7 @@ class QuizApp {
         this.quizData.forEach(set => {
             if (set.type === 'page' && set.questions) {
                 set.questions.forEach(q => {
-                    const combined = (q.text || '') + ' ' + (q.memo || '') + ' ' + (q.answer || '') + ' ' + (Array.isArray(q.options) ? q.options.join(' ') : (q.options || ''));
+                    const combined = q.text || '';
                     scanText(combined, q, set);
                 });
             } else if (set.type === 'clause' && set.text) {
@@ -7169,7 +7169,7 @@ class QuizApp {
         this.quizData.forEach(set => {
             if (set.type === 'page' && set.questions) {
                 set.questions.forEach(q => {
-                    const combined = (q.text || '') + ' ' + (q.memo || '') + ' ' + (q.answer || '') + ' ' + (Array.isArray(q.options) ? q.options.join(' ') : (q.options || ''));
+                    const combined = q.text || '';
                     if (hasMatch(combined)) {
                         questions.push({
                             ...JSON.parse(JSON.stringify(q)),
