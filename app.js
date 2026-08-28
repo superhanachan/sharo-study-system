@@ -765,6 +765,13 @@ class QuizApp {
         if (this.genWeakBtn) this.genWeakBtn.addEventListener('click', () => this.generateSpecialQuiz('weak'));
         if (this.genStagnantBtn) this.genStagnantBtn.addEventListener('click', () => this.scrollToStagnantList());
         if (this.sidebarGenStagnantBtn) this.sidebarGenStagnantBtn.addEventListener('click', () => this.scrollToStagnantList());
+        
+        const sidebarDrillBtn = document.getElementById('sidebar-article-drill-btn');
+        if (sidebarDrillBtn) sidebarDrillBtn.addEventListener('click', () => this.openArticleDrillModal());
+        
+        const dashboardDrillBtn = document.getElementById('dashboard-article-drill-btn');
+        if (dashboardDrillBtn) dashboardDrillBtn.addEventListener('click', () => this.openArticleDrillModal());
+
         if (this.genWeakClauseBtn) {
             this.genWeakClauseBtn.addEventListener('click', () => this.generateSpecialQuiz('clause-weak'));
         }
@@ -6864,6 +6871,230 @@ class QuizApp {
             reader.onerror = error => reject(error);
             reader.readAsDataURL(blob);
         });
+    }
+
+    // --- Law Article Drill Methods ---
+
+    formatEGovAnchor(anchor) {
+        if (!anchor) return "全体";
+        let text = "";
+        const atMatch = anchor.match(/At_(\d+)(?:_(\d+))?/);
+        if (atMatch) {
+            text += `第${atMatch[1]}条`;
+            if (atMatch[2]) text += `の${atMatch[2]}`;
+        }
+        const prMatch = anchor.match(/Pr_(\d+)(?:_(\d+))?/);
+        if (prMatch) {
+            text += `第${prMatch[1]}項`;
+            if (prMatch[2]) text += `の${prMatch[2]}`;
+        }
+        const itMatch = anchor.match(/It_(\d+)(?:_(\d+))?/);
+        if (itMatch) {
+            text += `第${itMatch[1]}号`;
+            if (itMatch[2]) text += `の${itMatch[2]}`;
+        }
+        return text || anchor;
+    }
+
+    getKnownLawName(lawId) {
+        const KNOWN_LAWS = {
+            "322AC0000000049": "労働基準法",
+            "347AC0000000057": "労働安全衛生法",
+            "322AC0000000050": "労働者災害補償保険法",
+            "349AC0000000116": "雇用保険法",
+            "344AC0000000084": "労働保険徴収法",
+            "211AC0000000070": "健康保険法",
+            "329AC0000000115": "厚生年金保険法",
+            "334AC0000000141": "国民年金法",
+            "334AC0000000137": "最低賃金法",
+            "346AC0000000113": "高年齢者雇用安定法"
+        };
+        return KNOWN_LAWS[lawId] || lawId;
+    }
+
+    buildLawArticleIndex() {
+        const index = {};
+        const urlRegex = /(https?:\/\/(?:e)?laws\.e-gov\.go\.jp\/[^\s<\]]+)/g;
+
+        const scanText = (text, qObj, set) => {
+            if (!text) return;
+            let match;
+            while ((match = urlRegex.exec(text)) !== null) {
+                let rawUrl = match[1];
+                if (rawUrl.endsWith(']')) rawUrl = rawUrl.slice(0, -1);
+                if (rawUrl.endsWith(')')) rawUrl = rawUrl.slice(0, -1);
+                try {
+                    const urlObj = new URL(rawUrl);
+                    let lawId = urlObj.searchParams.get('lawid');
+                    if (!lawId && urlObj.pathname.startsWith('/law/')) {
+                        const parts = urlObj.pathname.split('/');
+                        if (parts.length >= 3) lawId = parts[2];
+                    }
+                    if (lawId) {
+                        const anchor = urlObj.hash.replace('#', '');
+                        if (!index[lawId]) index[lawId] = {};
+                        if (!index[lawId][anchor]) index[lawId][anchor] = new Set();
+                        index[lawId][anchor].add(qObj.id);
+                    }
+                } catch(e) {}
+            }
+        };
+
+        this.quizData.forEach(set => {
+            if (set.type === 'page' && set.questions) {
+                set.questions.forEach(q => {
+                    const combined = (q.text || '') + ' ' + (q.memo || '') + ' ' + (q.answer || '') + ' ' + (q.options ? q.options.join(' ') : '');
+                    scanText(combined, q, set);
+                });
+            } else if (set.type === 'clause' && set.text) {
+                scanText(set.text, set, set);
+            }
+        });
+
+        return index;
+    }
+
+    openArticleDrillModal() {
+        const index = this.buildLawArticleIndex();
+        const container = document.getElementById('drill-tree-container');
+        if (!container) return;
+        
+        container.innerHTML = '';
+        
+        const lawIds = Object.keys(index);
+        if (lawIds.length === 0) {
+            container.innerHTML = '<div style="color: #888; text-align: center; padding: 2rem;">法令URLが含まれる問題が見つかりません。</div>';
+        } else {
+            lawIds.forEach(lawId => {
+                const lawName = this.getKnownLawName(lawId);
+                const lawDiv = document.createElement('div');
+                lawDiv.style.marginBottom = '1rem';
+                
+                const lawHeader = document.createElement('div');
+                lawHeader.style.fontWeight = 'bold';
+                lawHeader.style.fontSize = '1.1rem';
+                lawHeader.style.color = 'var(--accent)';
+                lawHeader.style.padding = '0.5rem 0';
+                lawHeader.style.borderBottom = '1px solid var(--glass-border)';
+                lawHeader.innerHTML = `📁 ${lawName}`;
+                lawDiv.appendChild(lawHeader);
+
+                const anchors = Object.keys(index[lawId]).sort();
+                anchors.forEach(anchor => {
+                    const count = index[lawId][anchor].size;
+                    const anchorName = this.formatEGovAnchor(anchor);
+                    
+                    const anchorDiv = document.createElement('div');
+                    anchorDiv.style.padding = '0.5rem 1rem';
+                    anchorDiv.style.cursor = 'pointer';
+                    anchorDiv.style.display = 'flex';
+                    anchorDiv.style.justifyContent = 'space-between';
+                    anchorDiv.style.borderBottom = '1px solid rgba(255,255,255,0.05)';
+                    anchorDiv.onmouseover = () => { anchorDiv.style.background = 'rgba(255,255,255,0.05)'; };
+                    anchorDiv.onmouseout = () => { anchorDiv.style.background = 'transparent'; };
+                    
+                    anchorDiv.innerHTML = `
+                        <span>📄 ${anchorName}</span>
+                        <span style="color: #aaa; font-size: 0.9rem;">${count}題</span>
+                    `;
+                    
+                    anchorDiv.onclick = () => {
+                        this.startArticleDrill(lawId, lawName, anchor);
+                    };
+                    
+                    lawDiv.appendChild(anchorDiv);
+                });
+                
+                container.appendChild(lawDiv);
+            });
+        }
+        
+        const modal = document.getElementById('drill-modal');
+        modal.classList.remove('hidden');
+        
+        const closeBtn = document.getElementById('close-drill-modal');
+        if (closeBtn) closeBtn.onclick = () => modal.classList.add('hidden');
+        modal.onclick = (e) => { if (e.target === modal) modal.classList.add('hidden'); };
+    }
+
+    startArticleDrill(lawId, lawName, anchor) {
+        const questions = [];
+        let maxCols = 2;
+        let bestCols = ["項目", "選択肢"];
+
+        const urlRegex = /(https?:\/\/(?:e)?laws\.e-gov\.go\.jp\/[^\s<\]]+)/g;
+        const hasMatch = (text) => {
+            if (!text) return false;
+            let m;
+            while ((m = urlRegex.exec(text)) !== null) {
+                let rawUrl = m[1];
+                if (rawUrl.endsWith(']')) rawUrl = rawUrl.slice(0, -1);
+                if (rawUrl.endsWith(')')) rawUrl = rawUrl.slice(0, -1);
+                try {
+                    const urlObj = new URL(rawUrl);
+                    let lId = urlObj.searchParams.get('lawid');
+                    if (!lId && urlObj.pathname.startsWith('/law/')) {
+                        const parts = urlObj.pathname.split('/');
+                        if (parts.length >= 3) lId = parts[2];
+                    }
+                    const a = urlObj.hash.replace('#', '');
+                    if (lId === lawId && a === anchor) return true;
+                } catch(e) {}
+            }
+            return false;
+        };
+
+        this.quizData.forEach(set => {
+            if (set.type === 'page' && set.questions) {
+                set.questions.forEach(q => {
+                    const combined = (q.text || '') + ' ' + (q.memo || '') + ' ' + (q.answer || '') + ' ' + (q.options ? q.options.join(' ') : '');
+                    if (hasMatch(combined)) {
+                        questions.push({
+                            ...JSON.parse(JSON.stringify(q)),
+                            origPage: set.title,
+                            columns: set.columns,
+                            isMultiSelect: set.isMultiSelect
+                        });
+                        if (set.columns && set.columns.length > maxCols) {
+                            maxCols = set.columns.length;
+                            bestCols = [...set.columns];
+                        }
+                    }
+                });
+            } else if (set.type === 'clause' && set.text) {
+                if (hasMatch(set.text)) {
+                    questions.push({
+                        id: set.id,
+                        type: 'clause',
+                        text: set.text,
+                        dummies: set.dummies,
+                        origPage: set.title,
+                        pageId: set.id,
+                        isMultiSelect: false
+                    });
+                }
+            }
+        });
+
+        if (questions.length === 0) {
+            alert('関連する問題が見つかりませんでした。');
+            return;
+        }
+
+        const anchorName = this.formatEGovAnchor(anchor);
+        this.isAutoGenerated = true;
+        this.autoGeneratedSet = {
+            id: 'auto-drill',
+            type: 'page',
+            title: `【条文別ドリル】 ${lawName} ${anchorName} (${questions.length}題)`,
+            columns: bestCols,
+            questions: questions
+        };
+
+        this.currentSetId = null;
+        this.renderTable();
+        this.switchView('quiz');
+        document.getElementById('drill-modal').classList.add('hidden');
     }
 
     utf8_to_b64_decode(str) {
