@@ -6968,6 +6968,31 @@ class QuizApp {
         if (lawIds.length === 0) {
             container.innerHTML = '<div style="color: #888; text-align: center; padding: 2rem;">法令URLが含まれる問題が見つかりません。</div>';
         } else {
+            const controlsDiv = document.createElement('div');
+            controlsDiv.style.marginBottom = '1rem';
+            controlsDiv.style.display = 'flex';
+            controlsDiv.style.gap = '0.5rem';
+            
+            const expandBtn = document.createElement('button');
+            expandBtn.className = 'btn';
+            expandBtn.innerHTML = '📂 すべて展開';
+            expandBtn.onclick = () => {
+                container.querySelectorAll('.drill-articles-container').forEach(c => c.classList.remove('hidden'));
+                container.querySelectorAll('.law-folder-icon').forEach(i => i.style.transform = 'rotate(0deg)');
+            };
+            
+            const collapseBtn = document.createElement('button');
+            collapseBtn.className = 'btn secondary';
+            collapseBtn.innerHTML = '📁 すべて折り畳む';
+            collapseBtn.onclick = () => {
+                container.querySelectorAll('.drill-articles-container').forEach(c => c.classList.add('hidden'));
+                container.querySelectorAll('.law-folder-icon').forEach(i => i.style.transform = 'rotate(-90deg)');
+            };
+            
+            controlsDiv.appendChild(expandBtn);
+            controlsDiv.appendChild(collapseBtn);
+            container.appendChild(controlsDiv);
+
             lawIds.forEach(lawId => {
                 const initialLawName = this.lawNameCache[lawId] || this.getKnownLawName(lawId);
                 const lawDiv = document.createElement('div');
@@ -7002,7 +7027,7 @@ class QuizApp {
                             const parser = new DOMParser();
                             const xmlDoc = parser.parseFromString(xmlText, "text/xml");
                             
-                            const lawNameNode = xmlDoc.querySelector("LawName");
+                            const lawNameNode = xmlDoc.querySelector("LawTitle");
                             if (lawNameNode) {
                                 const realLawName = lawNameNode.textContent;
                                 this.lawNameCache[lawId] = realLawName;
