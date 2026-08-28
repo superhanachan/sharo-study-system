@@ -6977,8 +6977,19 @@ class QuizApp {
                 lawHeader.style.color = 'var(--accent)';
                 lawHeader.style.padding = '0.5rem 0';
                 lawHeader.style.borderBottom = '1px solid var(--glass-border)';
-                lawHeader.innerHTML = `📁 ${lawName}`;
+                lawHeader.style.cursor = 'pointer';
+                lawHeader.innerHTML = `<span class="law-folder-icon" style="display:inline-block; transition:transform 0.2s; margin-right:5px;">▼</span>📁 ${lawName}`;
                 lawDiv.appendChild(lawHeader);
+
+                const articlesContainer = document.createElement('div');
+                articlesContainer.className = 'drill-articles-container';
+                lawDiv.appendChild(articlesContainer);
+
+                lawHeader.onclick = () => {
+                    const isHidden = articlesContainer.classList.toggle('hidden');
+                    const icon = lawHeader.querySelector('.law-folder-icon');
+                    if (icon) icon.style.transform = isHidden ? 'rotate(-90deg)' : 'rotate(0deg)';
+                };
 
                 // Start background fetch for captions if not cached
                 if (!this.lawCaptionCache[lawId]) {
@@ -6997,7 +7008,7 @@ class QuizApp {
                                 }
                             });
                             // Update existing DOM
-                            const anchorDivs = lawDiv.querySelectorAll('.drill-anchor-div');
+                            const anchorDivs = articlesContainer.querySelectorAll('.drill-anchor-div');
                             anchorDivs.forEach(div => {
                                 const anchor = div.dataset.anchor;
                                 const articleNum = anchor.replace('Mp-At_', '').replace('Sp-At_', '').split('-')[0];
@@ -7013,7 +7024,21 @@ class QuizApp {
                         }).catch(e => console.log('Law XML fetch error:', e));
                 }
 
-                const anchors = Object.keys(index[lawId]).sort();
+                const anchors = Object.keys(index[lawId]).sort((a, b) => {
+                    const isSpA = a.includes('Sp');
+                    const isSpB = b.includes('Sp');
+                    if (isSpA !== isSpB) return isSpA ? 1 : -1;
+                    
+                    const numsA = (a.match(/\d+/g) || []).map(Number);
+                    const numsB = (b.match(/\d+/g) || []).map(Number);
+                    for (let i = 0; i < Math.max(numsA.length, numsB.length); i++) {
+                        const nA = numsA[i] !== undefined ? numsA[i] : -1;
+                        const nB = numsB[i] !== undefined ? numsB[i] : -1;
+                        if (nA !== nB) return nA - nB;
+                    }
+                    return 0;
+                });
+                
                 anchors.forEach(anchor => {
                     const count = index[lawId][anchor].size;
                     const anchorName = this.formatEGovAnchor(anchor);
@@ -7047,7 +7072,7 @@ class QuizApp {
                         this.startArticleDrill(lawId, lawName, anchor);
                     };
                     
-                    lawDiv.appendChild(anchorDiv);
+                    articlesContainer.appendChild(anchorDiv);
                 });
                 
                 container.appendChild(lawDiv);
