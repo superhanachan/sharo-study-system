@@ -1017,7 +1017,52 @@ class QuizApp {
         }
     }
 
+    initSidebarResizer() {
+        const resizer = document.getElementById('sidebar-resizer');
+        const sidebar = document.getElementById('sidebar');
+        if (!resizer || !sidebar) return;
+
+        let isResizing = false;
+
+        // Restore saved width if any
+        const savedWidth = localStorage.getItem('sharoSidebarWidth');
+        if (savedWidth) {
+            sidebar.style.setProperty('--sidebar-width', savedWidth);
+        }
+
+        resizer.addEventListener('mousedown', (e) => {
+            isResizing = true;
+            resizer.classList.add('is-resizing');
+            document.body.style.cursor = 'col-resize';
+            // Disable text selection while dragging
+            document.body.style.userSelect = 'none';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isResizing) return;
+            // Ensure minimum width of 200px and maximum of 600px
+            const newWidth = Math.max(200, Math.min(600, e.clientX));
+            sidebar.style.setProperty('--sidebar-width', `${newWidth}px`);
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isResizing) {
+                isResizing = false;
+                resizer.classList.remove('is-resizing');
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+                
+                // Save width
+                const currentWidth = sidebar.style.getPropertyValue('--sidebar-width');
+                if (currentWidth) {
+                    localStorage.setItem('sharoSidebarWidth', currentWidth);
+                }
+            }
+        });
+    }
+
     init() {
+        this.initSidebarResizer();
         // If no specifically saved set, or just starting, show home dashboard
         if (!this.currentSetId) {
             this.loadSet(null);

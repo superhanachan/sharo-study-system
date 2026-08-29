@@ -706,8 +706,21 @@ h2,
 
 
 /* Sidebar */
+.sidebar-resizer {
+    width: 6px;
+    cursor: col-resize;
+    background-color: transparent;
+    transition: background-color 0.2s;
+    z-index: 1000;
+    flex-shrink: 0;
+}
+
+.sidebar-resizer:hover, .sidebar-resizer.is-resizing {
+    background-color: var(--accent);
+}
+
 .sidebar {
-    width: 320px;
+    width: var(--sidebar-width, 320px);
     height: 100vh;
     position: sticky;
     top: 0;
@@ -715,7 +728,7 @@ h2,
     border-right: 1px solid var(--glass-border);
     display: flex;
     flex-direction: column;
-    transition: var(--transition);
+    transition: width 0.1s, transform 0.3s;
     z-index: 1000;
     flex-shrink: 0;
     overflow-y: hidden; /* Inner content will scroll */
