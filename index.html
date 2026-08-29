@@ -692,9 +692,12 @@
 
     <!-- Article Drill Modal -->
     <div id="drill-modal" class="modal hidden">
-        <div class="modal-content" style="max-width: 600px; max-height: 80vh; display: flex; flex-direction: column;">
+        <div class="modal-content" style="width: 90vw; max-width: 1000px; max-height: 90vh; display: flex; flex-direction: column;">
             <h3>📖 法令・条文別ドリル</h3>
             <p style="font-size: 0.9rem; color: #888; margin-bottom: 1rem;">問題テキストやメモに含まれる法令URLから自動分類された問題リストです。</p>
+            <div id="drill-controls" style="margin-bottom: 0.5rem; display: flex; gap: 0.5rem;">
+                <!-- Controls will be populated or handled by app.js -->
+            </div>
             <div id="drill-tree-container" style="flex-grow: 1; overflow-y: auto; background: var(--bg-dark); padding: 1rem; border-radius: 8px;">
                 <!-- Tree goes here -->
             </div>

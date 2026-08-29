@@ -7047,9 +7047,12 @@ class QuizApp {
     openArticleDrillModal() {
         const index = this.buildLawArticleIndex();
         const container = document.getElementById('drill-tree-container');
+        const controlsContainer = document.getElementById('drill-controls');
         if (!container) return;
         
         container.innerHTML = '';
+        if (controlsContainer) controlsContainer.innerHTML = '';
+        
         if (!this.lawCaptionCache) this.lawCaptionCache = {};
         
         if (!this.lawNameCache) this.lawNameCache = {};
@@ -7058,30 +7061,26 @@ class QuizApp {
         if (lawIds.length === 0) {
             container.innerHTML = '<div style="color: #888; text-align: center; padding: 2rem;">法令URLが含まれる問題が見つかりません。</div>';
         } else {
-            const controlsDiv = document.createElement('div');
-            controlsDiv.style.marginBottom = '1rem';
-            controlsDiv.style.display = 'flex';
-            controlsDiv.style.gap = '0.5rem';
-            
-            const expandBtn = document.createElement('button');
-            expandBtn.className = 'btn';
-            expandBtn.innerHTML = '📂 すべて展開';
-            expandBtn.onclick = () => {
-                container.querySelectorAll('.drill-articles-container').forEach(c => c.classList.remove('hidden'));
-                container.querySelectorAll('.law-folder-icon').forEach(i => i.style.transform = 'rotate(0deg)');
-            };
-            
-            const collapseBtn = document.createElement('button');
-            collapseBtn.className = 'btn secondary';
-            collapseBtn.innerHTML = '📁 すべて折り畳む';
-            collapseBtn.onclick = () => {
-                container.querySelectorAll('.drill-articles-container').forEach(c => c.classList.add('hidden'));
-                container.querySelectorAll('.law-folder-icon').forEach(i => i.style.transform = 'rotate(-90deg)');
-            };
-            
-            controlsDiv.appendChild(expandBtn);
-            controlsDiv.appendChild(collapseBtn);
-            container.appendChild(controlsDiv);
+            if (controlsContainer) {
+                const expandBtn = document.createElement('button');
+                expandBtn.className = 'btn';
+                expandBtn.innerHTML = '📂 すべて展開';
+                expandBtn.onclick = () => {
+                    container.querySelectorAll('.drill-articles-container').forEach(c => c.classList.remove('hidden'));
+                    container.querySelectorAll('.law-folder-icon').forEach(i => i.style.transform = 'rotate(0deg)');
+                };
+                
+                const collapseBtn = document.createElement('button');
+                collapseBtn.className = 'btn secondary';
+                collapseBtn.innerHTML = '📁 すべて折り畳む';
+                collapseBtn.onclick = () => {
+                    container.querySelectorAll('.drill-articles-container').forEach(c => c.classList.add('hidden'));
+                    container.querySelectorAll('.law-folder-icon').forEach(i => i.style.transform = 'rotate(-90deg)');
+                };
+                
+                controlsContainer.appendChild(expandBtn);
+                controlsContainer.appendChild(collapseBtn);
+            }
 
             lawIds.forEach(lawId => {
                 const initialLawName = this.lawNameCache[lawId] || this.getKnownLawName(lawId);
@@ -7095,11 +7094,11 @@ class QuizApp {
                 lawHeader.style.padding = '0.5rem 0';
                 lawHeader.style.borderBottom = '1px solid var(--glass-border)';
                 lawHeader.style.cursor = 'pointer';
-                lawHeader.innerHTML = `<span class="law-folder-icon" style="display:inline-block; transition:transform 0.2s; margin-right:5px;">▼</span><span class="law-folder-name">📁 ${initialLawName}</span>`;
+                lawHeader.innerHTML = `<span class="law-folder-icon" style="display:inline-block; transition:transform 0.2s; margin-right:5px; transform: rotate(-90deg);">▼</span><span class="law-folder-name">📁 ${initialLawName}</span>`;
                 lawDiv.appendChild(lawHeader);
 
                 const articlesContainer = document.createElement('div');
-                articlesContainer.className = 'drill-articles-container';
+                articlesContainer.className = 'drill-articles-container hidden';
                 lawDiv.appendChild(articlesContainer);
 
                 lawHeader.onclick = () => {
