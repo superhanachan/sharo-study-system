@@ -6189,41 +6189,58 @@ class QuizApp {
     async importFromJSON(jsonString) {
         try {
             const data = JSON.parse(jsonString);
-            if (!data.quizData) throw new Error('Invalid backup format');
+            
+            const isBackup = !!data.quizData;
+            const incomingQuizData = Array.isArray(data) ? data : data.quizData;
+            
+            if (!incomingQuizData || !Array.isArray(incomingQuizData)) {
+                throw new Error('Invalid JSON format: missing quiz data array');
+            }
 
-            if (confirm('現在のデータをすべて上書きして復旧しますか？\n（現在の問題・履歴・統計がすべて消え、ファイルの内容に置き換わります）')) {
-                this.quizData = data.quizData;
+            // Auto-convert depth to parentId for AI-generated flat arrays
+            let currentParents = {};
+            incomingQuizData.forEach(item => {
+                // Ensure IDs exist
+                if (!item.id) item.id = 'import_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
                 
-                // Auto-convert depth to parentId for AI-generated flat arrays
-                let currentParents = {};
-                this.quizData.forEach(item => {
-                    if (item.parentId === undefined && item.depth !== undefined) {
-                        item.parentId = item.depth > 0 ? (currentParents[item.depth - 1] || null) : null;
-                    }
-                    if (item.type === 'folder') {
-                        let d = item.depth;
-                        if (d === undefined) {
-                            let curr = item;
-                            d = 0;
-                            while (curr && curr.parentId) {
-                                d++;
-                                curr = this.quizData.find(x => x.id === curr.parentId);
-                            }
+                if (item.parentId === undefined && item.depth !== undefined) {
+                    item.parentId = item.depth > 0 ? (currentParents[item.depth - 1] || null) : null;
+                }
+                if (item.type === 'folder') {
+                    let d = item.depth;
+                    if (d === undefined) {
+                        let curr = item;
+                        d = 0;
+                        while (curr && curr.parentId) {
+                            d++;
+                            curr = incomingQuizData.find(x => x.id === curr.parentId);
                         }
-                        currentParents[d] = item.id;
                     }
-                });
+                    currentParents[d] = item.id;
+                }
+            });
 
-                this.history = data.history || [];
-                this.questionStats = data.questionStats || {};
-
-                await this.saveAll();
-                alert('データを正常に復元しました。');
-                window.location.reload();
+            if (isBackup) {
+                if (confirm('現在のデータをすべて上書きして復元しますか？\n（現在の問題・履歴・統計がすべて消え、ファイルの内容に置き換わります）')) {
+                    this.quizData = incomingQuizData;
+                    this.history = data.history || [];
+                    this.questionStats = data.questionStats || {};
+                    await this.saveAll();
+                    alert('データを正常に復元しました。');
+                    window.location.reload();
+                }
+            } else {
+                if (confirm('AI等で作成された問題データが検出されました。\n現在のデータに追加（マージ）しますか？')) {
+                    // Prepend or append? Usually append.
+                    this.quizData = [...this.quizData, ...incomingQuizData];
+                    await this.saveAll();
+                    alert('新しい問題を追加しました。');
+                    window.location.reload();
+                }
             }
         } catch (err) {
             console.error(err);
-            alert('ファイルの読み込みに失敗しました。有効なJSONバックアップファイルであることを確認してください。');
+            alert('ファイルの読み込みに失敗しました。有効なJSONフォーマットであることを確認してください。');
         }
     }
 
