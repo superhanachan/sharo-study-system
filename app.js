@@ -5238,8 +5238,18 @@ class QuizApp {
             
             if (!lawId) throw new Error("法令IDが見つかりません");
 
+            // --- Workaround for Amendment Laws (一部改正法) ---
+            // The e-Gov API does not return XML for certain amendment laws directly (returns <Code>1</Code>).
+            // Their supplementary provisions are integrated into the main laws they amended.
+            // By redirecting the fetch to the main law, we can successfully retrieve the exact same SupplProvision text.
+            const AMENDMENT_LAW_MAP = {
+                "412AC0000000018": "334AC0000000141", // 平成12年法律第18号 -> 国民年金法
+                "416AC0000000104": "334AC0000000141"  // 平成16年法律第104号 -> 国民年金法
+            };
+            const fetchLawId = AMENDMENT_LAW_MAP[lawId] || lawId;
+
             // Fetch XML from e-Gov API
-            const apiUrl = `https://laws.e-gov.go.jp/api/1/lawdata/${lawId}`;
+            const apiUrl = `https://laws.e-gov.go.jp/api/1/lawdata/${fetchLawId}`;
             const response = await fetch(apiUrl);
             if (!response.ok) throw new Error("APIレスポンスエラー: " + response.status);
             const xmlText = await response.text();
@@ -5249,7 +5259,11 @@ class QuizApp {
             
             // Get Law Name
             const lawNameEl = xmlDoc.querySelector("LawTitle") || xmlDoc.querySelector("LawName");
-            if (lawNameEl) titleEl.textContent = lawNameEl.textContent;
+            if (lawNameEl && !AMENDMENT_LAW_MAP[lawId]) {
+                titleEl.textContent = lawNameEl.textContent;
+            } else if (AMENDMENT_LAW_MAP[lawId]) {
+                titleEl.textContent = this.getKnownLawName(lawId);
+            }
 
             // Find target element by anchor
             let targetNode = null;
@@ -7136,7 +7150,9 @@ class QuizApp {
             "334AC0000000141": "国民年金法",
             "334AC0000000137": "最低賃金法",
             "346AC0000000113": "高年齢者雇用安定法",
-            "347M50002000010": "失業保険法及び労働者災害補償保険法の一部を改正する法律及び労働保険の保険料の徴収等に関する法律の施行に伴う関係法律の整備等に関する法律の施行に関する省令"
+            "347M50002000010": "失業保険法及び労働者災害補償保険法の一部を改正する法律及び労働保険の保険料の徴収等に関する法律の施行に伴う関係法律の整備等に関する法律の施行に関する省令",
+            "412AC0000000018": "国民年金法等の一部を改正する法律（平成12年法律第18号）",
+            "416AC0000000104": "国民年金法等の一部を改正する法律（平成16年法律第104号）"
         };
         return KNOWN_LAWS[lawId] || lawId;
     }
@@ -7248,8 +7264,14 @@ class QuizApp {
 
                 // Start background fetch for captions if not cached
                 if (!this.lawCaptionCache[lawId]) {
+                    const AMENDMENT_LAW_MAP = {
+                        "412AC0000000018": "334AC0000000141",
+                        "416AC0000000104": "334AC0000000141"
+                    };
+                    const fetchLawId = AMENDMENT_LAW_MAP[lawId] || lawId;
+                    
                     this.lawCaptionCache[lawId] = {};
-                    fetch(`https://laws.e-gov.go.jp/api/1/lawdata/${lawId}`)
+                    fetch(`https://laws.e-gov.go.jp/api/1/lawdata/${fetchLawId}`)
                         .then(res => res.text())
                         .then(xmlText => {
                             const parser = new DOMParser();
