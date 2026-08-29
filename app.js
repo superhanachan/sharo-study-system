@@ -5165,7 +5165,8 @@ class QuizApp {
             } else if (anchor.startsWith('Sp')) {
                 // Supplementary Provisions
                 const amendMatch = anchor.match(/^Sp_?([^-]*)/);
-                const amendNum = amendMatch && amendMatch[1] ? amendMatch[1] : null;
+                const rawAmendNum = amendMatch && amendMatch[1] ? amendMatch[1] : null;
+                const amendNum = rawAmendNum ? decodeURIComponent(rawAmendNum) : null;
                 
                 let targetSp = null;
                 const spNodes = xmlDoc.querySelectorAll("SupplProvision");
