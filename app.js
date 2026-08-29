@@ -5170,6 +5170,8 @@ class QuizApp {
                 
                 let targetSp = null;
                 const spNodes = xmlDoc.querySelectorAll("SupplProvision");
+                
+                // 1. Exact match
                 for (let i = 0; i < spNodes.length; i++) {
                     if (!amendNum && !spNodes[i].hasAttribute("AmendLawNum")) {
                         targetSp = spNodes[i]; break;
@@ -5177,6 +5179,22 @@ class QuizApp {
                     if (amendNum && spNodes[i].getAttribute("AmendLawNum") === amendNum) {
                         targetSp = spNodes[i]; break;
                     }
+                }
+                
+                // 2. Fuzzy match (handle e-Gov kanji inconsistencies like 三十四 vs 三四)
+                if (!targetSp && amendNum) {
+                    const fuzzyAmend = amendNum.replace(/十/g, '');
+                    for (let i = 0; i < spNodes.length; i++) {
+                        const nodeAmend = spNodes[i].getAttribute("AmendLawNum") || "";
+                        if (nodeAmend && nodeAmend.replace(/十/g, '') === fuzzyAmend) {
+                            targetSp = spNodes[i]; break;
+                        }
+                    }
+                }
+                
+                // 3. Ultimate fallback for original law (which lacks AmendLawNum in XML despite URL having one)
+                if (!targetSp && spNodes.length > 0 && !spNodes[0].hasAttribute("AmendLawNum")) {
+                    targetSp = spNodes[0];
                 }
                 
                 if (targetSp) {
