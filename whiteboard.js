@@ -98,6 +98,8 @@ class Whiteboard {
     }
 
     close() {
+        // Automatically clear the board when closed
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.overlay.classList.add('hidden');
     }
 
