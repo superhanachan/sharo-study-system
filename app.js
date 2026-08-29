@@ -37,7 +37,7 @@ const DEFAULT_QUIZ_DATA = [
 
 // Spaced Repetition System (SRS) intervals in days
 // Level 0: New, Level 1: 1 day, Level 2: 2 days, Level 3: 4 days, etc.
-const SRS_INTERVALS = [0, 1, 2, 4, 7, 14, 30, 60, 120, 180, 365];
+const SRS_INTERVALS = [0, 1, 2, 4, 7, 14, 30, 60, 120, 120, 120];
 
 
 class QuizApp {
