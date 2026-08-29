@@ -1998,7 +1998,7 @@ class QuizApp {
         this.stopFlashMode();
         if (id === null) {
             this.currentSetId = null;
-            if (this.quizTitle) this.quizTitle.textContent = "ホーム / 富士登山";
+            if (this.quizTitle) this.quizTitle.textContent = "";
             if (this.homeDashboard) this.homeDashboard.classList.remove('hidden');
             if (this.quizArea) this.quizArea.classList.add('hidden');
             this.updateActiveTOC(null);
