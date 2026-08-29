@@ -991,6 +991,32 @@ class QuizApp {
         });
     }
 
+    updateExamCountdown() {
+        const getExamDate = (year) => {
+            const d = new Date(year, 7, 1); // August 1st
+            const offset = d.getDay() === 0 ? 0 : 7 - d.getDay();
+            return new Date(year, 7, 1 + offset + 21); // 4th Sunday
+        };
+        const now = new Date();
+        let year = now.getFullYear();
+        let examDate = getExamDate(year);
+        // If today is past exam day (with a small buffer for end of day), target next year
+        if (now.getTime() > examDate.getTime() + 24 * 60 * 60 * 1000) {
+            year++;
+            examDate = getExamDate(year);
+        }
+        
+        const diffMs = examDate.getTime() - now.getTime();
+        const daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+        
+        const elDays = document.getElementById('exam-days-left');
+        const elLabel = document.getElementById('exam-date-label');
+        if (elDays && elLabel) {
+            elDays.textContent = daysLeft;
+            elLabel.textContent = `${year}年8月第4日曜日 (${examDate.getMonth()+1}/${examDate.getDate()})`;
+        }
+    }
+
     init() {
         // If no specifically saved set, or just starting, show home dashboard
         if (!this.currentSetId) {
@@ -1001,6 +1027,7 @@ class QuizApp {
         this.checkAndOfferRecovery();
         this.checkBackupFrequency();
         this.updateDashboard();
+        this.updateExamCountdown();
         this.renderSrsProjectionChart();
         this.loadGitHubConfig();
         this.updateAutoFillShortcutUI();
@@ -3174,6 +3201,7 @@ class QuizApp {
     }
 
     updateDashboard() {
+        this.updateExamCountdown();
         // Build Info (Visual confirmation for the user)
         const buildInfo = document.getElementById('build-info') || document.createElement('div');
         buildInfo.id = 'build-info';
