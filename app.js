@@ -6987,6 +6987,11 @@ class QuizApp {
     formatEGovAnchor(anchor) {
         if (!anchor) return "全体";
         let text = "";
+        
+        if (anchor.startsWith('Sp')) {
+            text += "附則 ";
+        }
+        
         const atMatch = anchor.match(/At_(\d+)(?:_(\d+))?/);
         if (atMatch) {
             text += `第${atMatch[1]}条`;
@@ -7168,9 +7173,11 @@ class QuizApp {
                                 const anchor = div.dataset.anchor;
                                 const isMp = anchor.startsWith('Mp');
                                 const prefix = isMp ? 'Mp_' : 'Sp_';
-                                const articleNum = anchor.replace('Mp-At_', '').replace('Sp-At_', '').split('-')[0];
                                 
-                                if (this.lawCaptionCache[lawId][prefix + articleNum]) {
+                                const atMatch = anchor.match(/-At_([0-9_]+)/);
+                                const articleNum = atMatch ? atMatch[1] : (isMp ? anchor.replace('Mp-At_', '').split('-')[0] : null);
+                                
+                                if (articleNum && this.lawCaptionCache[lawId][prefix + articleNum]) {
                                     const capText = this.lawCaptionCache[lawId][prefix + articleNum];
                                     const span = div.querySelector('.anchor-name');
                                     if (span && !span.dataset.hasCap) {
