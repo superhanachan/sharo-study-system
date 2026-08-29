@@ -3045,11 +3045,17 @@ tr {
 
 /* Sidebar collapsed state for desktop */
 .sidebar-hidden .sidebar {
-    margin-left: -320px;
+    margin-left: calc(var(--sidebar-width, 320px) * -1);
 }
 
 .sidebar-hidden .main-content {
     margin-left: 0 !important;
+}
+
+@media (min-width: 1025px) {
+    body:not(.sidebar-hidden) .menu-toggle-global {
+        display: none !important;
+    }
 }
 
 @media (max-width: 1024px) {
