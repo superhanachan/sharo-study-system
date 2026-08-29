@@ -1,0 +1,1 @@
+﻿const https = require('https'); https.get('https://laws.e-gov.go.jp/api/1/lawdata/329AC0000000115', (res) => { let data = ''; res.on('data', d => data += d); res.on('end', () => console.log([...data.matchAll(/AmendLawNum=\x22([^\x22]+)\x22/g)].map(m=>m[1]).filter(x => x.includes('平成一二年三月三一日法律第一八号')).join(', '))); });
