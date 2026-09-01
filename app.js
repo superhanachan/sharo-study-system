@@ -5252,7 +5252,8 @@ class QuizApp {
             // By redirecting the fetch to the main law, we can successfully retrieve the exact same SupplProvision text.
             const AMENDMENT_LAW_MAP = {
                 "412AC0000000018": "334AC0000000141", // 平成12年法律第18号 -> 国民年金法
-                "416AC0000000104": "334AC0000000141"  // 平成16年法律第104号 -> 国民年金法
+                "416AC0000000104": "334AC0000000141", // 平成16年法律第104号 -> 国民年金法
+                "360AC0000000034": "334AC0000000141"  // 昭和60年法律第34号 -> 国民年金法
             };
             const fetchLawId = AMENDMENT_LAW_MAP[lawId] || lawId;
 
@@ -7161,6 +7162,7 @@ class QuizApp {
             "347M50002000010": "失業保険法及び労働者災害補償保険法の一部を改正する法律及び労働保険の保険料の徴収等に関する法律の施行に伴う関係法律の整備等に関する法律の施行に関する省令",
             "412AC0000000018": "国民年金法等の一部を改正する法律（平成12年法律第18号）",
             "416AC0000000104": "国民年金法等の一部を改正する法律（平成16年法律第104号）",
+            "360AC0000000034": "国民年金法等の一部を改正する法律（昭和60年法律第34号）",
             "215CO0000000243": "健康保険法施行令"
         };
         return KNOWN_LAWS[lawId] || lawId;
@@ -7280,7 +7282,8 @@ class QuizApp {
 
                     const AMENDMENT_LAW_MAP = {
                         "412AC0000000018": "334AC0000000141",
-                        "416AC0000000104": "334AC0000000141"
+                        "416AC0000000104": "334AC0000000141",
+                        "360AC0000000034": "334AC0000000141"
                     };
                     const fetchLawId = AMENDMENT_LAW_MAP[mappedLawId] || mappedLawId;
                     
