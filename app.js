@@ -6342,7 +6342,8 @@ class QuizApp {
             // Some URLs use 'CO' (Cabinet Order) instead of 'IO' (Imperial Ordinance) for older laws.
             // e-Gov web frontend handles this, but the API requires 'IO'.
             const ALIAS_MAP = {
-                "215CO0000000243": "215IO0000000243" // 健康保険法施行令
+                "215CO0000000243": "215IO0000000243", // 健康保険法施行令
+                "350M50002000025": "350M50002000003"  // 雇用保険法施行規則
             };
             if (ALIAS_MAP[lawId]) lawId = ALIAS_MAP[lawId];
 
@@ -8376,7 +8377,8 @@ class QuizApp {
                 // Start background fetch for captions if not cached
                 if (!this.lawCaptionCache[lawId]) {
                     const ALIAS_MAP = {
-                        "215CO0000000243": "215IO0000000243" // 健康保険法施行令
+                        "215CO0000000243": "215IO0000000243", // 健康保険法施行令
+                        "350M50002000025": "350M50002000003"  // 雇用保険法施行規則
                     };
                     const mappedLawId = ALIAS_MAP[lawId] || lawId;
 
