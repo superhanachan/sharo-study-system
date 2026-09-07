@@ -6338,25 +6338,7 @@ class QuizApp {
             
             if (!lawId) throw new Error("法令IDが見つかりません");
 
-            // --- Workaround for API Aliases ---
-            // Some URLs use 'CO' (Cabinet Order) instead of 'IO' (Imperial Ordinance) for older laws.
-            // e-Gov web frontend handles this, but the API requires 'IO'.
-            const ALIAS_MAP = {
-                "215CO0000000243": "215IO0000000243", // 健康保険法施行令
-                "350M50002000025": "350M50002000003"  // 雇用保険法施行規則
-            };
-            if (ALIAS_MAP[lawId]) lawId = ALIAS_MAP[lawId];
-
-            // --- Workaround for Amendment Laws (一部改正法) ---
-            // The e-Gov API does not return XML for certain amendment laws directly (returns <Code>1</Code>).
-            // Their supplementary provisions are integrated into the main laws they amended.
-            // By redirecting the fetch to the main law, we can successfully retrieve the exact same SupplProvision text.
-            const AMENDMENT_LAW_MAP = {
-                "412AC0000000018": "334AC0000000141", // 平成12年法律第18号 -> 国民年金法
-                "416AC0000000104": "334AC0000000141", // 平成16年法律第104号 -> 国民年金法
-                "360AC0000000034": "334AC0000000141"  // 昭和60年法律第34号 -> 国民年金法
-            };
-            const fetchLawId = AMENDMENT_LAW_MAP[lawId] || lawId;
+            const fetchLawId = this.getMappedLawId(lawId);
 
             // Fetch XML from e-Gov API
             const apiUrl = `https://laws.e-gov.go.jp/api/1/lawdata/${fetchLawId}`;
@@ -8286,6 +8268,21 @@ class QuizApp {
         return text || anchor;
     }
 
+    getMappedLawId(lawId) {
+        if (!lawId) return lawId;
+        const ALIAS_MAP = {
+            "215CO0000000243": "215IO0000000243", // 健康保険法施行令
+            "350M50002000025": "350M50002000003"  // 雇用保険法施行規則
+        };
+        const AMENDMENT_LAW_MAP = {
+            "412AC0000000018": "334AC0000000141", // 平成12年法律第18号 -> 国民年金法
+            "416AC0000000104": "334AC0000000141", // 平成16年法律第104号 -> 国民年金法
+            "360AC0000000034": "334AC0000000141"  // 昭和60年法律第34号 -> 国民年金法
+        };
+        let mapped = ALIAS_MAP[lawId] || lawId;
+        return AMENDMENT_LAW_MAP[mapped] || mapped;
+    }
+
     getKnownLawName(lawId) {
         const KNOWN_LAWS = {
             "322AC0000000049": "労働基準法",
@@ -8326,6 +8323,7 @@ class QuizApp {
                         if (parts.length >= 3) lawId = parts[2];
                     }
                     if (lawId) {
+                        lawId = this.getMappedLawId(lawId);
                         const anchor = urlObj.hash.replace('#', '');
                         if (!index[lawId]) index[lawId] = {};
                         if (!index[lawId][anchor]) index[lawId][anchor] = new Set();
@@ -8414,18 +8412,7 @@ class QuizApp {
 
                 // Start background fetch for captions if not cached
                 if (!this.lawCaptionCache[lawId]) {
-                    const ALIAS_MAP = {
-                        "215CO0000000243": "215IO0000000243", // 健康保険法施行令
-                        "350M50002000025": "350M50002000003"  // 雇用保険法施行規則
-                    };
-                    const mappedLawId = ALIAS_MAP[lawId] || lawId;
-
-                    const AMENDMENT_LAW_MAP = {
-                        "412AC0000000018": "334AC0000000141",
-                        "416AC0000000104": "334AC0000000141",
-                        "360AC0000000034": "334AC0000000141"
-                    };
-                    const fetchLawId = AMENDMENT_LAW_MAP[mappedLawId] || mappedLawId;
+                    const fetchLawId = this.getMappedLawId(lawId);
                     
                     this.lawCaptionCache[lawId] = {};
                     fetch(`https://laws.e-gov.go.jp/api/1/lawdata/${fetchLawId}`)
@@ -8569,6 +8556,7 @@ class QuizApp {
                         if (parts.length >= 3) lId = parts[2];
                     }
                     const a = urlObj.hash.replace('#', '');
+                    if (lId) lId = this.getMappedLawId(lId);
                     if (lId === lawId && a === anchor) return true;
                 } catch(e) {}
             }
