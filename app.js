@@ -6443,6 +6443,23 @@ class QuizApp {
                     }
                     if (!targetNode) targetNode = targetSp; // fallback to whole SupplProvision
                 }
+            } else if (anchor.startsWith('Ap')) {
+                // AppdxTable (別表)
+                const numStr = anchor.replace(/^A[pP]+_?/, ''); 
+                const appdxTables = xmlDoc.querySelectorAll("AppdxTable");
+                for (let i = 0; i < appdxTables.length; i++) {
+                    const titleEl = appdxTables[i].querySelector("AppdxTableTitle");
+                    if (titleEl) {
+                        let titleText = titleEl.textContent;
+                        titleText = titleText.replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0));
+                        titleText = titleText.replace('の', '_');
+                        const tMatch = titleText.match(/別表第?([0-9_]+)/);
+                        if (tMatch && tMatch[1] === numStr) {
+                            targetNode = appdxTables[i];
+                            break;
+                        }
+                    }
+                }
             }
 
             if (!targetNode) {
@@ -6491,6 +6508,27 @@ class QuizApp {
                             case 'ParagraphSentence':
                             case 'ItemSentence':
                                 Array.from(node.childNodes).forEach(child => html += parseEGovNode(child));
+                                break;
+                            case 'Table':
+                                html += `<div style="overflow-x: auto;"><table border="1" style="border-collapse: collapse; margin-top: 1rem; width: 100%; font-size: 0.9em; min-width: 400px;">`;
+                                Array.from(node.childNodes).forEach(child => html += parseEGovNode(child));
+                                html += `</table></div>`;
+                                break;
+                            case 'TableRow':
+                                html += `<tr>`;
+                                Array.from(node.childNodes).forEach(child => html += parseEGovNode(child));
+                                html += `</tr>`;
+                                break;
+                            case 'TableColumn':
+                                html += `<td style="padding: 0.5rem; border: 1px solid #ccc; vertical-align: top;">`;
+                                Array.from(node.childNodes).forEach(child => html += parseEGovNode(child));
+                                html += `</td>`;
+                                break;
+                            case 'AppdxTableTitle':
+                                html += `<div class="egov-title" style="margin-top: 1rem; font-size: 1.2em; font-weight: bold;">${node.textContent}</div>`;
+                                break;
+                            case 'TableStructTitle':
+                                html += `<div style="font-weight: bold; margin-top: 0.5rem;">${node.textContent}</div>`;
                                 break;
                             default:
                                 Array.from(node.childNodes).forEach(child => html += parseEGovNode(child));
