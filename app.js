@@ -6351,9 +6351,9 @@ class QuizApp {
             
             // Get Law Name
             const lawNameEl = xmlDoc.querySelector("LawTitle") || xmlDoc.querySelector("LawName");
-            if (lawNameEl && !AMENDMENT_LAW_MAP[lawId]) {
+            if (lawNameEl && fetchLawId === lawId) {
                 titleEl.textContent = lawNameEl.textContent;
-            } else if (AMENDMENT_LAW_MAP[lawId]) {
+            } else {
                 titleEl.textContent = this.getKnownLawName(lawId);
             }
 
