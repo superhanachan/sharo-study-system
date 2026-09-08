@@ -8250,20 +8250,23 @@ class QuizApp {
             text += "附則 ";
         }
         
-        const atMatch = anchor.match(/At_(\d+)(?:_(\d+))?/);
+        const atMatch = anchor.match(/At_([\d_]+)/);
         if (atMatch) {
-            text += `第${atMatch[1]}条`;
-            if (atMatch[2]) text += `の${atMatch[2]}`;
+            const parts = atMatch[1].split('_');
+            text += `第${parts[0]}条`;
+            if (parts.length > 1) text += `の${parts.slice(1).join('の')}`;
         }
-        const prMatch = anchor.match(/Pr_(\d+)(?:_(\d+))?/);
+        const prMatch = anchor.match(/Pr_([\d_]+)/);
         if (prMatch) {
-            text += `第${prMatch[1]}項`;
-            if (prMatch[2]) text += `の${prMatch[2]}`;
+            const parts = prMatch[1].split('_');
+            text += `第${parts[0]}項`;
+            if (parts.length > 1) text += `の${parts.slice(1).join('の')}`;
         }
-        const itMatch = anchor.match(/It_(\d+)(?:_(\d+))?/);
+        const itMatch = anchor.match(/It_([\d_]+)/);
         if (itMatch) {
-            text += `第${itMatch[1]}号`;
-            if (itMatch[2]) text += `の${itMatch[2]}`;
+            const parts = itMatch[1].split('_');
+            text += `第${parts[0]}号`;
+            if (parts.length > 1) text += `の${parts.slice(1).join('の')}`;
         }
         return text || anchor;
     }
