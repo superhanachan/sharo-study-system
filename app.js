@@ -6338,7 +6338,7 @@ class QuizApp {
             
             if (!lawId) throw new Error("法令IDが見つかりません");
 
-            const fetchLawId = this.getMappedLawId(lawId);
+            const fetchLawId = this.getMappedLawId(lawId, anchor);
 
             // Fetch XML from e-Gov API
             const apiUrl = `https://laws.e-gov.go.jp/api/1/lawdata/${fetchLawId}`;
@@ -8271,7 +8271,7 @@ class QuizApp {
         return text || anchor;
     }
 
-    getMappedLawId(lawId) {
+    getMappedLawId(lawId, anchor) {
         if (!lawId) return lawId;
         const ALIAS_MAP = {
             "215CO0000000243": "215IO0000000243", // 健康保険法施行令
@@ -8281,11 +8281,31 @@ class QuizApp {
         const AMENDMENT_LAW_MAP = {
             "412AC0000000018": "334AC0000000141", // 平成12年法律第18号 -> 国民年金法
             "416AC0000000104": "334AC0000000141", // 平成16年法律第104号 -> 国民年金法
-            "360AC0000000034": "334AC0000000141", // 昭和60年法律第34号 -> 国民年金法
             "406AC0000000095": "334AC0000000141"  // 平成6年法律第95号 -> 国民年金法
         };
+        
         let mapped = ALIAS_MAP[lawId] || lawId;
-        return AMENDMENT_LAW_MAP[mapped] || mapped;
+        mapped = AMENDMENT_LAW_MAP[mapped] || mapped;
+
+        // 特殊対応: 昭和60年法律第34号（国民年金法等の一部を改正する法律）は
+        // 附則の第1条〜第42条等までは「国民年金法（334AC0000000141）」のXMLにぶら下がり、
+        // 第43条〜第104条等は「厚生年金保険法（329AC0000000115）」のXMLにぶら下がるため
+        // アンカーの条数を見て動的に親のLawIdを振り分ける
+        if (lawId === "360AC0000000034") {
+            mapped = "334AC0000000141"; // Default to Kokumin Nenkin
+            if (anchor && anchor.startsWith("Sp")) {
+                const atMatch = anchor.match(/At_(\d+)/);
+                if (atMatch) {
+                    const artNum = parseInt(atMatch[1], 10);
+                    // 第43条以降は厚生年金保険法の方に属する
+                    if (artNum >= 43) {
+                        mapped = "329AC0000000115";
+                    }
+                }
+            }
+        }
+
+        return mapped;
     }
 
     getKnownLawName(lawId) {
@@ -8329,8 +8349,8 @@ class QuizApp {
                         if (parts.length >= 3) lawId = parts[2];
                     }
                     if (lawId) {
-                        lawId = this.getMappedLawId(lawId);
                         const anchor = urlObj.hash.replace('#', '');
+                        lawId = this.getMappedLawId(lawId, anchor);
                         if (!index[lawId]) index[lawId] = {};
                         if (!index[lawId][anchor]) index[lawId][anchor] = new Set();
                         index[lawId][anchor].add(qObj.id);
@@ -8562,7 +8582,7 @@ class QuizApp {
                         if (parts.length >= 3) lId = parts[2];
                     }
                     const a = urlObj.hash.replace('#', '');
-                    if (lId) lId = this.getMappedLawId(lId);
+                    if (lId) lId = this.getMappedLawId(lId, a);
                     if (lId === lawId && a === anchor) return true;
                 } catch(e) {}
             }
