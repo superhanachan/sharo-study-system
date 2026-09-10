@@ -5839,12 +5839,14 @@ class QuizApp {
                     editArea.style.minHeight = '120px';
                     editArea.style.resize = 'vertical';
                     editArea.style.marginTop = '10px';
-                    editArea.style.fontFamily = 'monospace';
-                    editArea.style.padding = '0.5rem';
+                    editArea.style.fontFamily = 'inherit';
+                    editArea.style.fontSize = '1rem';
+                    editArea.style.lineHeight = '1.6';
+                    editArea.style.padding = '0.75rem';
                     editArea.style.background = 'var(--bg-dark)';
                     editArea.style.color = 'var(--text-light)';
                     editArea.style.border = '1px solid var(--glass-border)';
-                    editArea.style.borderRadius = '4px';
+                    editArea.style.borderRadius = '6px';
                     editArea.style.overflow = 'hidden';
                     editArea.value = q.text;
                     const autoResize = (el) => {
@@ -5871,11 +5873,14 @@ class QuizApp {
                     memoArea.style.minHeight = '60px';
                     memoArea.style.resize = 'vertical';
                     memoArea.style.marginTop = '5px';
-                    memoArea.style.padding = '0.5rem';
+                    memoArea.style.fontFamily = 'inherit';
+                    memoArea.style.fontSize = '0.9rem';
+                    memoArea.style.lineHeight = '1.6';
+                    memoArea.style.padding = '0.75rem';
                     memoArea.style.background = 'var(--bg-dark)';
                     memoArea.style.color = 'var(--text-light)';
                     memoArea.style.border = '1px solid var(--glass-border)';
-                    memoArea.style.borderRadius = '4px';
+                    memoArea.style.borderRadius = '6px';
                     memoArea.style.overflow = 'hidden';
                     memoArea.value = q.memo || '';
                     memoArea.addEventListener('input', function() { autoResize(this); });
@@ -5897,11 +5902,13 @@ class QuizApp {
                         dummiesArea.placeholder = 'ダミー選択肢 (カンマ区切り)';
                         dummiesArea.style.width = '100%';
                         dummiesArea.style.marginTop = '5px';
-                        dummiesArea.style.padding = '0.5rem';
+                        dummiesArea.style.fontFamily = 'inherit';
+                        dummiesArea.style.fontSize = '0.9rem';
+                        dummiesArea.style.padding = '0.75rem';
                         dummiesArea.style.background = 'var(--bg-dark)';
                         dummiesArea.style.color = 'var(--text-light)';
                         dummiesArea.style.border = '1px solid var(--glass-border)';
-                        dummiesArea.style.borderRadius = '4px';
+                        dummiesArea.style.borderRadius = '6px';
                         dummiesArea.value = q.dummies.join(', ');
                         dummiesArea.onblur = () => {
                             const val = dummiesArea.value.split(',').map(s => s.trim()).filter(Boolean);
