@@ -6384,7 +6384,7 @@ class QuizApp {
                 targetNode = findArticleInList(articles, articleNum);
             } else if (anchor.startsWith('Sp')) {
                 // Supplementary Provisions
-                const amendMatch = anchor.match(/^Sp_?([^-]*)/);
+                const amendMatch = anchor.match(/^Sp_?(.*?)(?:[-_]At_|$)/);
                 const rawAmendNum = amendMatch && amendMatch[1] ? amendMatch[1] : null;
                 let amendNum = rawAmendNum ? decodeURIComponent(rawAmendNum) : null;
                 
@@ -6429,7 +6429,8 @@ class QuizApp {
                 }
                 
                 if (targetSp) {
-                    const atMatch = anchor.match(/-At_([0-9_]+)/);
+                    // Check for both -At_ and _At_ for robustness against AI hallucinations
+                    const atMatch = anchor.match(/[-_]At_([0-9_]+)/);
                     if (atMatch) {
                         const spArticles = targetSp.querySelectorAll("Article");
                         targetNode = findArticleInList(spArticles, atMatch[1]);
@@ -8493,7 +8494,7 @@ class QuizApp {
                                 const isMp = anchor.startsWith('Mp');
                                 const prefix = isMp ? 'Mp_' : 'Sp_';
                                 
-                                const atMatch = anchor.match(/-At_([0-9_]+)/);
+                                const atMatch = anchor.match(/[-_]At_([0-9_]+)/);
                                 const articleNum = atMatch ? atMatch[1] : (isMp ? anchor.replace('Mp-At_', '').split('-')[0] : null);
                                 
                                 if (articleNum && this.lawCaptionCache[lawId][prefix + articleNum]) {
