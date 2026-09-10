@@ -6386,7 +6386,18 @@ class QuizApp {
                 // Supplementary Provisions
                 const amendMatch = anchor.match(/^Sp_?([^-]*)/);
                 const rawAmendNum = amendMatch && amendMatch[1] ? amendMatch[1] : null;
-                const amendNum = rawAmendNum ? decodeURIComponent(rawAmendNum) : null;
+                let amendNum = rawAmendNum ? decodeURIComponent(rawAmendNum) : null;
+                
+                // Fallback for AI hallucinated anchors that lack the AmendLawNum (e.g. #Sp-At_47)
+                if (!amendNum && lawId !== fetchLawId) {
+                    const AMEND_NUM_MAP = {
+                        "412AC0000000018": "平成一二年三月三一日法律第一八号",
+                        "416AC0000000104": "平成一六年六月一一日法律第一〇四号",
+                        "360AC0000000034": "昭和六〇年五月一日法律第三四号",
+                        "406AC0000000095": "平成六年一一月九日法律第九五号"
+                    };
+                    amendNum = AMEND_NUM_MAP[lawId] || null;
+                }
                 
                 let targetSp = null;
                 const spNodes = xmlDoc.querySelectorAll("SupplProvision");
