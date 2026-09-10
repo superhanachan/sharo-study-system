@@ -5836,7 +5836,8 @@ class QuizApp {
                     const editArea = document.createElement('textarea');
                     editArea.className = 'clause-text-editor-mini';
                     editArea.style.width = '100%';
-                    editArea.style.minHeight = '80px';
+                    editArea.style.minHeight = '120px';
+                    editArea.style.resize = 'vertical';
                     editArea.style.marginTop = '10px';
                     editArea.style.fontFamily = 'monospace';
                     editArea.style.padding = '0.5rem';
@@ -5844,7 +5845,14 @@ class QuizApp {
                     editArea.style.color = 'var(--text-light)';
                     editArea.style.border = '1px solid var(--glass-border)';
                     editArea.style.borderRadius = '4px';
+                    editArea.style.overflow = 'hidden';
                     editArea.value = q.text;
+                    const autoResize = (el) => {
+                        el.style.height = 'auto';
+                        el.style.height = el.scrollHeight + 'px';
+                    };
+                    editArea.addEventListener('input', function() { autoResize(this); });
+                    setTimeout(() => autoResize(editArea), 0);
                     editArea.onblur = () => {
                         const val = editArea.value.trim();
                         if (val !== q.text) {
@@ -5860,14 +5868,18 @@ class QuizApp {
                     memoArea.className = 'clause-text-editor-mini';
                     memoArea.placeholder = 'メモ・解説...';
                     memoArea.style.width = '100%';
-                    memoArea.style.minHeight = '40px';
+                    memoArea.style.minHeight = '60px';
+                    memoArea.style.resize = 'vertical';
                     memoArea.style.marginTop = '5px';
                     memoArea.style.padding = '0.5rem';
                     memoArea.style.background = 'var(--bg-dark)';
                     memoArea.style.color = 'var(--text-light)';
                     memoArea.style.border = '1px solid var(--glass-border)';
                     memoArea.style.borderRadius = '4px';
+                    memoArea.style.overflow = 'hidden';
                     memoArea.value = q.memo || '';
+                    memoArea.addEventListener('input', function() { autoResize(this); });
+                    setTimeout(() => autoResize(memoArea), 0);
                     memoArea.onblur = () => {
                         const val = memoArea.value.trim();
                         if (val !== (q.memo || '')) {
