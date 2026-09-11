@@ -8511,7 +8511,7 @@ class QuizApp {
                             const xmlDoc = parser.parseFromString(xmlText, "text/xml");
                             
                             const lawNameNode = xmlDoc.querySelector("LawTitle");
-                            if (lawNameNode) {
+                            if (lawNameNode && lawId === fetchLawId) {
                                 const realLawName = lawNameNode.textContent;
                                 this.lawNameCache[lawId] = realLawName;
                                 const nameSpan = lawHeader.querySelector('.law-folder-name');
