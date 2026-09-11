@@ -8645,7 +8645,7 @@ class QuizApp {
                         if (parts.length >= 3) lId = parts[2];
                     }
                     const a = urlObj.hash.replace('#', '');
-                    if (lId) lId = this.getMappedLawId(lId, a);
+                    if (lId) lId = this.getAlias(lId);
                     if (lId === lawId && a === anchor) return true;
                 } catch(e) {}
             }
