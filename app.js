@@ -8303,30 +8303,36 @@ class QuizApp {
         return text || anchor;
     }
 
-    getMappedLawId(lawId, anchor) {
+    getAlias(lawId) {
         if (!lawId) return lawId;
         const ALIAS_MAP = {
-            "215CO0000000243": "215IO0000000243", // 健康保険法施行令
-            "350M50002000025": "350M50002000003", // 雇用保険法施行規則
-            "311AC0000000070": "211AC0000000070", // AIのハルシネーション対策（昭和11年→大正11年）
-            "361CO0000000053": "361CO0000000054", // AIのハルシネーション対策（昭和61年政令第53号→54号）
-            "402M50000100034": "402M50000100058", // AIのハルシネーション対策（平成2年厚生省令第34号→58号）
-            "347CO0000000063": "348CO0000000195"  // AIのハルシネーション対策（昭和47年政令第63号→昭和48年政令第195号）
+            "215CO0000000243": "215IO0000000243",
+            "350M50002000025": "350M50002000003",
+            "311AC0000000070": "211AC0000000070",
+            "361CO0000000053": "361CO0000000054",
+            "402M50000100034": "402M50000100058",
+            "347CO0000000063": "348CO0000000195"
         };
+        return ALIAS_MAP[lawId] || lawId;
+    }
+
+    getMappedLawId(lawId, anchor) {
+        if (!lawId) return lawId;
+        let mapped = this.getAlias(lawId);
+
         const AMENDMENT_LAW_MAP = {
             "412AC0000000018": "334AC0000000141", // 平成12年法律第18号 -> 国民年金法
             "416AC0000000104": "334AC0000000141", // 平成16年法律第104号 -> 国民年金法
             "406AC0000000095": "334AC0000000141"  // 平成6年法律第95号 -> 国民年金法
         };
         
-        let mapped = ALIAS_MAP[lawId] || lawId;
         mapped = AMENDMENT_LAW_MAP[mapped] || mapped;
 
         // 特殊対応: 昭和60年法律第34号（国民年金法等の一部を改正する法律）は
         // 附則の第1条〜第42条等までは「国民年金法（334AC0000000141）」のXMLにぶら下がり、
         // 第43条〜第104条等は「厚生年金保険法（329AC0000000115）」のXMLにぶら下がるため
         // アンカーの条数を見て動的に親のLawIdを振り分ける
-        if (lawId === "360AC0000000034") {
+        if (mapped === "360AC0000000034" || lawId === "360AC0000000034") {
             mapped = "334AC0000000141"; // Default to Kokumin Nenkin
             if (anchor && anchor.startsWith("Sp")) {
                 const atMatch = anchor.match(/At_(\d+)/);
@@ -8341,7 +8347,7 @@ class QuizApp {
         }
         
         // 特殊対応: 平成24年法律第63号
-        if (lawId === "424AC0000000063") {
+        if (mapped === "424AC0000000063" || lawId === "424AC0000000063") {
             mapped = "329AC0000000115"; // Default to Kousei Nenkin (Art 17 etc)
             if (anchor && anchor.startsWith("Sp")) {
                 const atMatch = anchor.match(/At_(\d+)/);
@@ -8378,7 +8384,6 @@ class QuizApp {
             "334AC0000000137": "最低賃金法",
             "346AC0000000113": "高年齢者雇用安定法",
             "347M50002000010": "失業保険法及び労働者災害補償保険法の一部を改正する法律及び労働保険の保険料の徴収等に関する法律の施行に伴う関係法律の整備等に関する法律の施行に関する省令",
-            "412AC0000000018": "国民年金法等の一部を改正する法律（平成12年法律第18号）",
             "416AC0000000104": "国民年金法等の一部を改正する法律（平成16年法律第104号）",
             "360AC0000000034": "国民年金法等の一部を改正する法律（昭和60年法律第34号）",
             "406AC0000000095": "国民年金法等の一部を改正する法律（平成6年法律第95号）",
@@ -8408,7 +8413,7 @@ class QuizApp {
                     }
                     if (lawId) {
                         const anchor = urlObj.hash.replace('#', '');
-                        lawId = this.getMappedLawId(lawId, anchor);
+                        lawId = this.getAlias(lawId); // Group by original Law ID, NOT mapped XML file ID!
                         if (!index[lawId]) index[lawId] = {};
                         if (!index[lawId][anchor]) index[lawId][anchor] = new Set();
                         index[lawId][anchor].add(qObj.id);
