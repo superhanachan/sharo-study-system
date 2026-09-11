@@ -8338,6 +8338,20 @@ class QuizApp {
                 }
             }
         }
+        
+        // 特殊対応: 平成24年法律第63号
+        if (lawId === "424AC0000000063") {
+            mapped = "329AC0000000115"; // Default to Kousei Nenkin (Art 17 etc)
+            if (anchor && anchor.startsWith("Sp")) {
+                const atMatch = anchor.match(/At_(\d+)/);
+                if (atMatch) {
+                    const artNum = parseInt(atMatch[1], 10);
+                    if (artNum === 25) {
+                        mapped = "334AC0000000141"; // Art 25 is in Kokumin Nenkin
+                    }
+                }
+            }
+        }
 
         return mapped;
     }
@@ -8367,6 +8381,7 @@ class QuizApp {
             "416AC0000000104": "国民年金法等の一部を改正する法律（平成16年法律第104号）",
             "360AC0000000034": "国民年金法等の一部を改正する法律（昭和60年法律第34号）",
             "406AC0000000095": "国民年金法等の一部を改正する法律（平成6年法律第95号）",
+            "424AC0000000063": "公的年金制度の財政基盤及び最低保障機能の強化等のための国民年金法等の一部を改正する法律",
             "215CO0000000243": "健康保険法施行令"
         };
         return KNOWN_LAWS[lawId] || lawId;
