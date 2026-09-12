@@ -8483,6 +8483,35 @@ class QuizApp {
                 searchInput.style.border = '1px solid var(--glass-border)';
                 searchInput.style.background = 'rgba(0,0,0,0.2)';
                 searchInput.style.color = 'white';
+                searchInput.setAttribute('list', 'drill-search-history');
+                
+                let searchHistory = [];
+                try {
+                    searchHistory = JSON.parse(localStorage.getItem('drillSearchHistory') || '[]');
+                } catch(e) {}
+                
+                const dataList = document.createElement('datalist');
+                dataList.id = 'drill-search-history';
+                const updateDataList = () => {
+                    dataList.innerHTML = '';
+                    searchHistory.forEach(term => {
+                        const option = document.createElement('option');
+                        option.value = term;
+                        dataList.appendChild(option);
+                    });
+                };
+                updateDataList();
+
+                searchInput.onchange = (e) => {
+                    const val = e.target.value.trim();
+                    if (val) {
+                        searchHistory = searchHistory.filter(t => t !== val);
+                        searchHistory.unshift(val);
+                        if (searchHistory.length > 10) searchHistory.pop();
+                        localStorage.setItem('drillSearchHistory', JSON.stringify(searchHistory));
+                        updateDataList();
+                    }
+                };
                 searchInput.oninput = (e) => {
                     const q = e.target.value.trim().toLowerCase();
                     const lawDivs = container.querySelectorAll('.drill-law-folder');
@@ -8523,6 +8552,7 @@ class QuizApp {
                 };
                 
                 controlsContainer.appendChild(searchInput);
+                controlsContainer.appendChild(dataList);
                 controlsContainer.appendChild(expandBtn);
                 controlsContainer.appendChild(collapseBtn);
             }
