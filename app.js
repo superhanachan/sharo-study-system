@@ -8476,7 +8476,7 @@ class QuizApp {
                 
                 const searchInput = document.createElement('input');
                 searchInput.type = 'text';
-                searchInput.placeholder = '🔍 法令名で検索 (例: 国民年金)';
+                searchInput.placeholder = '🔍 法令名や条文の内容で検索 (例: 国民年金, 被保険者)';
                 searchInput.style.flex = '1';
                 searchInput.style.padding = '0.5rem';
                 searchInput.style.borderRadius = '5px';
@@ -8488,8 +8488,34 @@ class QuizApp {
                     const lawDivs = container.querySelectorAll('.drill-law-folder');
                     lawDivs.forEach(div => {
                         const title = (div.dataset.lawName || '').toLowerCase();
-                        if (title.includes(q)) {
+                        const titleMatches = title.includes(q);
+                        let hasMatchingArticle = false;
+                        
+                        const anchorDivs = div.querySelectorAll('.drill-anchor-div');
+                        anchorDivs.forEach(anchorDiv => {
+                            // .anchor-name contains the text, including the caption
+                            const anchorText = (anchorDiv.textContent || '').toLowerCase();
+                            if (q === '' || titleMatches || anchorText.includes(q)) {
+                                anchorDiv.style.display = 'flex';
+                                if (anchorText.includes(q) && q !== '') {
+                                    hasMatchingArticle = true;
+                                }
+                            } else {
+                                anchorDiv.style.display = 'none';
+                            }
+                        });
+
+                        if (q === '' || titleMatches || hasMatchingArticle) {
                             div.style.display = 'block';
+                            // Expand the folder if it matched via article contents
+                            if (!titleMatches && hasMatchingArticle && q !== '') {
+                                const articlesContainer = div.querySelector('.drill-articles-container');
+                                if (articlesContainer) {
+                                    articlesContainer.classList.remove('hidden');
+                                    const icon = div.querySelector('.law-folder-icon');
+                                    if (icon) icon.style.transform = 'rotate(0deg)';
+                                }
+                            }
                         } else {
                             div.style.display = 'none';
                         }
@@ -8546,14 +8572,6 @@ class QuizApp {
                                 lawDiv.dataset.lawName = realLawName;
                                 const nameSpan = lawHeader.querySelector('.law-folder-name');
                                 if (nameSpan) nameSpan.innerHTML = `📁 ${realLawName}`;
-                                
-                                // Re-trigger search if input has value
-                                if (controlsContainer) {
-                                    const input = controlsContainer.querySelector('input');
-                                    if (input && input.value) {
-                                        input.dispatchEvent(new Event('input'));
-                                    }
-                                }
                             }
 
                             const mainArticles = xmlDoc.querySelectorAll("MainProvision Article, MainProvision > Chapter > Article, MainProvision > Chapter > Section > Article");
@@ -8593,6 +8611,14 @@ class QuizApp {
                                     }
                                 }
                             });
+                            
+                            // Re-trigger search if input has value (after captions are updated)
+                            if (controlsContainer) {
+                                const input = controlsContainer.querySelector('input');
+                                if (input && input.value) {
+                                    input.dispatchEvent(new Event('input'));
+                                }
+                            }
                         }).catch(e => console.log('Law XML fetch error:', e));
                 }
 
