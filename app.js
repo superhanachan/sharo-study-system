@@ -8470,6 +8470,29 @@ class QuizApp {
                     container.querySelectorAll('.law-folder-icon').forEach(i => i.style.transform = 'rotate(-90deg)');
                 };
                 
+                const searchInput = document.createElement('input');
+                searchInput.type = 'text';
+                searchInput.placeholder = '🔍 法令名で検索 (例: 国民年金)';
+                searchInput.style.flex = '1';
+                searchInput.style.padding = '0.5rem';
+                searchInput.style.borderRadius = '5px';
+                searchInput.style.border = '1px solid var(--glass-border)';
+                searchInput.style.background = 'rgba(0,0,0,0.2)';
+                searchInput.style.color = 'white';
+                searchInput.oninput = (e) => {
+                    const q = e.target.value.trim().toLowerCase();
+                    const lawDivs = container.querySelectorAll('.drill-law-folder');
+                    lawDivs.forEach(div => {
+                        const title = (div.dataset.lawName || '').toLowerCase();
+                        if (title.includes(q)) {
+                            div.style.display = 'block';
+                        } else {
+                            div.style.display = 'none';
+                        }
+                    });
+                };
+                
+                controlsContainer.appendChild(searchInput);
                 controlsContainer.appendChild(expandBtn);
                 controlsContainer.appendChild(collapseBtn);
             }
@@ -8477,6 +8500,8 @@ class QuizApp {
             lawIds.forEach(lawId => {
                 const initialLawName = this.lawNameCache[lawId] || this.getKnownLawName(lawId);
                 const lawDiv = document.createElement('div');
+                lawDiv.className = 'drill-law-folder';
+                lawDiv.dataset.lawName = initialLawName;
                 lawDiv.style.marginBottom = '1rem';
                 
                 const lawHeader = document.createElement('div');
@@ -8514,8 +8539,17 @@ class QuizApp {
                             if (lawNameNode && lawId === fetchLawId) {
                                 const realLawName = lawNameNode.textContent;
                                 this.lawNameCache[lawId] = realLawName;
+                                lawDiv.dataset.lawName = realLawName;
                                 const nameSpan = lawHeader.querySelector('.law-folder-name');
                                 if (nameSpan) nameSpan.innerHTML = `📁 ${realLawName}`;
+                                
+                                // Re-trigger search if input has value
+                                if (controlsContainer) {
+                                    const input = controlsContainer.querySelector('input');
+                                    if (input && input.value) {
+                                        input.dispatchEvent(new Event('input'));
+                                    }
+                                }
                             }
 
                             const mainArticles = xmlDoc.querySelectorAll("MainProvision Article, MainProvision > Chapter > Article, MainProvision > Chapter > Section > Article");
