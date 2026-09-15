@@ -6358,6 +6358,12 @@ class QuizApp {
             if (!lawId) throw new Error("法令IDが見つかりません");
 
             const fetchLawId = this.getMappedLawId(lawId, anchor);
+            
+            // Fix external link if we intercepted an amendment law
+            if (lawId !== fetchLawId) {
+                // e.g. https://laws.e-gov.go.jp/law/329AC0000000115#Sp-At_20
+                extLink.href = `https://laws.e-gov.go.jp/law/${fetchLawId}#${anchor}`;
+            }
 
             // Fetch XML from e-Gov API
             const apiUrl = `https://laws.e-gov.go.jp/api/1/lawdata/${fetchLawId}`;
