@@ -6420,6 +6420,7 @@ class QuizApp {
                         "416AC0000000104": "平成一六年六月一一日法律第一〇四号",
                         "360AC0000000034": "昭和六〇年五月一日法律第三四号",
                         "406AC0000000095": "平成六年一一月九日法律第九五号",
+                        "424AC0000000062": "平成二四年八月二二日法律第六二号",
                         "424AC0000000063": "平成二四年八月二二日法律第六三号"
                     };
                     amendNum = AMEND_NUM_MAP[lawId] || null;
@@ -8366,6 +8367,22 @@ class QuizApp {
             }
         }
         
+        // 特殊対応: 平成24年法律第62号 (国民年金法等の一部を改正する法律)
+        if (mapped === "424AC0000000062" || lawId === "424AC0000000062") {
+            mapped = "334AC0000000141"; // Default to Kokumin Nenkin
+            if (anchor && anchor.startsWith("Sp")) {
+                const atMatch = anchor.match(/At_(\d+)/);
+                if (atMatch) {
+                    const artNum = parseInt(atMatch[1], 10);
+                    if (artNum >= 16 && artNum <= 28) {
+                        mapped = "329AC0000000115"; // Kousei Nenkin
+                    } else if (artNum >= 45 && artNum <= 48) {
+                        mapped = "211AC0000000070"; // Kenkou Hoken
+                    }
+                }
+            }
+        }
+
         // 特殊対応: 平成24年法律第63号
         if (mapped === "424AC0000000063" || lawId === "424AC0000000063") {
             mapped = "329AC0000000115"; // Default to Kousei Nenkin (Art 17 etc)
