@@ -6402,9 +6402,64 @@ class QuizApp {
                 return null;
             };
 
-            if (anchor.startsWith('Mp-At_')) {
+            // Helper to extract table number from title (supports kanji and arabic digits)
+            const extractTableNum = (title) => {
+                if (!title) return null;
+                const map = { '〇':0, '一':1, '二':2, '三':3, '四':4, '五':5, '六':6, '七':7, '八':8, '九':9 };
+                let t = title.replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0));
+                const m = t.match(/別表第?([0-9一二三四五六七八九〇十百]+)(?:の([0-9一二三四五六七八九〇十百]+))?/);
+                if (!m) return null;
+                const conv = (s) => {
+                    if (!s) return '';
+                    if (/^\d+$/.test(s)) return s;
+                    let tot = 0, cur = 0;
+                    for (let c of s) {
+                        if (map[c] !== undefined) cur = map[c];
+                        else if (c === '十') { tot += (cur === 0 ? 1 : cur) * 10; cur = 0; }
+                        else if (c === '百') { tot += (cur === 0 ? 1 : cur) * 100; cur = 0; }
+                    }
+                    tot += cur;
+                    return tot > 0 ? String(tot) : s;
+                };
+                const p1 = conv(m[1]);
+                const p2 = m[2] ? '_' + conv(m[2]) : '';
+                return p1 + p2;
+            };
+
+            const tableMatch = anchor.match(/(?:Atb|Ap)_?([0-9_]+)/i);
+
+            if (tableMatch) {
+                // AppdxTable (別表) - Supports Mp-Atb_X, Sp-Atb_X, Ap_X, etc.
+                const targetTableNum = tableMatch[1];
+                const isSuppl = anchor.startsWith('Sp');
+                const allTables = xmlDoc.querySelectorAll("AppdxTable, SupplProvisionAppdxTable");
+                for (let i = 0; i < allTables.length; i++) {
+                    const tbl = allTables[i];
+                    const tblIsSuppl = !!tbl.closest('SupplProvision') || tbl.tagName.includes('Suppl');
+                    if (isSuppl && !tblIsSuppl && allTables.length > 1) {
+                        continue;
+                    }
+                    const titleEl = tbl.querySelector("AppdxTableTitle, SupplProvisionAppdxTableTitle");
+                    if (titleEl) {
+                        const numStr = extractTableNum(titleEl.textContent);
+                        if (numStr === targetTableNum) {
+                            targetNode = tbl;
+                            break;
+                        }
+                    }
+                }
+                if (!targetNode && isSuppl) {
+                    for (let i = 0; i < allTables.length; i++) {
+                        const titleEl = allTables[i].querySelector("AppdxTableTitle, SupplProvisionAppdxTableTitle");
+                        if (titleEl && extractTableNum(titleEl.textContent) === targetTableNum) {
+                            targetNode = allTables[i];
+                            break;
+                        }
+                    }
+                }
+            } else if (anchor.startsWith('Mp-At_') || anchor.startsWith('Mp')) {
                 // Main Provision - Article
-                const articleNum = anchor.replace('Mp-At_', '');
+                const articleNum = anchor.replace(/^Mp-At_?/, '');
                 const articles = xmlDoc.querySelectorAll("Article");
                 targetNode = findArticleInList(articles, articleNum);
             } else if (anchor.startsWith('Sp')) {
@@ -6463,23 +6518,6 @@ class QuizApp {
                         targetNode = findArticleInList(spArticles, atMatch[1]);
                     }
                     if (!targetNode) targetNode = targetSp; // fallback to whole SupplProvision
-                }
-            } else if (anchor.startsWith('Ap')) {
-                // AppdxTable (別表)
-                const numStr = anchor.replace(/^A[pP]+_?/, ''); 
-                const appdxTables = xmlDoc.querySelectorAll("AppdxTable");
-                for (let i = 0; i < appdxTables.length; i++) {
-                    const titleEl = appdxTables[i].querySelector("AppdxTableTitle");
-                    if (titleEl) {
-                        let titleText = titleEl.textContent;
-                        titleText = titleText.replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0));
-                        titleText = titleText.replace('の', '_');
-                        const tMatch = titleText.match(/別表第?([0-9_]+)/);
-                        if (tMatch && tMatch[1] === numStr) {
-                            targetNode = appdxTables[i];
-                            break;
-                        }
-                    }
                 }
             }
 
@@ -6544,6 +6582,9 @@ class QuizApp {
                                 html += `<td style="padding: 0.5rem; border: 1px solid #ccc; vertical-align: top;">`;
                                 Array.from(node.childNodes).forEach(child => html += parseEGovNode(child));
                                 html += `</td>`;
+                                break;
+                            case 'RelatedArticleNum':
+                                html += `<div style="font-size: 0.9em; color: var(--text-muted); margin-bottom: 0.5rem;">${node.textContent}</div>`;
                                 break;
                             case 'AppdxTableTitle':
                                 html += `<div class="egov-title" style="margin-top: 1rem; font-size: 1.2em; font-weight: bold;">${node.textContent}</div>`;
@@ -8287,6 +8328,14 @@ class QuizApp {
         
         if (anchor.startsWith('Sp')) {
             text += "附則 ";
+        }
+
+        const atbMatch = anchor.match(/(?:Atb|Ap)_?([\d_]+)/i);
+        if (atbMatch) {
+            const parts = atbMatch[1].split('_');
+            text += `別表第${parts[0]}`;
+            if (parts.length > 1) text += `の${parts.slice(1).join('の')}`;
+            return text;
         }
         
         const atMatch = anchor.match(/At_([\d_]+)/);
