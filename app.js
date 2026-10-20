@@ -8306,20 +8306,21 @@ class QuizApp {
         let content = '';
         const uint8 = new Uint8Array(arrayBuffer);
 
-        // Gzip蛻､螳・ 蜈磯ｭ縺・0x1f 0x8b
+        // Gzip magic number (0x1f 0x8b) check
         if (uint8.length >= 2 && uint8[0] === 0x1f && uint8[1] === 0x8b) {
             if (typeof DecompressionStream === 'undefined') {
-                throw new Error('縺贋ｽｿ縺・・繝悶Λ繧ｦ繧ｶ縺ｯGzip隗｣蜃・DecompressionStream)縺ｫ蟇ｾ蠢懊＠縺ｦ縺・∪縺帙ｓ縲・);
+                throw new Error("DecompressionStream is not supported by your browser");
             }
             try {
                 const stream = new Blob([arrayBuffer]).stream().pipeThrough(new DecompressionStream('gzip'));
                 content = await new Response(stream).text();
             } catch (decompErr) {
-                console.error('Gzip decompression failed:', decompErr);
-                throw new Error('蝨ｧ邵ｮ繝・・繧ｿ縺ｮ隗｣蜃阪↓螟ｱ謨励＠縺ｾ縺励◆縲・);
+                console.error("Gzip decompression failed:", decompErr);
+                throw new Error("Failed to decompress remote gzip data");
             }
         } else {
-            // 蠕捺擂縺ｮ蟷ｳ譁⑪SON・亥ｾ梧婿莠呈鋤蟇ｾ蠢懶ｼ・            content = new TextDecoder('utf-8').decode(arrayBuffer);
+            // Legacy plain JSON (UTF-8)
+            content = new TextDecoder('utf-8').decode(arrayBuffer);
         }
 
         if (!content) return null;
@@ -8328,7 +8329,7 @@ class QuizApp {
             return JSON.parse(content);
         } catch (e) {
             console.error('JSON Parse Error. Raw content start:', content.substring(0, 100));
-            throw new Error('繝ｪ繝｢繝ｼ繝医・JSON繝輔ぃ繧､繝ｫ縺悟｣翫ｌ縺ｦ縺・ｋ縺九∫ｩｺ縺ｧ縺吶・);
+            throw new Error('Remote JSON file is corrupted or empty');
         }
     }
 
@@ -8336,13 +8337,13 @@ class QuizApp {
         this.pruneData();
         const url = `https://api.github.com/repos/${config.repo}/contents/${config.path}`;
         
-        this.updateGitHubStatus('繝・・繧ｿ繧貞悸邵ｮ繝ｻ繧ｨ繝ｳ繧ｳ繝ｼ繝我ｸｭ...');
+        this.updateGitHubStatus('Compressing and encoding data...');
         await forceRepaint();
 
         const jsonStr = JSON.stringify(data);
         const content = await this.compress_and_b64_encode(jsonStr);
 
-        this.updateGitHubStatus('GitHub縺ｸ繧｢繝・・繝ｭ繝ｼ繝我ｸｭ...');
+        this.updateGitHubStatus('Uploading to GitHub...');
         await forceRepaint();
 
         // Need current SHA to update existing file
@@ -8381,7 +8382,8 @@ class QuizApp {
         this._ghFileSha = resData.content.sha;
     }
 
-    // 繝悶Λ繧ｦ繧ｶ讓呎ｺ悶・ CompressionStream 繧堤畑縺・◆ Gzip 蝨ｧ邵ｮ + Base64 繧ｨ繝ｳ繧ｳ繝ｼ繝・    async compress_and_b64_encode(str) {
+    // Standard CompressionStream Gzip + Base64
+    async compress_and_b64_encode(str) {
         let blob = new Blob([str], { type: 'application/json' });
 
         if (typeof CompressionStream !== 'undefined') {
@@ -8405,7 +8407,7 @@ class QuizApp {
         });
     }
 
-    // 譌｢蟄倥さ繝ｼ繝峨→縺ｮ莠呈鋤逕ｨ
+    // Compatibility alias
     async utf8_to_b64_encode(str) {
         return this.compress_and_b64_encode(str);
     }
