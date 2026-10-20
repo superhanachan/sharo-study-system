@@ -6476,25 +6476,77 @@ class QuizApp {
                         "360AC0000000034": "昭和六〇年五月一日法律第三四号",
                         "406AC0000000095": "平成六年一一月九日法律第九五号",
                         "424AC0000000062": "平成二四年八月二二日法律第六二号",
-                        "424AC0000000063": "平成二四年八月二二日法律第六三号"
+                        "424AC0000000063": "平成二四年八月二二日法律第六三号",
+                        "426AC0000000064": "平成二六年六月一一日法律第六四号"
                     };
                     amendNum = AMEND_NUM_MAP[lawId] || null;
                 }
                 
                 let targetSp = null;
                 const spNodes = xmlDoc.querySelectorAll("SupplProvision");
-                
-                // 1. Exact match
-                for (let i = 0; i < spNodes.length; i++) {
-                    if (!amendNum && !spNodes[i].hasAttribute("AmendLawNum")) {
-                        targetSp = spNodes[i]; break;
-                    }
-                    if (amendNum && spNodes[i].getAttribute("AmendLawNum") === amendNum) {
-                        targetSp = spNodes[i]; break;
+
+                // 1. Check for e-Gov Roman format like Heisei_16_Hou_104
+                if (amendNum) {
+                    const romanMatch = amendNum.match(/^(Heisei|Showa|Reiwa)_(\d+)_(Hou|Seirei|Rei)_(\d+)/i);
+                    if (romanMatch) {
+                        const eraMap = { 'heisei': '平成', 'showa': '昭和', 'reiwa': '令和' };
+                        const era = eraMap[romanMatch[1].toLowerCase()];
+                        const year = parseInt(romanMatch[2], 10);
+                        const type = romanMatch[3].toLowerCase() === 'hou' ? '法律' : '政令';
+                        const num = parseInt(romanMatch[4], 10);
+                        
+                        const kanjiDigits = ['〇','一','二','三','四','五','六','七','八','九'];
+                        const toKanjiVars = (n) => {
+                            const s = String(n);
+                            const positional = s.split('').map(d => kanjiDigits[parseInt(d)]).join('');
+                            let formal = '';
+                            if (n < 10) formal = kanjiDigits[n];
+                            else if (n < 20) formal = '十' + (n % 10 === 0 ? '' : kanjiDigits[n % 10]);
+                            else if (n < 100) {
+                                const t = Math.floor(n / 10);
+                                const o = n % 10;
+                                formal = kanjiDigits[t] + '十' + (o === 0 ? '' : kanjiDigits[o]);
+                            } else if (n < 1000) {
+                                const h = Math.floor(n / 100);
+                                const rem = n % 100;
+                                const t = Math.floor(rem / 10);
+                                const o = rem % 10;
+                                formal = (h === 1 ? '百' : kanjiDigits[h] + '百');
+                                if (t > 0) formal += (t === 1 ? '十' : kanjiDigits[t] + '十');
+                                if (o > 0) formal += kanjiDigits[o];
+                            }
+                            return [positional, formal, String(n)];
+                        };
+
+                        const yearVars = toKanjiVars(year);
+                        const numVars = toKanjiVars(num);
+
+                        for (let i = 0; i < spNodes.length; i++) {
+                            const aln = spNodes[i].getAttribute("AmendLawNum");
+                            if (!aln || !aln.startsWith(era) || !aln.includes(type)) continue;
+                            const yearMatches = yearVars.some(yv => aln.includes(yv + '年'));
+                            const numMatches = numVars.some(nv => aln.includes(nv + '号'));
+                            if (yearMatches && numMatches) {
+                                targetSp = spNodes[i];
+                                break;
+                            }
+                        }
                     }
                 }
                 
-                // 2. Fuzzy match (handle e-Gov kanji inconsistencies like 三十四 vs 三四)
+                // 2. Exact match
+                if (!targetSp && amendNum) {
+                    for (let i = 0; i < spNodes.length; i++) {
+                        if (!amendNum && !spNodes[i].hasAttribute("AmendLawNum")) {
+                            targetSp = spNodes[i]; break;
+                        }
+                        if (amendNum && spNodes[i].getAttribute("AmendLawNum") === amendNum) {
+                            targetSp = spNodes[i]; break;
+                        }
+                    }
+                }
+                
+                // 3. Fuzzy match (handle e-Gov kanji inconsistencies like 三十四 vs 三四)
                 if (!targetSp && amendNum) {
                     const fuzzyAmend = amendNum.replace(/十/g, '');
                     for (let i = 0; i < spNodes.length; i++) {
@@ -6505,11 +6557,11 @@ class QuizApp {
                     }
                 }
                 
-                // 3. Ultimate fallback for original law (which lacks AmendLawNum in XML despite URL having one)
+                // 4. Ultimate fallback for original law (which lacks AmendLawNum in XML despite URL having one)
                 if (!targetSp && spNodes.length > 0 && !spNodes[0].hasAttribute("AmendLawNum")) {
                     targetSp = spNodes[0];
                 }
-                
+
                 if (targetSp) {
                     // Check for both -At_ and _At_ for robustness against AI hallucinations
                     const atMatch = anchor.match(/[-_]At_([0-9_]+)/);
@@ -8326,8 +8378,23 @@ class QuizApp {
         if (!anchor) return "全体";
         let text = "";
         
+        // Check for e-Gov Roman format like Heisei_16_Hou_104
+        const romanMatch = anchor.match(/(?:Sp_)?(Heisei|Showa|Reiwa)_(\d+)_(Hou|Seirei|Rei)_(\d+)/i);
+        let eraPrefix = "";
+        if (romanMatch) {
+            const eraShort = { 'heisei': '平', 'showa': '昭', 'reiwa': '令' };
+            const era = eraShort[romanMatch[1].toLowerCase()] || romanMatch[1];
+            const year = romanMatch[2];
+            const type = romanMatch[3].toLowerCase() === 'hou' ? '法' : '令';
+            const num = romanMatch[4];
+            eraPrefix = era + year + type + num + " ";
+        }
+
         if (anchor.startsWith('Sp')) {
             text += "附則 ";
+        }
+        if (eraPrefix) {
+            text += eraPrefix;
         }
 
         const atbMatch = anchor.match(/(?:Atb|Ap)_?([\d_]+)/i);
@@ -8380,7 +8447,8 @@ class QuizApp {
 
         const AMENDMENT_LAW_MAP = {
             "416AC0000000104": "334AC0000000141", // 平成16年法律第104号 -> 国民年金法
-            "406AC0000000095": "334AC0000000141"  // 平成6年法律第95号 -> 国民年金法
+            "406AC0000000095": "334AC0000000141", // 平成6年法律第95号 -> 国民年金法
+            "426AC0000000064": "334AC0000000141"  // 平成26年法律第64号 -> 国民年金法
         };
         
         mapped = AMENDMENT_LAW_MAP[mapped] || mapped;
